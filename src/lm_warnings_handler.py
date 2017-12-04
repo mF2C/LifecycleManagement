@@ -19,10 +19,10 @@ import time
 
 
 # thread
-def thr(notification):
+def thr(warning):
     try:
         logs.info(">> UM warnings handler >> executing ...")
-        logs.info(">> " + str(notification))
+        logs.info(">> " + str(warning))
         # TODO
 
         time.sleep(10)
