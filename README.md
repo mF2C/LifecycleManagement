@@ -23,7 +23,8 @@ The Lifecycle Management module is a component of the European Project mF2C.
 
 ### Description
 
-...
+The Lifecycle Management component is responsible for managing the lifecycle of the applications to be executed by the mF2C infrastructure.
+This includes the initialization, the submission and the termination of these applications, among other operations.
 
 -----------------------
 
@@ -37,7 +38,25 @@ The Lifecycle Management module is a component of the European Project mF2C.
 
 ##### 1. Requirements
 
-...
+1. Docker
+2. Docker-Compose
+3. Python 2.7.9 - 2.7.14
+
+#### Launch with Docker
+
+- Build application:
+
+```bash
+sudo docker build -t lm-app .
+```
+
+- Run application:
+
+```bash
+sudo docker run -p 5002:5000 lm-app
+```
+
+#### Launch with Docker-Compose
 
 ...
 
