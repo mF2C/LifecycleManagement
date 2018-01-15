@@ -1,4 +1,4 @@
-'''
+"""
 Service
 This is being developed for the MF2C Project: http://www.mf2c-project.eu/
 
@@ -9,12 +9,10 @@ This code is licensed under an Apache 2.0 license. Please, refer to the LICENSE.
 Created on 27 sept. 2017
 
 @author: Roi Sucasas - ATOS
-'''
+"""
 
-#!/usr/bin/python3
 
-import requests
-import logs
+from src.utils import logs
 from flask import Response, json, jsonify
 
 
@@ -29,7 +27,7 @@ from flask import Response, json, jsonify
 # Submit a service
 def submit(service):
     try:
-        logs.info("Service: submit service: " + service)
+        logs.info("Lifecycle-Management: Service module: Submit service: " + service)
         # TODO
 
         # 1. RECOMMENDER -> RECIPE = GET_RECIPE (SERVICE)
@@ -61,31 +59,38 @@ def submit(service):
         # return
         return Response(jsonify({'Service': 'submit', 'service': service}), status=200, content_type='application/json')
     except:
-        logs.error('Error (0): Service: submit: Exception')
-        return Response(json.dumps({'Service': 'submit', 'service': service}), status=500, content_type='application/json')
-
+        logs.error('Lifecycle-Management: Service module: submit: Exception')
+        return Response(json.dumps({'error': True, 'message': 'Exception', 'service': service}),
+                        status=500, content_type='application/json')
 
 
 # Terminate service, Deallocate service's resources
 def terminate(service_id):
     try:
-        logs.info("Service: terminate: " + service_id)
+        logs.info("Lifecycle-Management: Service module: Terminate service: " + service_id)
+
         # TODO
+        #...
 
-        # 1. The Lifecycle calls the Service Management component of the same device or the Service Management component
-        #    of one its children, in order to deallocate the resources.
-
-        # return
-        return {'Service': 'terminate', 'service': service_id}
+        # TEST
+        return {'error': False, 'message': 'Service terminated', 'service_id': service_id}
     except:
-        logs.error('Error (0): Service_Submission: terminate: Exception')
-        return {'Service': 'terminate', 'service': service_id, 'result': 'error', 'message': 'Error (0)'}
-
+        logs.error('Lifecycle-Management: Service module: terminate: Exception')
+        return Response(json.dumps({'error': True, 'message': 'Exception', 'service_id': ''}),
+                        status=500, content_type='application/json')
 
 
 # Get service status
-def getStatus(service_id):
-    logs.info("Service: getStatus: " + service_id)
-    # TODO
+def get_status(service_id):
+    try:
+        logs.info("Lifecycle-Management: Service module: Get service status: " + service_id)
 
-    return "NOT_IMPLEMENTED"
+        # TODO
+        #...
+
+        # TEST
+        return {'error': False, 'message': 'Service status', 'service_id': service_id, 'status':'Running'}
+    except:
+        logs.error('Lifecycle-Management: Service module: get_status: Exception')
+        return Response(json.dumps({'error': True, 'message': 'Exception', 'service_id': ''}),
+                        status=500, content_type='application/json')
