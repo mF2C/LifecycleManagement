@@ -45,7 +45,7 @@ def handle_sla_notification(service_id, notification):
         t = threading.Thread(target=thr, args=(service_id, notification,))
         t.start()
 
-        return {'error': False, 'message': 'SLA Notification is being processed', 'service_id': service_id}
+        return {'error': False, 'message': 'SLA Notification has been processed.', 'service_id': service_id}
     except:
         logs.error('Lifecycle-Management: SLA Notifications Handler module: handle_sla_notification: Exception')
         return Response(json.dumps({'error': True, 'message': 'Exception', 'notification': ''}),

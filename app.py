@@ -151,16 +151,17 @@ class Service(Resource):
             "message": "Operation not defined / implemented"
         }])
     def post(self, service_id):
-        data = request.get_json()
-        if 'type' not in data or 'data' not in data:
+        body = request.get_json()
+        logs.info('body: ' + str(body))
+        if 'type' not in body or 'data' not in body:
             logs.error('Lifecycle-Management: Service: post: Exception - parameter not found: type / data')
             return Response(json.dumps({'error': True, 'message': 'parameter not found: type / data'}),
                             status=406, content_type='application/json')
         else:
-            if data['type'] == "sla_notification":
-                return lm_sla_handler.handle_sla_notification(service_id, data['data'])
-            elif data['type'] == "um_warning":
-                return lm_warnings_handler.handle_warning(service_id, data['data'])
+            if body['type'] == "sla_notification":
+                return lm_sla_handler.handle_sla_notification(service_id, body['data'])
+            elif body['type'] == "um_warning":
+                return lm_warnings_handler.handle_warning(service_id, body['data'])
         logs.error('Lifecycle-Management: Service: post: type not defined / implemented')
         return Response(json.dumps({'error': True, 'message': 'type not defined / implemented'}),
                         status=501, content_type='application/json')

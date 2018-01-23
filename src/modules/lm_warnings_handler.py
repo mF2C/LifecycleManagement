@@ -26,7 +26,7 @@ def thr(service_id, warning):
         # TODO
         #...
 
-        time.sleep(10)
+        time.sleep(5)
 
         # TEST
         logs.debug("Lifecycle-Management: Warnings Handler module: thr: " + service_id +
@@ -45,7 +45,7 @@ def handle_warning(service_id, warning):
         t = threading.Thread(target=thr, args=(service_id, warning,))
         t.start()
 
-        return {'error': False, 'message': 'Warning is being processed', 'service_id': service_id}
+        return {'error': False, 'message': 'Warning is being processed...', 'service_id': service_id, 'warning': warning}
     except:
         logs.error('Lifecycle-Management: Warnings Handler module: handle_warning: Exception')
         return Response(json.dumps({'error': True, 'message': 'Exception', 'warning': ''}),
