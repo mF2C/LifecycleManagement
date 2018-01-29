@@ -53,7 +53,7 @@ sudo docker build -t lm-app .
 - Run application:
 
 ```bash
-sudo docker run -p 5002:5000 lm-app
+sudo docker run -p 5002:8083 lm-app
 ```
 
 #### Launch with Docker-Compose
