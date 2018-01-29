@@ -12,7 +12,7 @@ Created on 27 sept. 2017
 """
 
 
-from src.utils import logs
+from src.utils.logs import LOG
 from flask import Response, json
 import threading
 import time
@@ -21,7 +21,7 @@ import time
 # thread
 def thr(service_id, notification):
     try:
-        logs.debug("Lifecycle-Management: SLA Notifications Handler module: thr: service_id: " + service_id + " ...")
+        LOG.debug("Lifecycle-Management: SLA Notifications Handler module: thr: service_id: " + service_id + " ...")
 
         # TODO
         #...
@@ -29,16 +29,16 @@ def thr(service_id, notification):
         time.sleep(10)
 
         # TEST
-        logs.debug("Lifecycle-Management: SLA Notifications Handler module: thr: " + service_id +
+        LOG.debug("Lifecycle-Management: SLA Notifications Handler module: thr: " + service_id +
                    " notification: " + str(notification) + " DONE!")
     except:
-        logs.error('Lifecycle-Management: SLA Notifications Handler module: thr: Exception')
+        LOG.error('Lifecycle-Management: SLA Notifications Handler module: thr: Exception')
 
 
 # Handle SLA violations
 def handle_sla_notification(service_id, notification):
     try:
-        logs.info("Lifecycle-Management: SLA Notifications Handler module: handle_sla_notification: service_id: " +
+        LOG.info("Lifecycle-Management: SLA Notifications Handler module: handle_sla_notification: service_id: " +
                   service_id + ", notification: " + str(notification))
 
         # handle notification
@@ -47,6 +47,6 @@ def handle_sla_notification(service_id, notification):
 
         return {'error': False, 'message': 'SLA Notification has been processed.', 'service_id': service_id}
     except:
-        logs.error('Lifecycle-Management: SLA Notifications Handler module: handle_sla_notification: Exception')
+        LOG.error('Lifecycle-Management: SLA Notifications Handler module: handle_sla_notification: Exception')
         return Response(json.dumps({'error': True, 'message': 'Exception', 'notification': ''}),
                         status=500, content_type='application/json')

@@ -14,8 +14,8 @@ Created on 27 sept. 2017
 import logging
 
 
-logs = logging.getLogger()
-logs.setLevel(logging.DEBUG)
+LOG = logging.getLogger()
+LOG.setLevel(logging.DEBUG)
 #fileHandler = logging.FileHandler("logs.log")
 #rootLogger.addHandler(fileHandler)
 consoleHandler = logging.StreamHandler()
@@ -23,24 +23,4 @@ consoleHandler = logging.StreamHandler()
 # create a logging format
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 consoleHandler.setFormatter(formatter)
-logs.addHandler(consoleHandler)
-
-
-# info wrapper
-def info(m):
-    logs.info(m)
-
-
-# error wrapper
-def error(m):
-    logs.error(m)
-
-
-# debug wrapper
-def debug(m):
-    logs.debug(m)
-
-
-# warning wrapper
-def warning(m):
-    logs.warning(m)
+LOG.addHandler(consoleHandler)

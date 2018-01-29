@@ -12,7 +12,7 @@ Created on 27 sept. 2017
 """
 
 
-from src.utils import logs
+from src.utils.logs import LOG
 from flask import Response, json
 import threading
 import time
@@ -21,7 +21,7 @@ import time
 # thread
 def thr(service_id, warning):
     try:
-        logs.debug("Lifecycle-Management: Warnings Handler module: thr: service_id: " + service_id + " ...")
+        LOG.debug("Lifecycle-Management: Warnings Handler module: thr: service_id: " + service_id + " ...")
 
         # TODO
         #...
@@ -29,16 +29,16 @@ def thr(service_id, warning):
         time.sleep(5)
 
         # TEST
-        logs.debug("Lifecycle-Management: Warnings Handler module: thr: " + service_id +
+        LOG.debug("Lifecycle-Management: Warnings Handler module: thr: " + service_id +
                    " warning: " + str(warning) + " DONE!")
     except:
-        logs.error('Lifecycle-Management: Warnings Handler module: thr: Exception')
+        LOG.error('Lifecycle-Management: Warnings Handler module: thr: Exception')
 
 
 # Handle UM warnings
 def handle_warning(service_id, warning):
     try:
-        logs.info("Lifecycle-Management: Warnings Handler module: handle_warning: service_id: " +
+        LOG.info("Lifecycle-Management: Warnings Handler module: handle_warning: service_id: " +
                   service_id + ", warning: " + str(warning))
 
         # handle notification
@@ -47,6 +47,6 @@ def handle_warning(service_id, warning):
 
         return {'error': False, 'message': 'Warning is being processed...', 'service_id': service_id, 'warning': warning}
     except:
-        logs.error('Lifecycle-Management: Warnings Handler module: handle_warning: Exception')
+        LOG.error('Lifecycle-Management: Warnings Handler module: handle_warning: Exception')
         return Response(json.dumps({'error': True, 'message': 'Exception', 'warning': ''}),
                         status=500, content_type='application/json')

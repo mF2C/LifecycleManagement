@@ -17,9 +17,9 @@ import src.modules.lm_service_operations as lm_service_operations
 import src.modules.lm_service as lm_service
 import src.modules.lm_warnings_handler as lm_warnings_handler
 import src.modules.lm_sla_handler as lm_sla_handler
-import src.utils.logs as logs
 import src.utils.auth as auth
 import config
+from src.utils.logs import LOG
 from flask_cors import CORS
 from flask import Flask, request, Response, json
 from flask_restful import Resource, Api
@@ -27,12 +27,13 @@ from flask_restful_swagger import swagger
 
 
 try:
+    # TODO ENV values
     # CONFIGURATION values
-    logs.info('[SERVER_PORT=' + str(config.dic['SERVER_PORT']) + ']')
-    logs.info('[API_DOC_URL=' + config.dic['API_DOC_URL'] + ']')
-    logs.info('[CERT_CRT=' + config.dic['CERT_CRT'] + ']')
-    logs.info('[CERT_KEY=' + config.dic['CERT_KEY'] + ']')
-    logs.info('[DEBUG=' + str(config.dic['DEBUG']) + ']')
+    LOG.info('[SERVER_PORT=' + str(config.dic['SERVER_PORT']) + ']')
+    LOG.info('[API_DOC_URL=' + config.dic['API_DOC_URL'] + ']')
+    LOG.info('[CERT_CRT=' + config.dic['CERT_CRT'] + ']')
+    LOG.info('[CERT_KEY=' + config.dic['CERT_KEY'] + ']')
+    LOG.info('[DEBUG=' + str(config.dic['DEBUG']) + ']')
 
     # CIMI URL
     CIMI_API_ENV_NAME = "CIMI_API"
@@ -52,7 +53,7 @@ try:
                        basePath='http://localhost:' + str(config.dic['SERVER_PORT']),
                        resourcePath='/')
 except ValueError:
-    logs.error('ERROR')
+    LOG.error('ERROR')
 
 
 ###############################################################################
@@ -152,9 +153,9 @@ class Service(Resource):
         }])
     def post(self, service_id):
         body = request.get_json()
-        logs.info('body: ' + str(body))
+        LOG.info('body: ' + str(body))
         if 'type' not in body or 'data' not in body:
-            logs.error('Lifecycle-Management: Service: post: Exception - parameter not found: type / data')
+            LOG.error('Lifecycle-Management: Service: post: Exception - parameter not found: type / data')
             return Response(json.dumps({'error': True, 'message': 'parameter not found: type / data'}),
                             status=406, content_type='application/json')
         else:
@@ -162,7 +163,7 @@ class Service(Resource):
                 return lm_sla_handler.handle_sla_notification(service_id, body['data'])
             elif body['type'] == "um_warning":
                 return lm_warnings_handler.handle_warning(service_id, body['data'])
-        logs.error('Lifecycle-Management: Service: post: type not defined / implemented')
+        LOG.error('Lifecycle-Management: Service: post: type not defined / implemented')
         return Response(json.dumps({'error': True, 'message': 'type not defined / implemented'}),
                         status=501, content_type='application/json')
 
@@ -204,7 +205,7 @@ class ServiceLifecycle(Resource):
     def post(self):
         data = request.get_json()
         if 'service' not in data:
-            logs.error('Lifecycle-Management: ServiceLifecycle: post: Exception - parameter not found: service')
+            LOG.error('Lifecycle-Management: ServiceLifecycle: post: Exception - parameter not found: service')
             return Response(json.dumps({'error': True, 'message': 'parameter not found: service'}),
                             status=406, content_type='application/json')
         return lm_service.submit(data['service'])
@@ -233,7 +234,7 @@ class ServiceLifecycle(Resource):
     def put(self):
         data = request.get_json()
         if 'service_id' not in data or 'operation' not in data:
-            logs.error('Lifecycle-Management: ServiceLifecycle: put: Exception - parameter not found: service_id / operation')
+            LOG.error('Lifecycle-Management: ServiceLifecycle: put: Exception - parameter not found: service_id / operation')
             return Response(json.dumps({'error': True, 'message': 'parameter not found: service_id / operation'}),
                             status=406, content_type='application/json')
         # operations
@@ -244,7 +245,7 @@ class ServiceLifecycle(Resource):
         elif data['operation'] == 'restart':
             return lm_service_operations.restart(data['service_id'])
         else:
-            logs.error('Lifecycle-Management: ServiceLifecycle: put: operation not defined / implemented')
+            LOG.error('Lifecycle-Management: ServiceLifecycle: put: operation not defined / implemented')
             return Response(json.dumps({'error': True, 'message': 'operation not defined / implemented'}),
                             status=501, content_type='application/json')
 
@@ -272,7 +273,7 @@ class ServiceLifecycle(Resource):
     def delete(self):
         data = request.get_json()
         if 'service_id' not in data:
-            logs.error('Lifecycle-Management: ServiceLifecycle: delete: Exception - parameter not found: service_id')
+            LOG.error('Lifecycle-Management: ServiceLifecycle: delete: Exception - parameter not found: service_id')
             return Response(json.dumps({'error': True, 'message': 'parameter not found: service_id'}),
                             status=406, content_type='application/json')
         return lm_service.terminate(data['service_id'])

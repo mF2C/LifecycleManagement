@@ -14,7 +14,7 @@ Created on 27 sept. 2017
 
 import config
 import requests
-from src.utils import logs
+from src.utils.logs import LOG
 from flask import Response, json, jsonify
 
 
@@ -29,7 +29,7 @@ from flask import Response, json, jsonify
 # Submit a service
 def submit(service):
     try:
-        logs.info("Lifecycle-Management: Service module: Submit service: " + service)
+        LOG.info("Lifecycle-Management: Service module: Submit service: " + service)
 
         # TODO define SERVICE content
 
@@ -39,10 +39,10 @@ def submit(service):
         # TODO: RECIPE = GET_RECIPE(SERVICE)
         r = requests.get(config.dic['URL_PM_RECOMMENDER'], verify=config.dic['VERIFY_SSL'])
         if r.status_code == 200:
-            logs.debug('Lifecycle-Management: Service module: Submit service (1): status_code=' + r.status_code +
+            LOG.debug('Lifecycle-Management: Service module: Submit service (1): status_code=' + r.status_code +
                        '; response: ' + r.text)
         else:
-            logs.error('Lifecycle-Management: Service module: Submit service (1): Error: status_code=' + r.status_code)
+            LOG.error('Lifecycle-Management: Service module: Submit service (1): Error: status_code=' + r.status_code)
 
         # 2. LANDSCAPER -> RESOURCES = GET_RESOURCES (RECIPE)
         # Based on this optimal configuration returned by the Recommender, the Lifecycle module asks the Landscaper
@@ -52,10 +52,10 @@ def submit(service):
         # TODO: RESOURCES = GET_RESOURCES(RECIPE)
         r = requests.get(config.dic['URL_PM_LANDSCAPER'], verify=config.dic['VERIFY_SSL'])
         if r.status_code == 200:
-            logs.debug('Lifecycle-Management: Service module: Submit service (2): status_code=' + r.status_code +
+            LOG.debug('Lifecycle-Management: Service module: Submit service (2): status_code=' + r.status_code +
                        '; response: ' + r.text)
         else:
-            logs.error('Lifecycle-Management: Service module: Submit service (2): Error: status_code=' + r.status_code)
+            LOG.error('Lifecycle-Management: Service module: Submit service (2): Error: status_code=' + r.status_code)
 
         # 3. QoS PROVIDING -> RESOURCES = XXX (RESOURCES)
         # TODO: RESOURCES = GET_RESOURCES(RESOURCES)
@@ -90,7 +90,7 @@ def submit(service):
         # return
         return Response(jsonify({'Service': 'submit', 'service': service}), status=200, content_type='application/json')
     except:
-        logs.error('Lifecycle-Management: Service module: submit: Exception')
+        LOG.error('Lifecycle-Management: Service module: submit: Exception')
         return Response(json.dumps({'error': True, 'message': 'Exception', 'service': service}),
                         status=500, content_type='application/json')
 
@@ -98,7 +98,7 @@ def submit(service):
 # Terminate service, Deallocate service's resources
 def terminate(service_id):
     try:
-        logs.info("Lifecycle-Management: Service module: Terminate service: " + service_id)
+        LOG.info("Lifecycle-Management: Service module: Terminate service: " + service_id)
 
         # TODO
         #...
@@ -106,7 +106,7 @@ def terminate(service_id):
         # TEST
         return {'error': False, 'message': 'Service terminated', 'service_id': service_id}
     except:
-        logs.error('Lifecycle-Management: Service module: terminate: Exception')
+        LOG.error('Lifecycle-Management: Service module: terminate: Exception')
         return Response(json.dumps({'error': True, 'message': 'Exception', 'service_id': ''}),
                         status=500, content_type='application/json')
 
@@ -114,7 +114,7 @@ def terminate(service_id):
 # Get service status
 def get_status(service_id):
     try:
-        logs.info("Lifecycle-Management: Service module: Get service status: " + service_id)
+        LOG.info("Lifecycle-Management: Service module: Get service status: " + service_id)
 
         # TODO
         #...
@@ -122,6 +122,6 @@ def get_status(service_id):
         # TEST
         return {'error': False, 'message': 'Service status', 'service_id': service_id, 'status':'Running'}
     except:
-        logs.error('Lifecycle-Management: Service module: get_status: Exception')
+        LOG.error('Lifecycle-Management: Service module: get_status: Exception')
         return Response(json.dumps({'error': True, 'message': 'Exception', 'service_id': ''}),
                         status=500, content_type='application/json')

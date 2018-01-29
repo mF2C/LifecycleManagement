@@ -12,14 +12,14 @@ Created on 27 sept. 2017
 """
 
 
-from src.utils import logs
+from src.utils.logs import LOG
 from flask import Response, json
 
 
 # Service Operation: start
 def start(service_id):
     try:
-        logs.info("Lifecycle-Management: Service Operations module: start service: " + service_id)
+        LOG.info("Lifecycle-Management: Service Operations module: start service: " + service_id)
 
         # TODO
         # ...
@@ -27,7 +27,7 @@ def start(service_id):
         # TEST
         return {'error': False, 'message': 'Service started', 'service_id': service_id}
     except:
-        logs.error('Lifecycle-Management: Service Operations module: start: Exception')
+        LOG.error('Lifecycle-Management: Service Operations module: start: Exception')
         return Response(json.dumps({'error': True, 'message': 'Exception', 'service_id': ''}),
                         status=500, content_type='application/json')
 
@@ -35,7 +35,7 @@ def start(service_id):
 # Service Operation: restart
 def restart(service_id):
     try:
-        logs.info("Lifecycle-Management: Service Operations module: restart service: " + service_id)
+        LOG.info("Lifecycle-Management: Service Operations module: restart service: " + service_id)
 
         # TODO
         # ...
@@ -43,7 +43,7 @@ def restart(service_id):
         # TEST
         return {'error': False, 'message': 'Service restarted', 'service_id': service_id}
     except:
-        logs.error('Lifecycle-Management: Service Operations module: restart: Exception')
+        LOG.error('Lifecycle-Management: Service Operations module: restart: Exception')
         return Response(json.dumps({'error': True, 'message': 'Exception', 'service_id': ''}),
                         status=500, content_type='application/json')
 
@@ -51,7 +51,7 @@ def restart(service_id):
 # Service Operation: stop
 def stop(service_id):
     try:
-        logs.info("Lifecycle-Management: Service Operations module: stop service: " + service_id)
+        LOG.info("Lifecycle-Management: Service Operations module: stop service: " + service_id)
 
         # TODO
         # ...
@@ -59,6 +59,6 @@ def stop(service_id):
         # TEST
         return {'error': False, 'message': 'Service stopped', 'service_id': service_id}
     except:
-        logs.error('Lifecycle-Management: Service Operations module: stop: Exception')
+        LOG.error('Lifecycle-Management: Service Operations module: stop: Exception')
         return Response(json.dumps({'error': True, 'message': 'Exception', 'service_id': ''}),
                         status=500, content_type='application/json')
