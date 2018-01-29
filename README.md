@@ -40,7 +40,7 @@ This includes the initialization, the submission and the termination of these ap
 
 1. Docker
 2. Docker-Compose
-3. Python 2.7.9 - 2.7.14
+3. ~~Python 2.7.9 - 2.7.14~~
 
 #### Launch with Docker
 
