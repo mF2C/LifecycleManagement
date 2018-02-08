@@ -13,7 +13,7 @@ Created on 27 sept. 2017
 
 
 from src.utils.logs import LOG
-from flask import Response, json
+import src.utils.common as common
 import threading
 import time
 
@@ -45,8 +45,7 @@ def handle_sla_notification(service_id, notification):
         t = threading.Thread(target=thr, args=(service_id, notification,))
         t.start()
 
-        return {'error': False, 'message': 'SLA Notification has been processed.', 'service_id': service_id}
+        return common.gen_response_ok('SLA Notification has been processed', 'service_id', service_id, 'notification', notification)
     except:
         LOG.error('Lifecycle-Management: SLA Notifications Handler module: handle_sla_notification: Exception')
-        return Response(json.dumps({'error': True, 'message': 'Exception', 'notification': ''}),
-                        status=500, content_type='application/json')
+        return common.gen_response(500, 'Exception', 'service_id', service_id, 'notification', notification)

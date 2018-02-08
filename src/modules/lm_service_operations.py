@@ -13,7 +13,7 @@ Created on 27 sept. 2017
 
 
 from src.utils.logs import LOG
-from flask import Response, json
+import src.utils.common as common
 
 
 # Service Operation: start
@@ -24,12 +24,10 @@ def start(service_id):
         # TODO
         # ...
 
-        # TEST
-        return {'error': False, 'message': 'Service started', 'service_id': service_id}
+        return common.gen_response_ok('Service started', 'service_id', service_id)
     except:
         LOG.error('Lifecycle-Management: Service Operations module: start: Exception')
-        return Response(json.dumps({'error': True, 'message': 'Exception', 'service_id': ''}),
-                        status=500, content_type='application/json')
+        return common.gen_response(500, 'Exception', 'service_id', service_id, 'service_id', service_id)
 
 
 # Service Operation: restart
@@ -40,12 +38,10 @@ def restart(service_id):
         # TODO
         # ...
 
-        # TEST
-        return {'error': False, 'message': 'Service restarted', 'service_id': service_id}
+        return common.gen_response_ok('Service restarted', 'service_id', service_id)
     except:
         LOG.error('Lifecycle-Management: Service Operations module: restart: Exception')
-        return Response(json.dumps({'error': True, 'message': 'Exception', 'service_id': ''}),
-                        status=500, content_type='application/json')
+        return common.gen_response(500, 'Exception', 'service_id', service_id, 'service_id', service_id)
 
 
 # Service Operation: stop
@@ -56,9 +52,7 @@ def stop(service_id):
         # TODO
         # ...
 
-        # TEST
-        return {'error': False, 'message': 'Service stopped', 'service_id': service_id}
+        return common.gen_response_ok('Service stopped', 'service_id', service_id)
     except:
         LOG.error('Lifecycle-Management: Service Operations module: stop: Exception')
-        return Response(json.dumps({'error': True, 'message': 'Exception', 'service_id': ''}),
-                        status=500, content_type='application/json')
+        return common.gen_response(500, 'Exception', 'service_id', service_id, 'service_id', service_id)

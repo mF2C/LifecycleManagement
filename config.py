@@ -13,7 +13,7 @@ Created on 27 sept. 2017
 
 #!/usr/bin/python
 
-dic = { "SERVER_PORT":                  8083, #5002
+dic = { "SERVER_PORT":                  46000,
         "API_DOC_URL":                  "/api/v1/lifecycle",
         "CERT_CRT":                     "cert/ia.crt",
         "CERT_KEY":                     "cert/ia.key",
@@ -34,5 +34,4 @@ dic = { "SERVER_PORT":                  8083, #5002
         #       PM-COMPSS-RUNTIME execute
         "URL_PM_COMPSS_RUNTIME_EXEC":   "https://localhost:5003/api/v1/landscape/....",
         #       PM-SLA MANAGER
-        "URL_PM_SLA_MANAGER":           "https://localhost:5003/api/v1/landscape/...."
-        }
+        "URL_PM_SLA_MANAGER":           "https://localhost:5003/api/v1/landscape/...."}

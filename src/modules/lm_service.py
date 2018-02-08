@@ -12,87 +12,64 @@ Created on 27 sept. 2017
 """
 
 
-import config
-import requests
+import src.utils.common as common
+import src.modules.dependencies as dependencies
 from src.utils.logs import LOG
-from flask import Response, json, jsonify
-
-
-# requests
-# r = requests.get('https://api.github.com/user', auth=('user', 'pass'))
-# if r.status_code == 200:
-#    logs.info('1')
-# else:
-#    logs.error('Error (1): Service: submit: call to Recommender: status_code != 200')
 
 
 # Submit a service
 def submit(service):
+    LOG.info("Lifecycle-Management: Service module: Submit service: " + str(service))
     try:
-        LOG.info("Lifecycle-Management: Service module: Submit service: " + service)
-
         # TODO define SERVICE content
+        # 1. get Service REQUEST - TODO: process data / content
 
-        # 1. RECOMMENDER -> RECIPE = GET_RECIPE (SERVICE)
+        # 2. RECOMMENDER -> TODO: RECIPE = GET_RECIPE(SERVICE)
         # The Lifecycle Management module calls the Recommender in order to get the optimal deployment configuration
         # to run the service
-        # TODO: RECIPE = GET_RECIPE(SERVICE)
-        r = requests.get(config.dic['URL_PM_RECOMMENDER'], verify=config.dic['VERIFY_SSL'])
-        if r.status_code == 200:
-            LOG.debug('Lifecycle-Management: Service module: Submit service (1): status_code=' + r.status_code +
-                       '; response: ' + r.text)
-        else:
-            LOG.error('Lifecycle-Management: Service module: Submit service (1): Error: status_code=' + r.status_code)
+        recipe = dependencies.get_recipe(service)
 
-        # 2. LANDSCAPER -> RESOURCES = GET_RESOURCES (RECIPE)
+        # 3. LANDSCAPER -> TODO: RESOURCES = GET_RESOURCES(RECIPE)
         # Based on this optimal configuration returned by the Recommender, the Lifecycle module asks the Landscaper
         # for a list of resources that match this recommendation.
-        #       2.a. If no resources were found, then the Lifecycle Management forwards the request (submit a service) upwards
-        #       2.b. If there are available resources ...
-        # TODO: RESOURCES = GET_RESOURCES(RECIPE)
-        r = requests.get(config.dic['URL_PM_LANDSCAPER'], verify=config.dic['VERIFY_SSL'])
-        if r.status_code == 200:
-            LOG.debug('Lifecycle-Management: Service module: Submit service (2): status_code=' + r.status_code +
-                       '; response: ' + r.text)
+        resources = dependencies.get_resources(recipe)
+
+        # If no resources were found, then the Lifecycle Management forwards the request (submit a service) upwards
+        if not resources or len(resources) == 0:
+            # TODO: forwards the request upwards
+            LOG.info("Lifecycle-Management: Service module: Submit service: forwards the request upwards" + service)
+        # If there are available resources ...
         else:
-            LOG.error('Lifecycle-Management: Service module: Submit service (2): Error: status_code=' + r.status_code)
+            # 4. QoS PROVIDING -> RESOURCES = XXX (RESOURCES) TODO: RESOURCES = GET_RESOURCES(RESOURCES)
+            resources = dependencies.get_qos_resources(resources)
 
-        # 3. QoS PROVIDING -> RESOURCES = XXX (RESOURCES)
-        # TODO: RESOURCES = GET_RESOURCES(RESOURCES)
-        r = requests.get(config.dic['URL_AC_QoS_PROVIDING'], verify=config.dic['VERIFY_SSL'])
+            # 5. USER MANAGEMENT -> TODO: RESOURCES = GET_RESOURCES(RESOURCES)
+            resources = dependencies.get_um_resources(resources)
 
-        # 4. USER MANAGEMENT -> RESOURCES = XXX (RESOURCES)
-        # TODO: RESOURCES = GET_RESOURCES(RESOURCES)
-        r = requests.get(config.dic['URL_AC_USER_MANAGEMENT'], verify=config.dic['VERIFY_SSL'])
+            # 6. process information and decide where to allocate resources
+            # TODO: APPLY ONE OF THE FOLLOWING POLICIES
+            #   1. Recommender = empty
+            #   2. There are no resources available
+            #   3. There are only some resources available
 
-        # 5. process information and decide where to allocate resources
-        # TODO: APPLY ONE OF THE FOLLOWING POLICIES
-        #   1. Recommender = empty
-        #   2. There are no resources available
-        #   3. There are only some resources available
+            # 7. DISTRIBUTED EXECUTION RUNTIME / COMPSS -> TODO: ALLOCATE(RESOURCES, SERVICE)
+            # Call to COMPSs in order to allocate resources (Iteration 1)
+            # Call to the Service Management in order to allocate resources (Iteration 2)
+            res = dependencies.allocate(service, resources)
 
-        # 6. DISTRIBUTED EXECUTION RUNTIME / COMPSS -> ALLOCATE (RESOURCES, SERVICE)
-        # Call to COMPSs in order to allocate resources (Iteration 1)
-        # Call to the Service Management in order to allocate resources (Iteration 2)
-        # TODO: ALLOCATE(RESOURCES, SERVICE)
-        r = requests.get(config.dic['URL_PM_COMPSS_RUNTIME_ALLOC'], verify=config.dic['VERIFY_SSL'])
+            # 8. SLA MANAGER -> TODO: INITIALIZES_SLA(SERVICE, RESOURCES)
+            # The Lifecycle calls the SLA Management to initialize all the SLA processes.
+            res = dependencies.initializes_sla(service, resources)
 
-        # 7. SLA MANAGER -> INITIALIZES_SLA (SERVICE, RESOURCES)
-        # The Lifecycle calls the SLA Management to initialize all the SLA processes.
-        # TODO: INITIALIZES_SLA(SERVICE, RESOURCES)
-        r = requests.get(config.dic['URL_PM_SLA_MANAGER'], verify=config.dic['VERIFY_SSL'])
+            # 9. DISTRIBUTED EXECUTION RUNTIME / COMPSS -> TODO: EXECUTE(SERVICE)
+            # The Lifecycle calls the Distributed Execution Runtime in order to start the execution of the service.
+            res = dependencies.execute(service, resources)
 
-        # 8. DISTRIBUTED EXECUTION RUNTIME / COMPSS -> EXECUTE (SERVICE)
-        # The Lifecycle calls the Distributed Execution Runtime in order to start the execution of the service.
-        # TODO: EXECUTE(SERVICE)
-        r = requests.get(config.dic['URL_PM_COMPSS_RUNTIME_EXEC'], verify=config.dic['VERIFY_SSL'])
-
-        # return
-        return Response(jsonify({'Service': 'submit', 'service': service}), status=200, content_type='application/json')
+            # return
+            return common.gen_response_ok('Service submitted', 'service', service)
     except:
-        LOG.error('Lifecycle-Management: Service module: submit: Exception')
-        return Response(json.dumps({'error': True, 'message': 'Exception', 'service': service}),
-                        status=500, content_type='application/json')
+        LOG.error('Lifecycle-Management: Service module: Submit service: Exception')
+        return common.gen_response(500, 'Exception', 'service', service)
 
 
 # Terminate service, Deallocate service's resources
@@ -103,12 +80,10 @@ def terminate(service_id):
         # TODO
         #...
 
-        # TEST
-        return {'error': False, 'message': 'Service terminated', 'service_id': service_id}
+        return common.gen_response_ok('Service terminated', 'service_id', service_id)
     except:
         LOG.error('Lifecycle-Management: Service module: terminate: Exception')
-        return Response(json.dumps({'error': True, 'message': 'Exception', 'service_id': ''}),
-                        status=500, content_type='application/json')
+        return common.gen_response(500, 'Exception', 'service_id', service_id)
 
 
 # Get service status
@@ -119,9 +94,7 @@ def get_status(service_id):
         # TODO
         #...
 
-        # TEST
-        return {'error': False, 'message': 'Service status', 'service_id': service_id, 'status':'Running'}
+        return common.gen_response_ok('Service status', 'service_id', service_id, 'status', 'Running')
     except:
         LOG.error('Lifecycle-Management: Service module: get_status: Exception')
-        return Response(json.dumps({'error': True, 'message': 'Exception', 'service_id': ''}),
-                        status=500, content_type='application/json')
+        return common.gen_response(500, 'Exception', 'service_id', service_id)

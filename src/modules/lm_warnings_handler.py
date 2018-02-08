@@ -13,7 +13,7 @@ Created on 27 sept. 2017
 
 
 from src.utils.logs import LOG
-from flask import Response, json
+import src.utils.common as common
 import threading
 import time
 
@@ -45,8 +45,7 @@ def handle_warning(service_id, warning):
         t = threading.Thread(target=thr, args=(service_id, warning,))
         t.start()
 
-        return {'error': False, 'message': 'Warning is being processed...', 'service_id': service_id, 'warning': warning}
+        return common.gen_response_ok('SLA Warning is being processed...', 'service_id', service_id, 'warning', warning)
     except:
         LOG.error('Lifecycle-Management: Warnings Handler module: handle_warning: Exception')
-        return Response(json.dumps({'error': True, 'message': 'Exception', 'warning': ''}),
-                        status=500, content_type='application/json')
+        return common.gen_response(500, 'Exception', 'service_id', service_id, 'warning', warning)
