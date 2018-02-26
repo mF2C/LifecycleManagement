@@ -32,7 +32,7 @@ This includes the initialization, the submission and the termination of these ap
 
 This component is part of the Platform Manager's Service Orchestration module:
 
-![Platform Manager](resources/pm.png)
+![Platform Manager](docresources/pm.png)
 
 -----------------------
 
@@ -103,9 +103,9 @@ _-not ready-_
 
 After installing the Lifecycle Management module, the REST API services can be accessed at port 46000:
 
-     - List of services (json): _https://localhost:46300/api/v1/lifecycle_
+     - List of services (json): _https://localhost:46000/api/v1/lifecycle_
 
-     - List of services (swagger ui): _https://localhost:46300/api/v1/lifecycle.html_
+     - List of services (swagger ui): _https://localhost:46000/api/v1/lifecycle.html_
 
 #### Test component
 
@@ -114,6 +114,8 @@ _-not ready-_
 -----------------------
 
 ### Relation to other mF2C components
+
+...
 
 The Lifecycle Management module is connected with the following mF2C components:
 

@@ -34,4 +34,6 @@ dic = { "SERVER_PORT":                  46000,
         #       PM-COMPSS-RUNTIME execute
         "URL_PM_COMPSS_RUNTIME_EXEC":   "https://localhost:5003/api/v1/landscape/....",
         #       PM-SLA MANAGER
-        "URL_PM_SLA_MANAGER":           "https://localhost:5003/api/v1/landscape/...."}
+        "URL_PM_SLA_MANAGER":           "https://localhost:5003/api/v1/landscape/....",
+        # TESTS
+        "AVAILABLE_AGENTS": ["192.168.252.7", "192.168.252.8", "192.168.252.9", "192.168.252.42"]}

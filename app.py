@@ -13,13 +13,12 @@ Created on 27 sept. 2017
 
 #!/usr/bin/python3
 
-import src.modules.lm_service_operations as lm_service_operations
-import src.modules.lm_service as lm_service
-import src.modules.lm_warnings_handler as lm_warnings_handler
-import src.modules.lm_sla_handler as lm_sla_handler
-import src.utils.auth as auth
-import config
-from src.utils.logs import LOG
+import lifecycle.lifecycle as lifecycle
+import lifecycle.mF2C.handler_um as handler_um
+import lifecycle.mF2C.handler_sla as handler_sla
+import lifecycle.utils.auth as auth
+from lifecycle import config
+from lifecycle.utils.logs import LOG
 from flask_cors import CORS
 from flask import Flask, request, Response, json
 from flask_restful import Resource, Api
@@ -82,7 +81,7 @@ def default_route():
 #           {
 #               "user_id": "",
 #               "device_id": "",
-#               "service_id": "",
+#               "service_instance_id": "",
 #               "warning_id": "",
 #               "warning_txt": ""
 #           }
@@ -95,7 +94,7 @@ def default_route():
 #           {
 #               "user_id": "",
 #               "device_id": "",
-#               "service_id": "",
+#               "service_instance_id": "",
 #               "warning_id": "",
 #               "warning_txt": ""
 #           }
@@ -103,13 +102,13 @@ def default_route():
 class Service(Resource):
     # GET: get service status
     @swagger.operation(
-        summary="Get service status",
-        notes="Gets the status of a service",
+        summary="Get service instance",
+        notes="Gets the service instance",
         produces=["application/json"],
         authorizations=[],
         parameters=[{
-                "name": "service_id",
-                "description": "Service ID",
+                "name": "service_instance_id",
+                "description": "Service instance ID",
                 "required": True,
                 "paramType": "path",
                 "type": "string"
@@ -118,8 +117,8 @@ class Service(Resource):
                 "code": 500,
                 "message": "Exception processing request"
             }])
-    def get(self, service_id):
-        return lm_service.get_status(service_id)
+    def get(self, service_instance_id):
+        return lifecycle.get(service_instance_id)
 
     # POST: process warnings and notifications
     @swagger.operation(
@@ -128,8 +127,8 @@ class Service(Resource):
         produces=["application/json"],
         authorizations=[],
         parameters=[{
-            "name": "service_id",
-            "description": "Service ID",
+            "name": "service_instance_id",
+            "description": "Service instance ID",
             "required": True,
             "paramType": "path",
             "type": "string"
@@ -151,24 +150,24 @@ class Service(Resource):
             "code": 501,
             "message": "Operation not defined / implemented"
         }])
-    def post(self, service_id):
+    def post(self, service_instance_id):
         body = request.get_json()
         LOG.info('body: ' + str(body))
-        if 'type' not in body or 'data' not in body:
+        if not body or 'type' not in body or 'data' not in body:
             LOG.error('Lifecycle-Management: Service: post: Exception - parameter not found: type / data')
             return Response(json.dumps({'error': True, 'message': 'parameter not found: type / data'}),
                             status=406, content_type='application/json')
         else:
             if body['type'] == "sla_notification":
-                return lm_sla_handler.handle_sla_notification(service_id, body['data'])
+                return handler_sla.handle_sla_notification(service_instance_id, body['data'])
             elif body['type'] == "um_warning":
-                return lm_warnings_handler.handle_warning(service_id, body['data'])
-        LOG.error('Lifecycle-Management: Service: post: type not defined / implemented')
+                return handler_um.handle_warning(service_instance_id, body['data'])
+        LOG.error("Lifecycle-Management: Service: post: type [" + body['type'] + "] not defined / implemented")
         return Response(json.dumps({'error': True, 'message': 'type not defined / implemented'}),
                         status=501, content_type='application/json')
 
 
-api.add_resource(Service, '/api/v1/lifecycle/<string:service_id>')
+api.add_resource(Service, '/api/v1/lifecycle/<string:service_instance_id>')
 
 
 ###############################################################################
@@ -190,7 +189,7 @@ class ServiceLifecycle(Resource):
         parameters=[{
             "name": "body",
             "description": "Parameters in JSON format.<br/>Example: <br/>"
-                           "{\"service\":{...}}",
+                           "{\"service\":{ \"service_id\": \"service_id\", \"service_path\": \"yeasy/simple-web\"}}",
             "required": True,
             "paramType": "body",
             "type": "string"
@@ -208,7 +207,7 @@ class ServiceLifecycle(Resource):
             LOG.error('Lifecycle-Management: ServiceLifecycle: post: Exception - parameter not found: service')
             return Response(json.dumps({'error': True, 'message': 'parameter not found: service'}),
                             status=406, content_type='application/json')
-        return lm_service.submit(data['service'])
+        return lifecycle.submit(data['service'])
 
     # PUT: Starts / stops / restarts ... a service and returns a JSON object with the result / status of the operation.
     @swagger.operation(
@@ -219,31 +218,31 @@ class ServiceLifecycle(Resource):
         parameters=[{
             "name": "body",
             "description": "Parameters in JSON format.<br/>Example: <br/>"
-                           "{\"service_id\":\"...\", \"operation\":\"start/restart/stop\"}",
+                           "{\"service_instance_id\":\"...\", \"operation\":\"start/restart/stop\"}",
             "required": True,
             "paramType": "body",
             "type": "string"
         }],
         responseMessages=[{
             "code": 406,
-            "message": "'service_id' / 'operation' parameter not found"
+            "message": "'service_instance_id' / 'operation' parameter not found"
         }, {
             "code": 500,
             "message": "Exception processing request"
         }])
     def put(self):
         data = request.get_json()
-        if 'service_id' not in data or 'operation' not in data:
-            LOG.error('Lifecycle-Management: ServiceLifecycle: put: Exception - parameter not found: service_id / operation')
-            return Response(json.dumps({'error': True, 'message': 'parameter not found: service_id / operation'}),
+        if 'service_instance_id' not in data or 'operation' not in data:
+            LOG.error('Lifecycle-Management: ServiceLifecycle: put: Exception - parameter not found: service_instance_id / operation')
+            return Response(json.dumps({'error': True, 'message': 'parameter not found: service_instance_id / operation'}),
                             status=406, content_type='application/json')
         # operations
         if data['operation'] == 'start':
-            return lm_service_operations.start(data['service_id'])
+            return lifecycle.start(data['service_instance_id'])
         elif data['operation'] == 'stop':
-            return lm_service_operations.stop(data['service_id'])
+            return lifecycle.stop(data['service_instance_id'])
         elif data['operation'] == 'restart':
-            return lm_service_operations.restart(data['service_id'])
+            return lifecycle.restart(data['service_instance_id'])
         else:
             LOG.error('Lifecycle-Management: ServiceLifecycle: put: operation not defined / implemented')
             return Response(json.dumps({'error': True, 'message': 'operation not defined / implemented'}),
@@ -258,25 +257,25 @@ class ServiceLifecycle(Resource):
         parameters=[{
             "name": "body",
             "description": "Parameters in JSON format.<br/>Example: <br/>"
-                           "{\"service_id\":\"...\"}",
+                           "{\"service_instance_id\":\"...\"}",
             "required": True,
             "paramType": "body",
             "type": "string"
         }],
         responseMessages=[{
             "code": 406,
-            "message": "'service_id' parameter not found"
+            "message": "'service_instance_id' parameter not found"
         }, {
             "code": 500,
             "message": "Exception processing request"
         }])
     def delete(self):
         data = request.get_json()
-        if 'service_id' not in data:
-            LOG.error('Lifecycle-Management: ServiceLifecycle: delete: Exception - parameter not found: service_id')
-            return Response(json.dumps({'error': True, 'message': 'parameter not found: service_id'}),
+        if 'service_instance_id' not in data:
+            LOG.error('Lifecycle-Management: ServiceLifecycle: delete: Exception - parameter not found: service_instance_id')
+            return Response(json.dumps({'error': True, 'message': 'parameter not found: service_instance_id'}),
                             status=406, content_type='application/json')
-        return lm_service.terminate(data['service_id'])
+        return lifecycle.terminate(data['service_instance_id'])
 
 
 api.add_resource(ServiceLifecycle, '/api/v1/lifecycle')

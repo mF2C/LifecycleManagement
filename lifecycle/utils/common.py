@@ -13,7 +13,7 @@ Created on 27 sept. 2017
 
 
 from flask import Response, json, jsonify
-from src.utils.logs import LOG
+from lifecycle.utils.logs import LOG
 
 
 # Generate response 200
