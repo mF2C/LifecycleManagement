@@ -41,7 +41,7 @@ This component is part of the Platform Manager's Service Orchestration module:
 #### 1. Requirements
 
 1. [Docker](https://docs.docker.com/install/)
-2. [Docker-Compose](https://docs.docker.com/compose/install/) (for integration with other components)
+2. [mF2C CIMI server](https://github.com/mF2C/cimi)
 
 Dockerfile content:
 
@@ -54,74 +54,75 @@ EXPOSE 46000
 CMD ["python", "app.py"]
 ```
 
-#### 2. Install
+#### 2. Install & Launch with Docker
 
-###### 2.1 Launch with Docker
+1. [Install and launch the CIMI server](https://github.com/mF2C/cimi/tree/master/_demo)
 
-How to install the Lifecycle Management module:
-
-1. Clone / download repository
+2. Clone / download repository
 
 ```bash
 git clone https://github.com/mF2C/LifecycleManagement.git
 ```
 
-2. Go to LifecycleManagement folder
+3. Go to LifecycleManagement folder
 
 ```bash
 cd LifecycleManagement
 ```
 
-3. Build application:
+4. Build application:
 
 ```bash
 sudo docker build -t lm-app .
 ```
 
-4. Run application:
+5. Run application:
 
 ```bash
 sudo docker run -p 46000:46000 lm-app
 ```
 
-5. REST API can be accessed at port 46000:
+```bash
+sudo docker run --env CIMI_URL=https://192.192.192.192 -p 46300:46300 lm-app
+```
 
-     - List of services (json): _https://localhost:46000/api/v1/lifecycle_
+6. REST API can be accessed at port 46000:
 
-     - List of services (swagger ui): _https://localhost:46000/api/v1/lifecycle.html_
+     - List of services (json): _https://192.192.192.192:46000/api/v1/lifecycle_
 
+     - List of services (swagger ui): _https://192.192.192.192:46000/api/v1/lifecycle.html_
 
-###### 2.2. Launch with Docker-Compose
-
-How to install the Lifecycle Management module and other components:
-
-_-not ready-_
 
 -----------------------
 
 ### Usage Guide
 
-After installing the Lifecycle Management module, the REST API services can be accessed at port 46000:
+1. Create one or more users by executing `create_user.py`
+    - Edit the URLs of this file before executing it:
+
+```python
+r = requests.post('https://192.192.192.192/api/user',
+                  verify=False,
+                  headers={'Content-Type': 'application/json',
+                          'Accept': 'application/json'},
+                  json=body)
+```
+
+2. After installing the Lifecycle Management module, the REST API services can be accessed at port 46000:
 
      - List of services (json): _https://localhost:46000/api/v1/lifecycle_
 
      - List of services (swagger ui): _https://localhost:46000/api/v1/lifecycle.html_
 
-#### Test component
-
-_-not ready-_
-
 -----------------------
 
 ### Relation to other mF2C components
-
-...
 
 The Lifecycle Management module is connected with the following mF2C components:
 
 - Is called by the following modules / components:
     - User Management: it receives warnings from the User Management when the mF2C applications use more resources than allowed by the users
-    - ...
+
 - Makes calls to the following modules / components:
     - User Management:
     - QoS:
@@ -130,4 +131,3 @@ The Lifecycle Management module is connected with the following mF2C components:
     - Distributed Execution Runtime:
     - SLA Manager:
     - Service Management:
-    - ...

@@ -1,5 +1,5 @@
 """
-Interactions with other mF2C components
+CIMI interface
 This is being developed for the MF2C Project: http://www.mf2c-project.eu/
 
 Copyright: Roi Sucasas Font, Atos Research and Innovation, 2017.
@@ -11,131 +11,177 @@ Created on 27 sept. 2017
 @author: Roi Sucasas - ATOS
 """
 
+
+import sys, traceback
+import requests
 from lifecycle import config
 from lifecycle.utils.logs import LOG
+from slipstream.api import Api
 
 
-# TODO CALL TO RECOMMENDER: get service's recipe
-def get_recipe(service):
+# CIMI initialization
+# API
+api = None
+
+# ACL
+acl = {"owner":
+           {"principal": "ADMIN",
+            "type": "ROLE"},
+       "rules": [{"principal": "ADMIN",
+                  "type": "ROLE",
+                  "right": "ALL"},
+                 {"principal": "ANON",
+                  "type": "ROLE",
+                  "right": "ALL"}
+                 ]}
+
+
+# connect_to_cimi: CIMI initialization / api creation
+def connect_to_cimi():
+    global api
     try:
-        LOG.info("Lifecycle-Management: Dependencies: get_recipe: " + str(service))
-        LOG.warn("Lifecycle-Management: Dependencies: get_recipe not implemented ")
-        """
-        r = requests.get(config.dic['URL_PM_RECOMMENDER'], verify=config.dic['VERIFY_SSL'])
-        if r.status_code == 200:
-            LOG.debug('Lifecycle-Management: Dependencies: get_recipe: status_code=' + r.status_code + '; response: ' + r.text)
-        else:
-            LOG.error('Lifecycle-Management: Dependencies: get_recipe: Error: status_code=' + r.status_code)
-        """
-        return {}
-    except:
-        LOG.error('Lifecycle-Management: Dependencies: get_recipe: Exception')
-        return {}
+        # API
+        LOG.info('Connecting UM to ' + config.dic['CIMI_URL'] + " ...")
+
+        api = Api(config.dic['CIMI_URL'],
+                  insecure=True,
+                  cookie_file=config.dic['CIMI_COOKIES_PATH'],
+                  login_creds={'username': config.dic['CIMI_USER'],
+                               'password': config.dic['CIMI_PASSWORD']})
+
+        LOG.info(str(api))
+
+        # Login with username & password
+        LOG.info(str(api.login({"href": "session-template/internal",
+                                "username": config.dic['CIMI_USER'],
+                                "password": config.dic['CIMI_PASSWORD']})))
+
+        # test api
+        resp = api.cimi_search('users')
+        LOG.info('UM connected to ' + config.dic['CIMI_URL'] + ": total users: " + str(resp.count))
+        return str(resp.count)
+
+    except ValueError:
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('ERROR')
+        return -1
 
 
-# TODO CALL TO LANDSCAPER: get available resources for a recipe
-def get_resources(recipe):
+# common_map_fields: generates a map with time and acl values
+def common_map_fields():
+    default_map = {
+        "created": "1964-08-25T10:00:00.0Z",
+        "updated": "1964-08-25T10:00:00.0Z",
+        "acl": acl
+    }
+    return default_map
+
+
+# check if api object is initialized
+def get_api():
+    if api is None:
+        connect_to_cimi()
+    return api
+
+
+###############################################################################
+
+
+# get_user_by_id: get user by id
+def get_user_by_id(user_id):
     try:
-        LOG.info("User-Management: Dependencies: get_resources: " + str(recipe))
-        LOG.warn("Lifecycle-Management: Dependencies: get_resources not implemented ")
-        """
-        r = requests.get(config.dic['URL_PM_LANDSCAPER'], verify=config.dic['VERIFY_SSL'])
-        if r.status_code == 200:
-            LOG.debug('Lifecycle-Management: Dependencies: get_resources: status_code=' + r.status_code + '; response: ' + r.text)
+        resp = get_api().cimi_search("users", filter="id='" + user_id + "'")
+        if resp.count == 1:
+            return resp.json['users'][0] # dict
         else:
-            LOG.error('Lifecycle-Management: Dependencies: get_resources: Error: status_code=' + r.status_code)
-        """
-        return config.dic['AVAILABLE_AGENTS']
+            LOG.warning("User not found [user_id=" + user_id + "]")
+            return None
     except:
-        LOG.error('Lifecycle-Management: Dependencies: get_resources: Exception')
-        return {}
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('Exception')
+        return None
 
 
-# TODO CALL TO QoS PROVIDING: get resources
-def get_qos_resources(resources):
+# get_service_instance_by_id: get service instance by id
+def get_service_instance_by_id(id):
     try:
-        LOG.info("User-Management: Dependencies: get_qos_resources: " + str(resources))
-        LOG.warn("Lifecycle-Management: Dependencies: get_qos_resources not implemented ")
-        """
-        r = requests.get(config.dic['URL_AC_QoS_PROVIDING'], verify=config.dic['VERIFY_SSL'])
-        if r.status_code == 200:
-            LOG.debug('Lifecycle-Management: Dependencies: get_qos_resources: status_code=' + r.status_code + '; response: ' + r.text)
+        resp = get_api().cimi_search("serviceinstances", filter="id='" + id + "'")
+        if resp.count == 1:
+            return resp.json['serviceinstances'][0] # dict
         else:
-            LOG.error('Lifecycle-Management: Dependencies: get_qos_resources: Error: status_code=' + r.status_code)
-        """
-        return resources
+            LOG.warning("User not found [id=" + id + "]")
+            return None
     except:
-        LOG.error('Lifecycle-Management: Dependencies: get_qos_resources: Exception')
-        return {}
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('Exception')
+        return None
 
 
-# TODO CALL TO User Management: get resources
-def get_um_resources(resources):
+# get_all: get all resources
+def get_all(resource_type):
     try:
-        LOG.info("User-Management: Dependencies: get_um_resources: " + str(resources))
-        LOG.warn("Lifecycle-Management: Dependencies: get_um_resources not implemented ")
-        """
-        r = requests.get(config.dic['URL_AC_USER_MANAGEMENT'], verify=config.dic['VERIFY_SSL'])
-        if r.status_code == 200:
-            LOG.debug('Lifecycle-Management: Dependencies: get_um_resources: status_code=' + r.status_code + '; response: ' + r.text)
-        else:
-            LOG.error('Lifecycle-Management: Dependencies: get_um_resources: Error: status_code=' + r.status_code)
-        """
-        return resources
+        return get_api().cimi_search(resource_type)
     except:
-        LOG.error('Lifecycle-Management: Dependencies: get_um_resources: Exception')
-        return {}
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('Exception')
+        return None
 
 
-# TODO CALL TO DISTRIBUTED EXECUTION RUNTIME / COMPSS: allocate
-def allocate(service_instance, resources):
+# get_resource_by_id: get resource by id
+def get_resource_by_id(resource_id):
     try:
-        LOG.info("User-Management: Dependencies: allocate: " + str(resources) + ", " + str(service_instance))
-        LOG.warn("Lifecycle-Management: Dependencies: allocate not implemented ")
-        """
-        r = requests.get(config.dic['URL_PM_COMPSS_RUNTIME_ALLOC'], verify=config.dic['VERIFY_SSL'])
-        if r.status_code == 200:
-            LOG.debug('Lifecycle-Management: Dependencies: allocate: status_code=' + r.status_code + '; response: ' + r.text)
-        else:
-            LOG.error('Lifecycle-Management: Dependencies: allocate: Error: status_code=' + r.status_code)
-        """
-        return {}
+        return get_api().cimi_get(resource_id)
     except:
-        LOG.error('Lifecycle-Management: Dependencies: allocate: Exception')
-        return {}
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('Exception')
+        return None
 
 
-# TODO CALL TO SLA:
-def initializes_sla(service_instance):
+# delete_resource: delete resource by id
+def delete_resource(resource_id):
     try:
-        LOG.info("User-Management: Dependencies: initializes_sla: " + str(service_instance))
-        LOG.warn("Lifecycle-Management: Dependencies: initializes_sla not implemented ")
-        """
-        r = requests.get(config.dic['URL_PM_SLA_MANAGER'], verify=config.dic['VERIFY_SSL'])
-        if r.status_code == 200:
-            LOG.debug('Lifecycle-Management: Dependencies: initializes_sla: status_code=' + r.status_code + '; response: ' + r.text)
-        else:
-            LOG.error('Lifecycle-Management: Dependencies: initializes_sla: Error: status_code=' + r.status_code)
-        """
-        return True
+        return get_api().cimi_delete(resource_id)
     except:
-        LOG.error('Lifecycle-Management: Dependencies: initializes_sla: Exception')
-        return False
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('Exception')
+        return None
 
 
-# TODO CALL TO DISTRIBUTED EXECUTION RUNTIME / COMPSS: execute
-def execute(service, resources):
+# FUNCTION: add_resource: add resource to cimi
+# RETURNS: resource
+def add_resource(resource_name, content):
     try:
-        LOG.info("User-Management: Dependencies: execute: " + str(resources) + ", " + str(service))
-        LOG.warn("Lifecycle-Management: Dependencies: execute not implemented ")
-        """
-        r = requests.get(config.dic['URL_PM_COMPSS_RUNTIME_EXEC'], verify=config.dic['VERIFY_SSL'])
-        if r.status_code == 200:
-            LOG.debug('Lifecycle-Management: Dependencies: execute: status_code=' + r.status_code + '; response: ' + r.text)
-        else:
-            LOG.error('Lifecycle-Management: Dependencies: execute: Error: status_code=' + r.status_code)
-        """
-        return {}
+        LOG.debug("Adding new resource to [" + resource_name + "] ... ")
+
+        # complete map and update resource
+        content.update(common_map_fields())
+
+        resp = get_api().cimi_add(resource_name, content)
+        LOG.debug("resp:        " + str(resp.message))
+        LOG.debug("resource-id: " + str(resp.json['resource-id']))
+
+        return get_resource_by_id(resp.json['resource-id'])
     except:
-        LOG.error('Lifecycle-Management: Dependencies: execute: Exception')
-        return {}
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('Exception')
+        return None
+
+
+# add_resource: add resource to cimi
+def update_resource(resource_id, content):
+    try:
+        LOG.debug("Adding new resource to [" + resource_id + "] ... ")
+
+        # complete map and update resource
+        content.update(common_map_fields())
+
+        resp = get_api().cimi_edit(resource_id, content)
+        LOG.debug("resp: " + str(resp))
+        LOG.debug("id: " + str(resp.id))
+
+        return get_resource_by_id(resp.id)
+    except:
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('Exception')
+        return None
+

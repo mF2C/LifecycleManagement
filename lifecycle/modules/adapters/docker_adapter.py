@@ -19,10 +19,22 @@ from lifecycle.utils.logs import LOG
 # Get docker api client
 def get_client_agent_docker(url):
     try:
+        LOG.info(">>>>>>>>>>>>>>>>>>>>> unix://var/run/docker.sock >>>>>>>>>>>>>>>>>>>>>")
         # connect to docker api
-        client = docker.APIClient(base_url=url)
-        LOG.info("Connected to docker in [" + url + "]; version: " + str(client.version()) +
-                 ", api_version: " + str(client.api_version))
+        # client = docker.APIClient(base_url=url)
+        # dclient = docker.DockerClient(base_url='unix://var/run/docker.sock')
+        # dclient.containers.create()
+        client = docker.APIClient(base_url='unix://var/run/docker.sock')
+        # client = docker.APIClient(base_url=url) #'tcp://192.168.252.42:2375') #172.17.0.1:2375')
+
+        try:
+            LOG.info(">> " + str(client))
+            LOG.info(">> " + str(client.version()))
+            LOG.info("Connected to docker in [" + url + "]; version: " + str(client.version()))
+        except:
+            LOG.error("Error")
+
+        LOG.info("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
         return client
     except:
         LOG.error('Lifecycle-Management: Docker adapter: get_client_agent_docker: Exception: ' + str(url))
@@ -60,6 +72,8 @@ def deploy(service_instance):
             # check if image already exists in agent
             l_images = client.images(name=service_image) # TODO not tested
             if not l_images or len(l_images) == 0:
+                LOG.info("Lifecycle-Management: Docker adapter: deploy: call to 'import_image' [" +
+                         service_image + "] ...")
                 client.import_image(tag="latest", image=service_image)
                 # client.import_image(tag="latest", image="ubuntu")
 

@@ -17,6 +17,7 @@ import lifecycle.lifecycle as lifecycle
 import lifecycle.mF2C.handler_um as handler_um
 import lifecycle.mF2C.handler_sla as handler_sla
 import lifecycle.utils.auth as auth
+import os
 from lifecycle import config
 from lifecycle.utils.logs import LOG
 from flask_cors import CORS
@@ -26,17 +27,48 @@ from flask_restful_swagger import swagger
 
 
 try:
-    # TODO ENV values
     # CONFIGURATION values
     LOG.info('[SERVER_PORT=' + str(config.dic['SERVER_PORT']) + ']')
     LOG.info('[API_DOC_URL=' + config.dic['API_DOC_URL'] + ']')
     LOG.info('[CERT_CRT=' + config.dic['CERT_CRT'] + ']')
     LOG.info('[CERT_KEY=' + config.dic['CERT_KEY'] + ']')
     LOG.info('[DEBUG=' + str(config.dic['DEBUG']) + ']')
+    # CIMI
+    LOG.info('[CIMI_URL=' + config.dic['CIMI_URL'] + ']')
+    LOG.info('[CIMI_COOKIES_PATH=' + config.dic['CIMI_COOKIES_PATH'] + ']')
+    LOG.info('[CIMI_USER=' + config.dic['CIMI_USER'] + ']')
+    LOG.info('[CIMI_PASSWORD=' + config.dic['CIMI_PASSWORD'] + ']')
 
-    # CIMI URL
-    CIMI_API_ENV_NAME = "CIMI_API"
-    CIMI_API_ENV_VALUE = "http://...."
+    # get CIMI from environment values:
+    LOG.info('Reading values from ENVIRONMENT...')
+
+    env_cimi_url = os.getenv('CIMI_URL', default='not-defined')
+    LOG.info('[CIMI_URL=' + env_cimi_url + ']')
+    if env_cimi_url != 'not-defined':
+        config.dic['CIMI_URL'] = env_cimi_url
+
+    env_cimi_cookies_path = os.getenv('CIMI_COOKIES_PATH', default='not-defined')
+    LOG.info('[CIMI_COOKIES_PATH=' + env_cimi_cookies_path + ']')
+    if env_cimi_cookies_path != 'not-defined':
+        config.dic['CIMI_COOKIES_PATH'] = env_cimi_cookies_path
+
+    env_cimi_user = os.getenv('CIMI_USER', default='not-defined')
+    LOG.info('[CIMI_USER=' + env_cimi_user + ']')
+    if env_cimi_user != 'not-defined':
+        config.dic['CIMI_USER'] = env_cimi_user
+
+    env_cimi_password = os.getenv('CIMI_PASSWORD', default='not-defined')
+    LOG.info('[CIMI_PASSWORD=' + env_cimi_password + ']')
+    if env_cimi_password != 'not-defined':
+        config.dic['CIMI_PASSWORD'] = env_cimi_password
+
+    # CIMI
+    LOG.info('Checking CIMI configuration...')
+
+    LOG.info('[CIMI_URL=' + config.dic['CIMI_URL'] + ']')
+    LOG.info('[CIMI_COOKIES_PATH=' + config.dic['CIMI_COOKIES_PATH'] + ']')
+    LOG.info('[CIMI_USER=' + config.dic['CIMI_USER'] + ']')
+    LOG.info('[CIMI_PASSWORD=' + config.dic['CIMI_PASSWORD'] + ']')
 
     # APP
     app = Flask(__name__)
@@ -284,9 +316,6 @@ api.add_resource(ServiceLifecycle, '/api/v1/lifecycle')
 ###############################################################################
 
 def main():
-    # get CIMI_API_ENV_VALUE from env
-    # CIMI_API_ENV_VALUE = os.environ.get(CIMI_API_ENV_NAME, '...')
-    # logs.info('[CIMI_API_ENV_VALUE=' + CIMI_API_ENV_VALUE + ']')
     # START SERVER
     context = (config.dic['CERT_CRT'], config.dic['CERT_KEY'])
     app.run(host='0.0.0.0', port=config.dic['SERVER_PORT'], ssl_context=context, threaded=True, debug=config.dic['DEBUG'])

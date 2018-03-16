@@ -12,7 +12,7 @@ Created on 09 feb. 2018
 """
 
 
-import lifecycle.mF2C.cimi as cimi
+import lifecycle.mF2C.mf2c as cimi
 from lifecycle.utils.logs import LOG
 
 

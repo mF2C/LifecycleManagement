@@ -21,6 +21,12 @@ dic = { "SERVER_PORT":                  46000,
         # VERIFY_SSL controls whether we verify the server's TLS certificate or not
         "VERIFY_SSL":                   False,
         # URLs from other mF2C components:
+        # CIMI
+        "CIMI_URL":                     "https://localhost",
+        "CIMI_COOKIES_PATH":            "~./cookies",           # "C://TMP/cookies",
+        "CIMI_USER":                    "testuser2",
+        "CIMI_PASSWORD":                "testpassword",
+        # URLs from other mF2C components:
         #       PM-RECOMMENDER get recipe: api/v1/recommender/recipe/...
         "URL_PM_RECOMMENDER":           "https://localhost:5004/api/v1/recommender/recipe/....",
         #       PM-LANDSCAPER get resources (recipe): api/v1/landscape/...
@@ -36,4 +42,5 @@ dic = { "SERVER_PORT":                  46000,
         #       PM-SLA MANAGER
         "URL_PM_SLA_MANAGER":           "https://localhost:5003/api/v1/landscape/....",
         # TESTS
-        "AVAILABLE_AGENTS": ["192.168.252.7", "192.168.252.8", "192.168.252.9", "192.168.252.42"]}
+        "AVAILABLE_AGENTS": ["192.168.252.42"]}
+# "192.168.252.41"
