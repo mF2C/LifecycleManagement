@@ -24,28 +24,41 @@ from lifecycle.utils.logs import LOG
 # Submits a service
 # IN:
 #   Service example:
-#       {
-#           "service_id": "service_id",
-#           "service_path": "yeasy/simple-web"
-#           ...
-#       }
+#    {
+#       ...
+#       "id": "id_service_123"
+# 	    "category": {
+# 		    "cpu": "low",
+# 		    "memory": "low",
+# 		    "storage": "low",
+# 		    "inclinometer": false,
+# 		    "temperature": false,
+# 		    "jammer": false,
+# 		    "location": false
+# 	    }
+#   }
+#
 # OUT:
 #   Service instance (example):
-#       {
-#           "service_instance_id": "service_id",
-#           "service_id": service['service_id'],
-#           "list_of_agents": agents_list,
-#           "status": "",
-#           ("service": service)
-#       }
+#   {
+#       ...
+#       "id": "",
+#       "service_id": {"href": "blaat"},
+#       "agreement_id": {"href": "blaat"},
+#       "status": "waiting",
+#       "agents": [
+#           {"agent_id": {"href": "blaat"}, "port": 8987, "container_id": "123daf231230f", "status": "waiting", "num_cpus": 2, "allow": true},
+#           {"agent_id": {"href": "blaat2"}, "port": 8987, "container_id": "623daf331230a", "status": "waiting", "num_cpus": 2, "allow": true}
+#      ]
+#   }
 def submit(service):
     try:
         LOG.debug("Lifecycle-Management: Lifecycle: submit: " + str(service))
 
         # 1. get container path (service)
-        if 'service_path' not in service:
+        if 'category' not in service:
             # error
-            LOG.debug("Lifecycle-Management: Lifecycle: submit: (container) service_path not found")
+            LOG.debug("Lifecycle-Management: Lifecycle: submit: (container) category not found")
 
         # 2. get list of available agents / resources / VMs
         available_agents_list = agent_decision.get_available_agents_list(service)

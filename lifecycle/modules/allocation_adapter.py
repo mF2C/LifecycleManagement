@@ -19,13 +19,21 @@ from lifecycle.utils.logs import LOG
 # allocates service in agents
 # IN:
 #   Service instance (example):
-#       {
-#           "service_instance_id": "service_id",
-#           "service_id": service['service_id'],
-#           "list_of_agents": [{"url": "192.168.252.7" "container_id": ""} ...],
-#           "status": "",
-#           ("service": service)
-#       }
+#   Service instance (example):
+#    {
+#    	"id": URI,
+#    	"name": string,
+#    	"description": "profiling ...",
+#    	"created": dateTime,
+#    	"updated": dateTime,
+#    	"resourceURI": URI,
+#    	"service_id": string,
+#       "agreement_id": string,
+#    	"status": string,
+#    	"agents": [
+#        {"agent": resource-link, "url": "192.168.1.31", "port": int, "container_id": string, "status": string, "num_cpus": int}
+#      ]
+#    }
 def allocate(service_instance):
     try:
         LOG.info("Lifecycle-Management: allocation_adapter: allocate: " + str(service_instance))

@@ -13,7 +13,7 @@ Created on 27 sept. 2017
 
 
 import sys, traceback
-import requests
+import datetime
 from lifecycle import config
 from lifecycle.utils.logs import LOG
 from slipstream.api import Api
@@ -25,9 +25,9 @@ api = None
 
 # ACL
 acl = {"owner":
-           {"principal": "ADMIN",
+           {"principal": config.dic['CIMI_USER'], #"ADMIN",
             "type": "ROLE"},
-       "rules": [{"principal": "ADMIN",
+       "rules": [{"principal": config.dic['CIMI_USER'], #"ADMIN",
                   "type": "ROLE",
                   "right": "ALL"},
                  {"principal": "ANON",
@@ -67,11 +67,22 @@ def connect_to_cimi():
         return -1
 
 
-# common_map_fields: generates a map with time and acl values
-def common_map_fields():
+# common_new_map_fields: generates a map with time and acl values
+def common_new_map_fields():
+    now = datetime.datetime.now()
     default_map = {
-        "created": "1964-08-25T10:00:00.0Z",
-        "updated": "1964-08-25T10:00:00.0Z",
+        "created": now.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+        "updated": now.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+        "acl": acl
+    }
+    return default_map
+
+
+# common_update_map_fields: generates a map with time and acl values
+def common_update_map_fields():
+    now = datetime.datetime.now()
+    default_map = {
+        "updated": now.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
         "acl": acl
     }
     return default_map
@@ -88,11 +99,13 @@ def get_api():
 
 
 # get_user_by_id: get user by id
+# TODO not used
+# curl -XGET cimi/api/sharing-model?$filter=acl/owner/principal="user"
 def get_user_by_id(user_id):
     try:
-        resp = get_api().cimi_search("users", filter="id='" + user_id + "'")
+        resp = get_api().cimi_search(config.dic['CIMI_USERS'], filter="id='" + user_id + "'")
         if resp.count == 1:
-            return resp.json['users'][0] # dict
+            return resp.json[config.dic['CIMI_USERS']][0] # dict
         else:
             LOG.warning("User not found [user_id=" + user_id + "]")
             return None
@@ -105,9 +118,9 @@ def get_user_by_id(user_id):
 # get_service_instance_by_id: get service instance by id
 def get_service_instance_by_id(id):
     try:
-        resp = get_api().cimi_search("serviceinstances", filter="id='" + id + "'")
+        resp = get_api().cimi_search(config.dic['CIMI_SERVICE_INSTANCES'], filter="id='" + id + "'")
         if resp.count == 1:
-            return resp.json['serviceinstances'][0] # dict
+            return resp.json[config.dic['CIMI_SERVICE_INSTANCES']][0] # dict
         else:
             LOG.warning("User not found [id=" + id + "]")
             return None
@@ -154,7 +167,7 @@ def add_resource(resource_name, content):
         LOG.debug("Adding new resource to [" + resource_name + "] ... ")
 
         # complete map and update resource
-        content.update(common_map_fields())
+        content.update(common_new_map_fields())
 
         resp = get_api().cimi_add(resource_name, content)
         LOG.debug("resp:        " + str(resp.message))
@@ -173,7 +186,7 @@ def update_resource(resource_id, content):
         LOG.debug("Adding new resource to [" + resource_id + "] ... ")
 
         # complete map and update resource
-        content.update(common_map_fields())
+        content.update(common_update_map_fields())
 
         resp = get_api().cimi_edit(resource_id, content)
         LOG.debug("resp: " + str(resp))

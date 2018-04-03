@@ -13,6 +13,7 @@ Created on 09 feb. 2018
 
 import lifecycle.mF2C.cimi as cimi
 from lifecycle.utils.logs import LOG
+from lifecycle import config
 
 
 ###############################################################################
@@ -25,19 +26,38 @@ def get_user_by_id(user_id):
 
 
 ###############################################################################
-# SERVICE INSTANCE
+# SERVICE
 #
 # {
-#        "user_id": "user/testuser",
 #        "id": "",
 #        "name": "",
 #        "description": "profiling ...",
 #        "resourceURI": "",
-#        "service_id": {"href": ""},
-#        "agreement_id": {"href": ""},
-#        "status": "",
+#        ## service
+#        "category": {
+#        "cpu": "low",
+#        "memory": "low",
+#        "storage": "low",
+#        "inclinometer": false,
+#        "temperature": false,
+#        "jammer": false,
+#        "location": false
+#        }
+#  }
+###############################################################################
+# SERVICE INSTANCE
+#
+# {
+#        "id": "",
+#        "name": "",
+#        "description": "profiling ...",
+#        "resourceURI": "",
+#        ## service instance
+#        "service_id": {"href": "blaat"},
+#        "agreement_id": {"href": "blaat"},
+#        "status": "waiting",
 #        "agents": [
-#            {"agent_id": {"href": ""}, "port": int, "container_id": "", "status": "", "num_cpus": int}
+#            {"agent_id": {"href": "blaat"}, "port": 8987, "container_id": "123daf231230f", "status": "waiting", "num_cpus": 2, "allow": true}
 #       ]
 #    }
 
@@ -55,12 +75,18 @@ def create_service_instance(service, agents_list):
 
     # list of agents
     list_of_agents = []
+    # {"agent_id": {"href": "blaat"}, "port": 8987, "container_id": "123daf231230f", "status": "waiting", "num_cpus": 2, "allow": true}
     for agent_ip in agents_list:
-        list_of_agents.append({"url": agent_ip, "container_id": ""})
+        list_of_agents.append({"agent":         {"href": "agent/1230958abdef2"},
+                               "port":          8987,
+                               "url":           agent_ip,
+                               "status":        "waiting",
+                               "num_cpus":      2,
+                               "allow":         True,
+                               "container_id":  "-"})
 
-    data = {"service_instance_id": "service_instance_id",
-            "service_id": service['service_id'],
-            "list_of_agents": list_of_agents,
-            "status": "",
-            "service": service}
-    return cimi.add_resource("serviceinstances", data)
+    data = {"service_id":       {"href": "service/" + service['id']},
+            "agreement_id":     {"href": "blaat"},
+            "agents":           list_of_agents,
+            "status":           "waiting"}              #"service":          service}
+    return cimi.add_resource(config.dic['CIMI_SERVICE_INSTANCES'], data)

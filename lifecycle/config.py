@@ -20,12 +20,18 @@ dic = { "SERVER_PORT":                  46000,
         "DEBUG":                        False,
         # VERIFY_SSL controls whether we verify the server's TLS certificate or not
         "VERIFY_SSL":                   False,
+        # CIMI RESOURCES
+        "CIMI_USERS":                   "users",
+        "CIMI_SERVICES":                "services",
+        "CIMI_SERVICE":                 "service",
+        "CIMI_SERVICE_INSTANCES":       "serviceInstances",
+        "CIMI_SERVICE_INSTANCE":        "service-instance",
         # URLs from other mF2C components:
         # CIMI
-        "CIMI_URL":                     "https://localhost",
+        "CIMI_URL":                     "https://dashboard.mf2c-project.eu", #""https://192.168.252.41",
         "CIMI_COOKIES_PATH":            "~./cookies",           # "C://TMP/cookies",
-        "CIMI_USER":                    "testuser2",
-        "CIMI_PASSWORD":                "testpassword",
+        "CIMI_USER":                    "rsucasas",
+        "CIMI_PASSWORD":                "password",
         # URLs from other mF2C components:
         #       PM-RECOMMENDER get recipe: api/v1/recommender/recipe/...
         "URL_PM_RECOMMENDER":           "https://localhost:5004/api/v1/recommender/recipe/....",

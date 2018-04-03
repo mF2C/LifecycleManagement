@@ -206,7 +206,18 @@ api.add_resource(Service, '/api/v1/lifecycle/<string:service_instance_id>')
 # ServiceLifecycle route: submit, terminate, operations (start, stop, pause...)
 # 'data' from request (body) - content:
 #   {
-#       "service": {},
+#       "service": {
+#               ...
+# 	            "category": {
+# 		            "cpu": "low",
+# 		            "memory": "low",
+# 		            "storage": "low",
+# 		            "inclinometer": false,
+# 		            "temperature": false,
+# 		            "jammer": false,
+# 		            "location": false
+# 	            }
+#       },
 #       "service_id": "",
 #       "operation": "stop"
 #   }
@@ -220,8 +231,21 @@ class ServiceLifecycle(Resource):
         authorizations=[],
         parameters=[{
             "name": "body",
-            "description": "Parameters in JSON format.<br/>Example: <br/>"
-                           "{\"service\":{ \"service_id\": \"service_id\", \"service_path\": \"yeasy/simple-web\"}}",
+            "description": "Parameters in JSON format.<br/>Service example: <br/>"
+                            "{\"service\": {"
+                                 "\"id\": \"id_service_123\","
+                                 "\"name\": \"\","
+                                 "\"description\": \"profiling ...\","
+                                 "\"resourceURI\": \"\","
+                                 "\"category\": {"
+                                     "\"cpu\": \"low\","
+                                     "\"memory\": \"low\","
+                                     "\"storage\": \"low\","
+                                     "\"inclinometer\": false,"
+                                     "\"temperature\": false,"
+                                     "\"jammer\": false,"
+                                     "\"location\": false"
+                                 "}}}",
             "required": True,
             "paramType": "body",
             "type": "string"
