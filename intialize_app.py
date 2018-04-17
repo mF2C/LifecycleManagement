@@ -20,20 +20,20 @@ acl = {"owner":
 
 
 # create_user: create a user in cimi
-def create_admin_user():
+def create_user_1():
     try:
         body = {
                 "userTemplate": {
                     "href": "user-template/self-registration",
                     #"roles": "ADMIN",
-                    "password": "testpassword",
-                    "passwordRepeat" : "testpassword",
-                    "emailAddress": "testuser@gmail.com",
+                    "password": "password",
+                    "passwordRepeat" : "password",
+                    "emailAddress": "rsucasas@gmail.com",
                     "username": "rsucasas"
                 }
             }
 
-        r = requests.post('https://192.168.252.41/api/user',
+        r = requests.post('https://dashboard.mf2c-project.eu/api/user',
                           verify=False,
                           headers={'Content-Type': 'application/json',
                                   'Accept': 'application/json'},
@@ -140,9 +140,8 @@ def main():
     # '''
     # create users
     LOG.info("-------------------------------")
-    #create_admin_user() # testuser
-    #create_anon_user()  # testuser2
-    add_service_1()
+    create_user_1()
+    #add_service_1()
     LOG.info("-------------------------------")
     # '''
 

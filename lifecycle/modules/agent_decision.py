@@ -11,12 +11,11 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-
-import lifecycle.mF2C.mf2c as cimi
+import lifecycle.mF2C.mf2c as mf2c
 from lifecycle.utils.logs import LOG
 
 
-# Get list of available agents
+# get_available_agents_list: Gets a list of available agents
 # IN:
 #   Service example:
 #       {
@@ -36,12 +35,12 @@ def get_available_agents_list(service):
         # 1. RECOMMENDER -> RECIPE = GET_RECIPE(SERVICE)
         # The Lifecycle Management module calls the Recommender in order to get the optimal deployment configuration
         # to run the service
-        recipe = cimi.get_recipe(service)
+        #recipe = mf2c.get_recipe(service) # TODO
 
         # 2. LANDSCAPER -> RESOURCES = GET_RESOURCES(RECIPE)
         # Based on this optimal configuration returned by the Recommender, the Lifecycle module asks the Landscaper
         # for a list of resources that match this recommendation.
-        resources = cimi.get_resources(recipe) # TODO resources = config.dic['AVAILABLE_AGENTS']
+        resources = mf2c.get_resources() # TODO resources = config.dic['AVAILABLE_AGENTS']
 
         # If no resources were found, then the Lifecycle Management forwards the request (submit a service) upwards
         if not resources or len(resources) == 0:
@@ -51,10 +50,10 @@ def get_available_agents_list(service):
         # If there are available resources ...
         else:
             # 3. QoS PROVIDING -> RESOURCES = XXX (RESOURCES) -> RESOURCES = GET_RESOURCES(RESOURCES)
-            resources = cimi.get_qos_resources(resources)
+            #resources = mf2c.get_qos_resources(resources) # TODO
 
             # 4. USER MANAGEMENT -> RESOURCES = GET_RESOURCES(RESOURCES)
-            resources = cimi.get_um_resources(resources)
+            #resources = mf2c.get_um_resources(resources) # TODO
             return resources
     except:
         LOG.error('Lifecycle-Management: agent_decision: get_available_agents_list: Exception')

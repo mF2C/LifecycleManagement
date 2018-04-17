@@ -82,33 +82,19 @@ sudo docker build -t lm-app .
 sudo docker run -p 46000:46000 lm-app
 ```
 
-```bash
-sudo docker run --env CIMI_URL=https://192.192.192.192 -p 46300:46300 lm-app
-```
-
-6. REST API can be accessed at port 46000:
-
-     - List of services (json): _https://192.192.192.192:46000/api/v1/lifecycle_
-
-     - List of services (swagger ui): _https://192.192.192.192:46000/api/v1/lifecycle.html_
-
-
 -----------------------
 
 ### Usage Guide
 
-1. Create one or more users by executing `create_user.py`
-    - Edit the URLs of this file before executing it:
+1. Create one or more users in CIMI
 
-```python
-r = requests.post('https://192.192.192.192/api/user',
-                  verify=False,
-                  headers={'Content-Type': 'application/json',
-                          'Accept': 'application/json'},
-                  json=body)
+2. Start the Lifecycle Management module with access to the docker socket ('-v /var/run/docker.sock:/var/run/docker.sock')
+
+```bash
+sudo docker run --env CIMI_URL=https://cimi_rest_api --env CIMISER="user" --env CIMI_PASSWORD="password"  --env CIMI_COOKIES_PATH="~./cookies" --env HOST_IP="host_ip" -v /var/run/docker.sock:/var/run/docker.sock -p 46000:46000 lm-app
 ```
 
-2. After installing the Lifecycle Management module, the REST API services can be accessed at port 46000:
+3. After launching the Lifecycle Management module, the REST API services can be accessed at port 46000:
 
      - List of services (json): _https://localhost:46000/api/v1/lifecycle_
 

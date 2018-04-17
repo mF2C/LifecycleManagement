@@ -11,7 +11,6 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-
 import lifecycle.modules.adapters.lf_adapter as lf_adapter
 from lifecycle.utils.logs import LOG
 
@@ -39,3 +38,33 @@ def execute(service_instance):
     except:
         LOG.error('Lifecycle-Management: execution_adapter: execute: Exception')
         return None
+
+
+# Executes service in an agent
+# IN:
+#   Service example:
+#       {
+#           "name": "hello-world",
+#           "description": "Hello World Service",
+#           "resourceURI": "/hello-world",
+#           "exec": "hello-world",
+#           "exec_type": "docker",
+#           "category": {
+#               "cpu": "low",
+#               "memory": "low",
+#               "storage": "low",
+#               "inclinometer": false,
+#               "temperature": false,
+#               "jammer": false,
+#               "location": false
+#           }
+#       }
+#   Agent example:
+#    {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", "status": "waiting",
+#     "num_cpus": 3, "allow": true}
+#
+# OUT: status value
+#
+def execute_service_agent(service, agent):
+    LOG.info("Lifecycle-Management: execution_adapter: execute_service_agent: " + str(service) + ", " + str(agent))
+    return lf_adapter.execute_service_agent(service, agent)

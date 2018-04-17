@@ -11,50 +11,68 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-
+import lifecycle.utils.common as common
 import docker
 import requests
 import sys, traceback
 from lifecycle.utils.logs import LOG
 
 
-# Get docker api client
-def get_client_agent_docker(url):
+'''
+ Data managed by this component:
+ SERVICE:
+       {
+           "name": "hello-world",
+           "description": "Hello World Service",
+           "resourceURI": "/hello-world",
+           "exec": "hello-world",
+           "exec_type": "docker",
+           "exec_ports": ["8080", "8081"],
+           "category": {
+               "cpu": "low",
+               "memory": "low",
+               "storage": "low",
+               "inclinometer": false,
+               "temperature": false,
+               "jammer": false,
+               "location": false
+           }
+       }
+
+ SERVICE INSTANCE:
+   {
+       ...
+       "id": "",
+       "user_id": "testuser",
+       "service_id": "",
+       "agreement_id": "",
+       "status": "waiting",
+       "agents": [
+           {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", "status": "waiting",
+               "num_cpus": 3, "allow": true},
+           {"agent": resource-link, "url": "192.168.1.34", "port": 8081, "container_id": "99asd673f", "status": "waiting",
+               "num_cpus": 2, "allow": true}
+      ]
+   }
+'''
+
+
+# get_client_agent_docker: Get docker api client
+# connect to docker api: Examples: base_url='tcp://192.168.252.42:2375'; base_url='unix://var/run/docker.sock'
+def get_client_agent_docker():
+    LOG.info("Connecting to DOCKER API [unix://var/run/docker.sock]...")
     try:
-        # connect to docker api
-        # client = docker.APIClient(base_url='unix://var/run/docker.sock')
-        client = docker.APIClient(base_url=url) #'tcp://192.168.252.42:2375') #172.17.0.1:2375')
-
-        try:
-            LOG.info(">> " + str(client))
-            LOG.info(">> " + str(client.version()))
-            LOG.info("Connected to docker in [" + url + "]; version: " + str(client.version()))
-        except:
-            LOG.error("Error when connecting to DOCKER API")
-
+        client = docker.APIClient(base_url='unix://var/run/docker.sock')
+        LOG.info("Connected to DOCKER in [unix://var/run/docker.sock]; version: " + str(client.version()))
         return client
     except:
-        LOG.error('Lifecycle-Management: Docker adapter: get_client_agent_docker: Exception: ' + str(url))
+        LOG.error('Lifecycle-Management: Docker adapter: get_client_agent_docker: Error when connecting to DOCKER API: '
+                  'unix://var/run/docker.sock')
         return None
 
 
-# Deploy / allocate service
-# IN:
-#   Service instance (example):
-#    {
-#    	"id": URI,
-#    	"name": string,
-#    	"description": "profiling ...",
-#    	"created": dateTime,
-#    	"updated": dateTime,
-#    	"resourceURI": URI,
-#    	"service_id": string,
-#       "agreement_id": string,
-#    	"status": string,
-#    	"agents": [
-#        {"agent": resource-link, "url": "192.168.1.31", "port": int, "container_id": string, "status": string, "num_cpus": int}
-#      ]
-#    }
+# deploy: Deploy / allocate service
+# IN: service_instance
 def deploy(service_instance):
     LOG.info("Lifecycle-Management: Docker adapter: deploy: " + str(service_instance))
 
@@ -66,22 +84,28 @@ def deploy(service_instance):
 
         for agent in service_instance["agents"]:
             LOG.info("Lifecycle-Management: Docker adapter: deploy: agent: " + str(agent))
-            # get url
-            url = agent['url']
             # connect to docker api
-            client = get_client_agent_docker('tcp://' + url + ':2375') # TODO
-            # check if image already exists in agent
-            l_images = client.images(name=service_image) # TODO not tested
-            if not l_images or len(l_images) == 0:
-                LOG.info("Lifecycle-Management: Docker adapter: deploy: call to 'import_image' [" + service_image + "] ...")
-                client.import_image(tag="latest", image=service_image) # (tag="latest", image="ubuntu")
-            # create a new container: 'docker run'
-            container = client.create_container(service_image, #command=service_command,
-                                                name=service_name,
-                                                tty=True,
-                                                ports=[8080],
-                                                host_config=client.create_host_config(port_bindings={8080: 8080}))
-            agent['container_id'] = container['Id']
+            client = get_client_agent_docker() # TODO
+
+            if client:
+                # check if image already exists in agent
+                l_images = client.images(name=service_image) # TODO not tested
+                if not l_images or len(l_images) == 0:
+                    LOG.info("Lifecycle-Management: Docker adapter: deploy: call to 'import_image' [" + service_image + "] ...")
+                    client.import_image(tag="latest", image=service_image) # (tag="latest", image="ubuntu")
+
+                # create a new container: 'docker run'
+                container = client.create_container(service_image, #command=service_command,
+                                                    name=service_name,
+                                                    tty=True,
+                                                    ports=[8080],
+                                                    host_config=client.create_host_config(port_bindings={8080: 8080}))
+                # update agent properties
+                agent['container_id'] = container['Id']
+                agent['status'] = "waiting"
+            else:
+                LOG.error("Lifecycle-Management: Docker adapter: deploy: Could not connect to DOCKER API")
+                agent['status'] = "error"
 
         service_instance['status'] = "Deployed"
         return True
@@ -91,14 +115,52 @@ def deploy(service_instance):
         return False
 
 
-# Terminate service
-def terminate_service(service_instance):
-    LOG.info("Lifecycle-Management: Docker adapter: terminate_service: " + str(service_instance))
-    LOG.warn("Lifecycle-Management: Docker adapter: terminate_service not implemented ")
+# deploy_service_agent: Deploy service in an agent
+# IN: service
+#    {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", "status": "waiting",
+#     "num_cpus": 3, "allow": true}
+# OUT: status value
+def deploy_service_agent(service, agent):
+    LOG.info("Lifecycle-Management: Docker adapter: deploy_service_agent: " + str(service) + ", " + str(agent))
 
-    # TODO remove service_instance
+    try:
+        # get service image / location
+        service_image = service['exec'] # "mf2c/compss-mf2c:1.0"      #""yeasy/simple-web"
+        service_name = service['name'] # "app-compss"                 #""simple-web-test"
+        #service_command = "/bin/sh -c 'python index.py'"
 
-    return "Terminated"
+        # get url / port
+        port = agent['port']    # TODO check/improve ports
+        # connect to docker api
+        client = get_client_agent_docker()
+
+        if client:
+            # check if image already exists in agent
+            l_images = client.images(name=service_image)
+            # if not, download image
+            if not l_images or len(l_images) == 0:
+                LOG.info("Lifecycle-Management: Docker adapter: deploy: call to 'import_image' [" + service_image + "] ...")
+                client.import_image(image=service_image)  # (tag="latest", image="ubuntu") # (tag="latest", image="ubuntu")
+
+            LOG.info("Lifecycle-Management: Docker adapter: deploy_service_agent: " + service_image + ", " + service_name + " ...")
+            # create a new container: 'docker run'
+            container = client.create_container(service_image, #command=service_command,
+                                                name=service_name,
+                                                tty=True,
+                                                ports=[port],
+                                                host_config=client.create_host_config(port_bindings={port: port}))
+            # update agent properties
+            agent['container_id'] = container['Id']
+            agent['status'] = "waiting"
+            return common.gen_response_ok('Deploy service in agent', 'agent', str(agent), 'service', str(service))
+        else:
+            LOG.error("Lifecycle-Management: Docker adapter: deploy_service_agent: Could not connect to DOCKER API")
+            agent['status'] = "error"
+            return common.gen_response(500, 'Error when connecting to DOCKER API', 'agent', str(agent), 'service', str(service))
+    except:
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('Lifecycle-Management: Docker adapter: deploy_service_agent: Exception')
+        return common.gen_response(500, 'Exception: deploy_service_agent()', 'agent', str(agent), 'service', str(service))
 
 
 # Return service's status
@@ -107,26 +169,8 @@ def get_status(service_instance):
     return service_instance['status']
 
 
-# Stop service / stop container
-def stop(service_instance):
-    LOG.info("Lifecycle-Management: Docker adapter: stop: " + str(service_instance))
-
-    for agent in service_instance["agents"]:
-        LOG.info("Lifecycle-Management: Docker adapter: stop: agent: " + str(agent))
-        # get url
-        url = agent['url']
-        # connect to docker api
-        client = get_client_agent_docker('tcp://' + url + ':2375')  # TODO
-        # stop container
-        client.stop(agent['container_id'])
-        client.remove_container(agent['container_id'], force=True)
-
-    service_instance['status'] = "Stopped"
-    return "Stopped"
-
-
 # Start app inside container
-def start_compss_app(service_instance):
+def start_compss_app(service_instance, agent):
     LOG.info("Lifecycle-Management: Docker adapter: start_app")
 
     try:
@@ -176,7 +220,7 @@ def start_compss_app(service_instance):
               "  </resources>" \
               "</startApplication>"
 
-        requests.put('http://192.168.252.41:8080/COMPSs/startApplication',
+        requests.put("http://127.0.0.1:8080/COMPSs/startApplication",
                      data=xml,
                      headers={'Content-Type': 'application/xml'})
 
@@ -187,76 +231,102 @@ def start_compss_app(service_instance):
         return False
 
 
-# Start service
+# start_service_agent: Start service in agent
+def start_service_agent(agent):
+    LOG.info("Lifecycle-Management: Docker adapter: start_service_agent: " + str(agent))
+
+    # connect to docker api
+    client = get_client_agent_docker()
+
+    if client:
+        # start container
+        client.start(agent['container_id'])
+        agent['status'] = "Running"
+    else:
+        LOG.error("Lifecycle-Management: Docker adapter: start_service_agent: Could not connect to DOCKER API")
+        agent['status'] = "??"
+
+    return "Started"
+
+
+# start: Start service
 def start(service_instance):
     LOG.info("Lifecycle-Management: Docker adapter: start: " + str(service_instance))
 
     for agent in service_instance["agents"]:
-        LOG.info("Lifecycle-Management: Docker adapter: start: agent_ip: " + str(agent))
-        # get url
-        url = agent['url']
-        # connect to docker api
-        client = get_client_agent_docker('tcp://' + url + ':2375')  # TODO
-        # start container
-        client.start(agent['container_id'])
+        start_service_agent(agent)
 
     service_instance['status'] = "Running"
 
     return "Started"
 
 
-# Restart service
+# restart_service_agent: Restart service in agent
+def restart_service_agent(agent):
+    LOG.info("Lifecycle-Management: Docker adapter: restart_service_agent: " + str(agent))
+
+    # connect to docker api
+    client = get_client_agent_docker()
+
+    if client:
+        # start container
+        client.restart(agent['container_id'])
+        agent['status'] = "Running"
+    else:
+        LOG.error("Lifecycle-Management: Docker adapter: restart_service_agent: Could not connect to DOCKER API")
+        agent['status'] = "??"
+
+    return "Restarted"
+
+
+# restart: Restart service
 def restart(service_instance):
     LOG.info("Lifecycle-Management: Docker adapter: restart: " + str(service_instance))
 
     for agent in service_instance["agents"]:
-        LOG.info("Lifecycle-Management: Docker adapter: restart: agent_ip: " + str(agent))
-        # get url
-        url = agent['url']
-        # connect to docker api
-        client = get_client_agent_docker('tcp://' + url + ':2375')  # TODO
-        # start container
-        client.restart(agent['container_id'])
+        restart_service_agent(agent)
 
     service_instance['status'] = "Running"
 
     return "Restarted"
 
 
+# stop_service_agent: Stop service / stop container
+def stop_service_agent(agent):
+    LOG.info("Lifecycle-Management: Docker adapter: stop_service_agent: " + str(agent))
 
-###############################################################################
+    # connect to docker api
+    client = get_client_agent_docker()
 
-def main():
-    # '''
-    LOG.info("-------------------------------")
-    service_instance = {
-        	"id": "id....",
-        	"name": "name....",
-        	"description": "profiling ...",
-        	#"created": dateTime,
-        	#"updated": dateTime,
-        	#"resourceURI": URI,
-        	"service_id": "service_id....",
-            "agreement_id": "agreement_id....",
-        	"status": "none",
-        	"agents": [
-            {"agent": "", "url": "192.168.252.41", "port": 8080, "container_id": "", "status": "none", "num_cpus": 0}
-          ]
-        }
-    deploy(service_instance)
+    if client:
+        # stop container
+        client.stop(agent['container_id'])
+        client.remove_container(agent['container_id'], force=True)
+        agent['status'] = "Stopped"
+    else:
+        LOG.error("Lifecycle-Management: Docker adapter: stop_service_agent: Could not connect to DOCKER API")
+        agent['status'] = "??"
 
-    LOG.info("-------------------------------")
-    start(service_instance)     # start container
-
-    LOG.info("-------------------------------")
-    start_compss_app(service_instance) # start app (in container)
-
-    LOG.info("-------------------------------")
-    stop(service_instance)
-
-    LOG.info("-------------------------------")
-    # '''
+    return "Stopped"
 
 
-if __name__ == "__main__":
-    main()
+# stop: Stop service / stop container
+def stop(service_instance):
+    LOG.info("Lifecycle-Management: Docker adapter: stop: " + str(service_instance))
+
+    for agent in service_instance["agents"]:
+        stop_service_agent(agent)
+
+    service_instance['status'] = "Stopped"
+    return "Stopped"
+
+
+# Terminate service
+def terminate_service(service_instance):
+    LOG.info("Lifecycle-Management: Docker adapter: terminate_service: " + str(service_instance))
+    LOG.warn("Lifecycle-Management: Docker adapter: terminate_service not implemented ")
+
+    # TODO remove service_instance
+
+    return "Terminated"
+

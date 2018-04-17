@@ -6,13 +6,15 @@ Copyright: Roi Sucasas Font, Atos Research and Innovation, 2017.
 
 This code is licensed under an Apache 2.0 license. Please, refer to the LICENSE.TXT file for more information
 
-Created on 27 sept. 2017
+Created on 09 feb. 2018
 
 @author: Roi Sucasas - ATOS
 """
 
 
-from flask import Response, json, jsonify
+import socket, os
+from lifecycle import config
+from flask import Response, json
 from lifecycle.utils.logs import LOG
 
 
@@ -34,3 +36,26 @@ def gen_response(status, message, key, value, key2=None, value2=None):
         dict[key2] = value2
     LOG.debug('Generate response ' + str(status) + "; dict=" + str(dict))
     return Response(json.dumps(dict), status=status, content_type='application/json')
+
+
+# Get IP
+def get_ip():
+    return config.dic['HOST_IP']
+
+
+# Check if IP is alive
+def check_ip(ip_adress):
+    try:
+        # '-c 1' ==> linux
+        # '-n 1' ==> windows
+        response = os.system("ping -n 1 " + ip_adress)
+        if response == 0:
+            return True
+    except:
+        LOG.error('Lifecycle-Management: Lifecycle: check_ip: Exception')
+    return False
+
+
+# CLASS ResponseCIMI
+class ResponseCIMI():
+    msj = ""

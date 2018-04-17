@@ -16,77 +16,120 @@ from lifecycle.utils.logs import LOG
 from lifecycle import config
 
 
+'''
+ Data managed by this component:
+ SERVICE:
+       {
+           "name": "hello-world",
+           "description": "Hello World Service",
+           "resourceURI": "/hello-world",
+           "exec": "hello-world",
+           "exec_type": "docker",
+           "exec_ports": ["8080", "8081"],
+           "category": {
+               "cpu": "low",
+               "memory": "low",
+               "storage": "low",
+               "inclinometer": false,
+               "temperature": false,
+               "jammer": false,
+               "location": false
+           }
+       }
+
+ SERVICE INSTANCE:
+   {
+       ...
+       "id": "",
+       "user_id": "testuser",
+       "service_id": "",
+       "agreement_id": "",
+       "status": "waiting",
+       "agents": [
+           {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", "status": "waiting",
+               "num_cpus": 3, "allow": true},
+           {"agent": resource-link, "url": "192.168.1.34", "port": 8081, "container_id": "99asd673f", "status": "waiting",
+               "num_cpus": 2, "allow": true}
+      ]
+   }
+'''
+
+
 ###############################################################################
 # USER
-
-# Get user
+# get_user_by_id: Get user by id
 def get_user_by_id(user_id):
     LOG.info("User-Management: Data: get_user: " + str(user_id))
     return cimi.get_user_by_id(user_id)
 
 
 ###############################################################################
-# SERVICE
-#
-# {
-#        "id": "",
-#        "name": "",
-#        "description": "profiling ...",
-#        "resourceURI": "",
-#        ## service
-#        "category": {
-#        "cpu": "low",
-#        "memory": "low",
-#        "storage": "low",
-#        "inclinometer": false,
-#        "temperature": false,
-#        "jammer": false,
-#        "location": false
-#        }
-#  }
-###############################################################################
 # SERVICE INSTANCE
-#
-# {
-#        "id": "",
-#        "name": "",
-#        "description": "profiling ...",
-#        "resourceURI": "",
-#        ## service instance
-#        "service_id": {"href": "blaat"},
-#        "agreement_id": {"href": "blaat"},
-#        "status": "waiting",
-#        "agents": [
-#            {"agent_id": {"href": "blaat"}, "port": 8987, "container_id": "123daf231230f", "status": "waiting", "num_cpus": 2, "allow": true}
-#       ]
-#    }
-
-# Get service instance
-# OUT: Service instance (dict)
-def get_service_instance(service_instance_id):
+# get_service_instance: Get service instance
+def get_service_instance(service_instance_id, obj_response_cimi=None):
     LOG.info("Lifecycle-Management: Data: get_service_instance: " + service_instance_id)
-    return cimi.get_service_instance_by_id(service_instance_id)
+    return cimi.get_service_instance_by_id(service_instance_id, obj_response_cimi)
 
 
-# Creates a new service instance
-# OUT: Service instance (dict)
+# get_all_service_instances: Get all service instances
+def get_all_service_instances(obj_response_cimi=None):
+    LOG.info("Lifecycle-Management: Data: get_all_service_instances: ")
+    return cimi.get_all_service_instances(obj_response_cimi)
+
+
+# del_service_instance: Delete service instance
+def del_service_instance(service_instance_id, obj_response_cimi=None):
+    LOG.info("Lifecycle-Management: Data: del_service_instance: " + service_instance_id)
+    return cimi.del_service_instance_by_id(service_instance_id, obj_response_cimi)
+
+
+# create_service_instance: Creates a new service instance
+#   IN: 1. service
+#       2. [{"agent_ip": "192.168.252.41", "num_cpus": 4}, {"agent_ip": "192.168.252.42", "num_cpus": 2},
+#           {"agent_ip": "192.168.252.43", "num_cpus": 2}] TODO IPs list until landscaper is ready
+#
+#   OUT: service_instance dict
 def create_service_instance(service, agents_list):
     LOG.info("Lifecycle-Management: Data: create_service_instance: " + str(service) + ", " + str(agents_list))
 
-    # list of agents
+    # create list of agents
     list_of_agents = []
-    # {"agent_id": {"href": "blaat"}, "port": 8987, "container_id": "123daf231230f", "status": "waiting", "num_cpus": 2, "allow": true}
-    for agent_ip in agents_list:
-        list_of_agents.append({"agent":         {"href": "agent/1230958abdef2"},
-                               "port":          8987,
-                               "url":           agent_ip,
-                               "status":        "waiting",
-                               "num_cpus":      2,
+
+    # AGENT:
+    # {"agent": resource-link, "url": "192.168.1.34", "port": 8081, "container_id": "99asd673f", "status": "waiting",
+    #  "num_cpus": 2, "allow": true}
+    for agent in agents_list:
+        list_of_agents.append({"agent":         {"href": "agent/default-value"},
+                               "port":          service['exec_ports'][0],           # TODO it takes the first item
+                               "url":           agent['agent_ip'],
+                               "status":        "not-defined",
+                               "num_cpus":      agent['num_cpus'],
                                "allow":         True,
                                "container_id":  "-"})
+    # SERVICE_INSTANCE:
+    new_service_instance = {"service_id":       service['id'],
+                            "agreement_id":     "not-defined",
+                            "agents":           list_of_agents,
+                            "status":           "not-defined"}
 
-    data = {"service_id":       {"href": "service/" + service['id']},
-            "agreement_id":     {"href": "blaat"},
-            "agents":           list_of_agents,
-            "status":           "waiting"}              #"service":          service}
-    return cimi.add_resource(config.dic['CIMI_SERVICE_INSTANCES'], data)
+    LOG.info("Lifecycle-Management: Data: create_service_instance: adding service_intance to CIMI ...")
+    LOG.info("Lifecycle-Management: Data: create_service_instance: " + str(new_service_instance))
+
+    res = cimi.add_resource(config.dic['CIMI_SERVICE_INSTANCES'], new_service_instance)
+    if not res:
+        LOG.error("Lifecycle-Management: Data: create_service_instance: Error during the creation of the service_instance object")
+        return new_service_instance
+    return res
+
+
+# update_service_instance: Updates a service instance
+#       service_instance_id = "service-instance/250af452-959f-4ac6-9b06-54f757b46bf0"
+def update_service_instance(service_instance_id, service_instance):
+    LOG.info("Lifecycle-Management: Data: update_service_instance: " + service_instance_id + ", " + str(service_instance))
+    #service_instance_id = service_instance_id.replace("service-instance/","")
+    res = cimi.update_resource(service_instance_id, service_instance)
+
+    if not res:
+        LOG.error("Lifecycle-Management: Data: update_service_instance: Error during the edition of the service_instance object")
+        return None
+    return res

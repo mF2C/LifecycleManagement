@@ -6,11 +6,10 @@ Copyright: Roi Sucasas Font, Atos Research and Innovation, 2017.
 
 This code is licensed under an Apache 2.0 license. Please, refer to the LICENSE.TXT file for more information
 
-Created on 27 sept. 2017
+Created on 09 feb. 2018
 
 @author: Roi Sucasas - ATOS
 """
-
 
 import sys, traceback
 import datetime
@@ -41,7 +40,7 @@ def connect_to_cimi():
     global api
     try:
         # API
-        LOG.info('Connecting UM to ' + config.dic['CIMI_URL'] + " ...")
+        LOG.info('Connecting LM to ' + config.dic['CIMI_URL'] + " ...")
 
         api = Api(config.dic['CIMI_URL'],
                   insecure=True,
@@ -61,9 +60,9 @@ def connect_to_cimi():
         LOG.info('UM connected to ' + config.dic['CIMI_URL'] + ": total users: " + str(resp.count))
         return str(resp.count)
 
-    except ValueError:
+    except:
         traceback.print_exc(file=sys.stdout)
-        LOG.error('ERROR')
+        LOG.error('ERROR: Could not connect to CIMI REST API!')
         return -1
 
 
@@ -73,6 +72,7 @@ def common_new_map_fields():
     default_map = {
         "created": now.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
         "updated": now.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+        "resourceURI": {"href": "service-instance/1234579abcdef"},
         "acl": acl
     }
     return default_map
@@ -116,14 +116,68 @@ def get_user_by_id(user_id):
 
 
 # get_service_instance_by_id: get service instance by id
-def get_service_instance_by_id(id):
+def get_service_instance_by_id(id, obj_response_cimi=None):
     try:
-        resp = get_api().cimi_search(config.dic['CIMI_SERVICE_INSTANCES'], filter="id='" + id + "'")
-        if resp.count == 1:
-            return resp.json[config.dic['CIMI_SERVICE_INSTANCES']][0] # dict
+        api = get_api()
+        if api == -1:
+            LOG.error("Connection error: get_api() = -1")
+            if obj_response_cimi:
+                obj_response_cimi.msj = "Connection error"
+            return -1
         else:
-            LOG.warning("User not found [id=" + id + "]")
-            return None
+            resp = api.cimi_search(config.dic['CIMI_SERVICE_INSTANCES'], filter="id='service-instance/" + id + "'")
+            if resp.count == 1:
+                if obj_response_cimi:
+                    obj_response_cimi.msj = "Service instance found"
+                return resp.json[config.dic['CIMI_SERVICE_INSTANCES']][0] # dict
+            else:
+                LOG.warning("Service instance not found [id=" + id + "]")
+                if obj_response_cimi:
+                    obj_response_cimi.msj = "Service instance not found"
+                return None
+    except:
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('Exception')
+        return None
+
+
+# get_all_service_instances: get all service instances
+def get_all_service_instances(obj_response_cimi=None):
+    try:
+        api = get_api()
+        if api == -1:
+            LOG.error("Connection error: get_api() = -1")
+            if obj_response_cimi:
+                obj_response_cimi.msj = "Connection error"
+            return -1
+        else:
+            resp = api.cimi_search(config.dic['CIMI_SERVICE_INSTANCES'])
+            if resp.count >= 0:
+                if obj_response_cimi:
+                    obj_response_cimi.msj = "Service instances found: " + str(resp.count)
+                return resp.json[config.dic['CIMI_SERVICE_INSTANCES']] # dict
+            else:
+                LOG.warning("No service instances were found")
+                if obj_response_cimi:
+                    obj_response_cimi.msj = "No service instances were found"
+                return None
+    except:
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('Exception')
+        return None
+
+
+# del_service_instance_by_id: delete service instance
+def del_service_instance_by_id(id, obj_response_cimi=None):
+    try:
+        api = get_api()
+        if api == -1:
+            LOG.error("Connection error: get_api() = -1")
+            if obj_response_cimi:
+                obj_response_cimi.msj = "Connection error"
+            return -1
+
+        return api.cimi_delete("service-instance/" + id)
     except:
         traceback.print_exc(file=sys.stdout)
         LOG.error('Exception')
@@ -183,7 +237,7 @@ def add_resource(resource_name, content):
 # add_resource: add resource to cimi
 def update_resource(resource_id, content):
     try:
-        LOG.debug("Adding new resource to [" + resource_id + "] ... ")
+        LOG.info("Updating resource [" + resource_id + "] ... ")
 
         # complete map and update resource
         content.update(common_update_map_fields())
