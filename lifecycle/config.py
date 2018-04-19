@@ -31,7 +31,7 @@ dic = { "SERVER_PORT":                  46000,
         "CIMI_SERVICE_INSTANCE":        "service-instance",
 
         # CIMI:  https://dashboard.mf2c-project.eu/api/cloud-entry-point
-        "CIMI_URL":                     "https://dashboard.mf2c-project.eu",    # https://proxy
+        "CIMI_URL":                     "https://dashboard.mf2c-project.eu/api",    # https://proxy
         "CIMI_COOKIES_PATH":            "~./cookies",
         "CIMI_USER":                    "rsucasas",
         "CIMI_PASSWORD":                "password",

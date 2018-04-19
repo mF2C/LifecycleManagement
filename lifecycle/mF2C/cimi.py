@@ -59,7 +59,7 @@ def common_update_map_fields():
 # get_service_instance_by_id: get service instance by id
 def get_service_instance_by_id(id, obj_response_cimi=None):
     try:
-        res = requests.get('https://dashboard.mf2c-project.eu/api/service-instance/' + id,
+        res = requests.get(config.dic['CIMI_URL'] + '/service-instance/' + id,
                            headers={'slipstream-authn-info': 'super ADMIN'},
                            verify=False)
 
@@ -78,7 +78,7 @@ def get_service_instance_by_id(id, obj_response_cimi=None):
 # get_all_service_instances: get all service instances
 def get_all_service_instances(obj_response_cimi=None):
     try:
-        res = requests.get('https://dashboard.mf2c-project.eu/api/service-instance',
+        res = requests.get(config.dic['CIMI_URL'] + '/service-instance',
                            headers={'slipstream-authn-info': 'super ADMIN'},
                            verify=False)
 
@@ -97,7 +97,7 @@ def get_all_service_instances(obj_response_cimi=None):
 # del_service_instance_by_id: delete service instance
 def del_service_instance_by_id(id, obj_response_cimi=None):
     try:
-        res = requests.delete('https://dashboard.mf2c-project.eu/api/service-instance/' + id,
+        res = requests.delete(config.dic['CIMI_URL'] + '/service-instance/' + id,
                               headers={'slipstream-authn-info': 'super ADMIN'},
                               verify=False)
 
@@ -119,7 +119,7 @@ def add_service_instance(resource_name, content):
         # complete map and update resource
         content.update(common_new_map_fields())
 
-        res = requests.post('https://dashboard.mf2c-project.eu/api/service-instance',
+        res = requests.post(config.dic['CIMI_URL'] + '/service-instance',
                             headers={'slipstream-authn-info': 'super ADMIN'},
                             verify=False,
                             json=content)
@@ -145,7 +145,7 @@ def update_service_instance(resource_id, content):
         # complete map and update resource
         content.update(common_update_map_fields())
 
-        res = requests.put('https://dashboard.mf2c-project.eu/api/service-instance/' + resource_id,
+        res = requests.put(config.dic['CIMI_URL'] + '/service-instance/' + resource_id,
                             headers={'slipstream-authn-info': 'super ADMIN'},
                             verify=False,
                             json=content)
