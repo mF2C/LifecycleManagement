@@ -18,6 +18,11 @@ from flask import Response, json
 from lifecycle.utils.logs import LOG
 
 
+# CLASS ResponseCIMI
+class ResponseCIMI():
+    msj = ""
+
+
 # Generate response 200
 def gen_response_ok(message, key, value, key2=None, value2=None):
     dict = {'error': False, 'message': message}
@@ -38,12 +43,10 @@ def gen_response(status, message, key, value, key2=None, value2=None):
     return Response(json.dumps(dict), status=status, content_type='application/json')
 
 
-# Get IP
-def get_ip():
-    return config.dic['HOST_IP']
 
 
-# Check if IP is alive
+
+# check_ip: Check if IP is alive
 def check_ip(ip_adress):
     try:
         # '-c 1' ==> linux
@@ -56,6 +59,24 @@ def check_ip(ip_adress):
     return False
 
 
-# CLASS ResponseCIMI
-class ResponseCIMI():
-    msj = ""
+# get_ip_address: get IP
+def get_ip_address():
+    ipaddr = ''
+    try:
+        # 1: Use outside connection
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('google.com', 0))
+        ipaddr = s.getsockname()[0]
+    except:
+        try:
+            # 2: Use the gethostname method
+            ipaddr = socket.gethostbyname(socket.gethostname())
+        except:
+            LOG.error('Lifecycle-Management: Lifecycle: check_ip: Exception')
+
+    return ipaddr
+
+
+# Get IP
+def get_ip():
+    return get_ip_address() #config.dic['HOST_IP']

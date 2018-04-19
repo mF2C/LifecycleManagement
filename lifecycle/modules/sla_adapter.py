@@ -53,16 +53,10 @@ from lifecycle.utils.logs import LOG
 #         ]
 #     }
 #   }
-def initializes_sla(service_instance):
+def initializes_sla(service_instance, agreement_id):
     try:
-        LOG.info("Lifecycle-Management: sla_adapter: initializes_sla: " + str(service_instance))
-        LOG.warn("Lifecycle-Management: sla_adapter: initializes_sla not implemented ")
-
-        # 1. SLA MANAGER -> INITIALIZES_SLA(SERVICE, RESOURCES)
-        # The Lifecycle calls the SLA Management to initialize all the SLA processes.
-        service_instance['agreement_id'] = "sla_agreement_id_test_001" # TODO mf2c.initializes_sla(service_instance)
-
-        return service_instance
+        LOG.info("Lifecycle-Management: sla_adapter: initializes_sla: " + str(service_instance) + ", " + str(agreement_id))
+        return mf2c.start_sla_agreement(agreement_id)
     except:
         LOG.error('Lifecycle-Management: sla_adapter: initializes_sla: Exception')
         return None

@@ -13,7 +13,6 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-
 import lifecycle.lifecycle as lifecycle
 import lifecycle.operations as operations
 import lifecycle.mF2C.handler_um as handler_um
@@ -46,6 +45,16 @@ REST API
             POST:   Submits a service in a mF2C agent
             PUT:    starts / stops ... a service in a mF2C agent
             DELETE: deletes a service in a mF2C agent
+            
+ENV VARIABLES
+    CIMI_USER=
+    CIMI_PASSWORD=
+    CIMI_API_KEY=
+    CIMI_API_SECRET=
+    CIMI_SSL_INSECURE=
+    
+CIMI URL
+    https://proxy
 '''
 
 
@@ -221,42 +230,7 @@ class Service(Resource):
         LOG.error("Lifecycle-Management: REST API: post: type [" + body['type'] + "] not defined / implemented")
         return Response(json.dumps({'error': True, 'message': 'type not defined / implemented'}),
                         status=501, content_type='application/json')
-'''
-    # DELETE: Terminate service, Deallocate service's resources
-    @swagger.operation(
-        summary="Deletes a service instance and deallocates the service's resources",
-        notes="Terminate service instance, Deallocate service's resources.",
-        produces=["application/json"],
-        authorizations=[],
-        parameters=[{
-            "name": "service_instance_id",
-            "description": "Service instance ID",
-            "required": True,
-            "paramType": "path",
-            "type": "string"
-            }, {
-            "name": "body",
-            "description": "Parameters in JSON format.<br/>Example: <br/>"
-                           "{\"service_instance_id\":\"2122f75b-4dd5-49f1-ac30-dda18e2e1e00\"}",
-            "required": True,
-            "paramType": "body",
-            "type": "string"
-        }],
-        responseMessages=[{
-            "code": 406,
-            "message": "'service_instance_id' parameter not found"
-        }, {
-            "code": 500,
-            "message": "Exception processing request"
-        }])
-    def delete(self, service_instance_id):
-        data = request.get_json()
-        if 'service_instance_id' not in data:
-            LOG.error('Lifecycle-Management: REST API: delete: Exception - parameter not found: service_instance_id')
-            return Response(json.dumps({'error': True, 'message': 'parameter not found: service_instance_id'}),
-                            status=406, content_type='application/json')
-        return lifecycle.delete(data['service_instance_id'])
-'''
+
 
 api.add_resource(Service, '/api/v1/lifecycle/service-instance/<string:service_instance_id>')
 
@@ -335,7 +309,7 @@ class ServiceLifecycle(Resource):
             "name": "body",
             "description": "Parameters in JSON format.<br/>Service example: <br/>"
                             "{\"service\": {<br/>"
-                                 "\"id\": \"123hgaksd\",<br/>"
+                                 "\"id\": \"120f1ae12ca\",<br/>"
                                  "\"name\": \"compss-mf2c\",<br/>"
                                  "\"description\": \"Hello World Service\",<br/>"
                                  "\"resourceURI\": \"/hello-world\",<br/>"
@@ -350,27 +324,36 @@ class ServiceLifecycle(Resource):
                                      "\"jammer\": false,<br/>"
                                      "\"location\": false<br/>"
                                  "}},<br/>"
-                            "\"service_id\": \"\",<br/>"
-                            "\"user_id\": \"\",<br/>"
-                            "\"operation\": \"stop\"}",
+                            "\"service_id\": \"120f1ae12ca\",<br/>"
+                            "\"user_id\": \"rsucasas\",<br/>"
+                            "\"agreement_id\": \"sla_agreement/12932af0ef123\",<br/>"
+                            "\"agents_list\": [{\"agent_ip\": \"192.168.252.41\", \"num_cpus\": 4},<br/>"
+                                              "{\"agent_ip\": \"192.168.252.42\", \"num_cpus\": 2}] }",
             "required": True,
             "paramType": "body",
             "type": "string"
         }],
         responseMessages=[{
             "code": 406,
-            "message": "'service' / 'user_id' parameter not found"
+            "message": "'service' / 'user_id' / agreement_id parameter not found"
         }, {
             "code": 500,
             "message": "Error processing request"
         }])
     def post(self):
         data = request.get_json()
-        if 'service' not in data or 'user_id' not in data:
-            LOG.error('Lifecycle-Management: REST API: post: Exception - parameter not found: service / user_id')
-            return Response(json.dumps({'error': True, 'message': 'parameter not found: service /  user_id'}),
+        if 'service' not in data or 'user_id' not in data or 'agreement_id' not in data:
+            LOG.error('Lifecycle-Management: REST API: post: Exception - parameter not found: service / user_id / agreement_id')
+            return Response(json.dumps({'error': True, 'message': 'parameter not found: service /  user_id / agreement_id'}),
                             status=406, content_type='application/json')
-        return lifecycle.submit(data['service'], data['user_id']) # returns a json with the content of the 'service_instance'
+        # submit function returns a json with the content of the 'service_instance'
+        if 'agents_list' in data:
+            # using a predefined list of agents:
+            return lifecycle.submit_service_in_agents(data['service'], data['user_id'], data['agreement_id'],
+                                                      data['agents_list'], check_service=True)
+        else:
+            # using agent_decision module (landscaper, recommender...):
+            return lifecycle.submit(data['service'], data['user_id'], data['agreement_id'])
 
     # PUT: Starts / stops / restarts ... a service and returns a JSON object with the result / status of the operation.
     @swagger.operation(

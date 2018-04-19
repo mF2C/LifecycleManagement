@@ -44,7 +44,7 @@ def lifecycle_deploy(service, agent):
 
 # lifecycle_operation: call to lifceycle from other agent in order to start/stop... a service
 def lifecycle_operation(agent, operation):
-    LOG.info("Lifecycle-Management: Dependencies: lifecycle_operation: " + str(agent) + ", " + operation)
+    LOG.info("Lifecycle-Management: MF2C: lifecycle_operation: " + str(agent) + ", " + operation)
     try:
         r = requests.put("https://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v1/lifecycle/service-instance-operations",
                          json={"operation": operation,
@@ -55,27 +55,116 @@ def lifecycle_operation(agent, operation):
         LOG.debug("Lifecycle-Management: MF2C: lifecycle_operation:" + str(agent))
 
         if r.status_code == 200 or r.status_code == 201 or r.status_code == 202:
-            LOG.debug('Lifecycle-Management: Dependencies: lifecycle_operation: status_code=' +  str(r.status_code) + '; response: ' + str(json_data))
+            LOG.debug('Lifecycle-Management: MF2C: lifecycle_operation: status_code=' +  str(r.status_code) + '; response: ' + str(json_data))
             return True
 
-        LOG.error('Lifecycle-Management: Dependencies: lifecycle_operation: Error: status_code=' +  str(r.status_code))
+        LOG.error('Lifecycle-Management: MF2C: lifecycle_operation: Error: status_code=' +  str(r.status_code))
         return False
     except:
-        LOG.error('Lifecycle-Management: Dependencies: lifecycle_operation: Exception')
+        LOG.error('Lifecycle-Management: MF2C: lifecycle_operation: Exception')
         return False
 
 
 ###############################################################################
 # Interactions with other mF2C components
-# get_resources: TODO CALL TO LANDSCAPER: get available resources for a recipe
+# TODO CALL TO LANDSCAPER
+# get_resources: get available resources for a recipe
 def get_resources():
-    LOG.warn("Lifecycle-Management: Dependencies: get_resources not implemented ")
+    LOG.warn("Lifecycle-Management: MF2C: get_resources not implemented ")
     return config.dic['AVAILABLE_AGENTS']
 
 
+# CALL TO SLA MANAGEMENT
+# start_sla_agreement: start SLA agreement
+# PUT /agreements/<id>
+# { "state": "started" }
+def start_sla_agreement(agreement_id):
+    LOG.info("Lifecycle-Management: MF2C: start_sla_agreement: agreement_id: " + agreement_id)
+    try:
+        r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id,
+                         json={"state": "started"},
+                         verify=config.dic['VERIFY_SSL'])
+
+        LOG.debug("Lifecycle-Management: MF2C: start_sla_agreement:" + str(r))
+
+        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202:
+            LOG.debug('Lifecycle-Management: MF2C: start_sla_agreement: status_code=' +  str(r.status_code))
+            return True
+
+        LOG.error('Lifecycle-Management: MF2C: start_sla_agreement: Error: status_code=' +  str(r.status_code))
+        return False
+    except:
+        LOG.error('Lifecycle-Management: MF2C: start_sla_agreement: Exception')
+        return False
+
+
+# CALL TO QoS PROVIDING
+# service_management_qos: Returns which agents can be used to execute a specific service
+# GET /qos/<id>
+#   where <id>: id of the service instance
+# ==> Returns a copy of the service instance specifying the agents that can be used to execute that service
+def service_management_qos(service_instance):
+    try:
+        id = service_instance['id']
+        LOG.info("Lifecycle-Management: MF2C: service_management_qos: service_instance_id: " + id)
+
+        r = requests.get(str(config.dic['URL_AC_QoS_PROVIDING']) + "/qos/" + id,
+                         verify=config.dic['VERIFY_SSL'])
+
+        LOG.debug("Lifecycle-Management: MF2C: service_management_qos:" + str(r))
+
+        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202:
+            LOG.debug('Lifecycle-Management: MF2C: service_management_qos: status_code=' + str(r.status_code))
+            return r
+
+        LOG.error('Lifecycle-Management: MF2C: service_management_qos: Error: status_code=' + str(r.status_code))
+        return None
+    except:
+        LOG.error('Lifecycle-Management: MF2C: service_management_qos: Exception')
+        return None
+
+
+# CALL TO User Management (Profiling)
+def user_management_profiling(user_id):
+    try:
+        LOG.info("Lifecycle-Management: MF2C: user_management_profiling: user_id: " + user_id)
+
+        r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/profiling/" + user_id,
+                         verify=config.dic['VERIFY_SSL'])
+
+        LOG.debug("Lifecycle-Management: MF2C: user_management_profiling:" + str(r))
+        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202:
+            LOG.debug('Lifecycle-Management: MF2C: user_management_profiling: status_code=' + str(r.status_code))
+            return r
+
+        LOG.error('Lifecycle-Management: MF2C: user_management_profiling: Error: status_code=' + str(r.status_code))
+        return None
+    except:
+        LOG.error('Lifecycle-Management: MF2C: user_management_profiling: Exception')
+        return None
+
+
+# CALL TO User Management (Sharing Model)
+def user_management_sharing_model(user_id):
+    try:
+        LOG.info("Lifecycle-Management: MF2C: user_management_sharing_model: user_id: " + user_id)
+
+        r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharingmodel/" + user_id,
+                         verify=config.dic['VERIFY_SSL'])
+
+        LOG.debug("Lifecycle-Management: MF2C: user_management_sharing_model:" + str(r))
+        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202:
+            LOG.debug('Lifecycle-Management: MF2C: user_management_sharing_model: status_code=' + str(r.status_code))
+            return r
+
+        LOG.error('Lifecycle-Management: MF2C: user_management_sharing_model: Error: status_code=' + str(r.status_code))
+        return None
+    except:
+        LOG.error('Lifecycle-Management: MF2C: user_management_sharing_model: Exception')
+        return None
+
+
+
 # TODO CALL TO RECOMMENDER: get service's recipe
-# TODO CALL TO QoS PROVIDING: get resources
-# TODO CALL TO User Management: get resources
 # TODO CALL TO DISTRIBUTED EXECUTION RUNTIME / COMPSS: allocate
-# TODO CALL TO SLA:
 # TODO CALL TO DISTRIBUTED EXECUTION RUNTIME / COMPSS: execute

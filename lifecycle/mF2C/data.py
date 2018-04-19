@@ -56,14 +56,6 @@ from lifecycle import config
 
 
 ###############################################################################
-# USER
-# get_user_by_id: Get user by id
-def get_user_by_id(user_id):
-    LOG.info("User-Management: Data: get_user: " + str(user_id))
-    return cimi.get_user_by_id(user_id)
-
-
-###############################################################################
 # SERVICE INSTANCE
 # get_service_instance: Get service instance
 def get_service_instance(service_instance_id, obj_response_cimi=None):
@@ -107,15 +99,16 @@ def create_service_instance(service, agents_list):
                                "allow":         True,
                                "container_id":  "-"})
     # SERVICE_INSTANCE:
-    new_service_instance = {"service_id":       service['id'],
-                            "agreement_id":     "not-defined",
+    new_service_instance = {"service":          service['id'],
+                            "agreement":        "not-defined",
+                            "user":             "not-defined",                      # TODO
                             "agents":           list_of_agents,
                             "status":           "not-defined"}
 
     LOG.info("Lifecycle-Management: Data: create_service_instance: adding service_intance to CIMI ...")
     LOG.info("Lifecycle-Management: Data: create_service_instance: " + str(new_service_instance))
 
-    res = cimi.add_resource(config.dic['CIMI_SERVICE_INSTANCES'], new_service_instance)
+    res = cimi.add_service_instance(config.dic['CIMI_SERVICE_INSTANCES'], new_service_instance)
     if not res:
         LOG.error("Lifecycle-Management: Data: create_service_instance: Error during the creation of the service_instance object")
         return new_service_instance
@@ -127,7 +120,7 @@ def create_service_instance(service, agents_list):
 def update_service_instance(service_instance_id, service_instance):
     LOG.info("Lifecycle-Management: Data: update_service_instance: " + service_instance_id + ", " + str(service_instance))
     #service_instance_id = service_instance_id.replace("service-instance/","")
-    res = cimi.update_resource(service_instance_id, service_instance)
+    res = cimi.update_service_instance(service_instance_id, service_instance)
 
     if not res:
         LOG.error("Lifecycle-Management: Data: update_service_instance: Error during the edition of the service_instance object")

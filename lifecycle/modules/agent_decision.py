@@ -16,13 +16,8 @@ from lifecycle.utils.logs import LOG
 
 
 # get_available_agents_list: Gets a list of available agents
-# IN:
-#   Service example:
-#       {
-#           "service_path": "yeasy/simple-web"
-#           ...
-#       }
-# OUT:
+# IN: service
+# OUT: resources TODO!!
 #   resources example:
 #       {
 #           "list_of_agents": ["192.168.252.7", "192.168.252.8", "192.168.252.9" ...],   // list urls / docker apis
@@ -47,38 +42,42 @@ def get_available_agents_list(service):
             # forwards the request upwards
             LOG.info("Lifecycle-Management: agent_decision: get_available_agents_list: forwards the request upwards" + service)
             return []
-        # If there are available resources ...
-        else:
-            # 3. QoS PROVIDING -> RESOURCES = XXX (RESOURCES) -> RESOURCES = GET_RESOURCES(RESOURCES)
-            #resources = mf2c.get_qos_resources(resources) # TODO
 
-            # 4. USER MANAGEMENT -> RESOURCES = GET_RESOURCES(RESOURCES)
-            #resources = mf2c.get_um_resources(resources) # TODO
-            return resources
+        # If there are available resources ...
+        return resources
     except:
         LOG.error('Lifecycle-Management: agent_decision: get_available_agents_list: Exception')
         return None
 
 
-# Select from list of available agents
-# IN:
-#   resources example:
-#       {
-#           "list_of_agents": ["192.168.252.7", "192.168.252.8", "192.168.252.9" ...],
-#           ...
-#       }
-# OUT:
-#   resources example:
-#       {
-#           "list_of_agents": ["192.168.252.7", "192.168.252.8", "192.168.252.9" ...],   // list urls / docker apis
-#           ...
-#       }
-def select_agents_list(available_agents_list):
+# select_agents_list: Select from list of available agents
+# 1. QoS PROVIDING -> RESOURCES = XXX (RESOURCES) -> RESOURCES = GET_RESOURCES(RESOURCES)
+#       resources = mf2c.get_qos_resources(resources) # TODO
+# 2. USER MANAGEMENT -> RESOURCES = GET_RESOURCES(RESOURCES)
+#       resources = mf2c.get_um_resources(resources) # TODO
+# 3. Select agents
+def select_agents(service_instance):
     try:
-        LOG.info("Lifecycle-Management: agent_decision: select_agents_list: " + str(available_agents_list))
-        LOG.warn("Lifecycle-Management: agent_decision: select_agents_list not implemented ")
+        LOG.info("Lifecycle-Management: agent_decision: select_agents: " + str(service_instance))
 
-        return available_agents_list
+        # 1. QoS PROVIDING
+        service_instance_1 = mf2c.service_management_qos(service_instance)
+        LOG.info("Lifecycle-Management: agent_decision: select_agents: service_instance_1: " + str(service_instance_1))
+
+        # 2. USER MANAGEMENT -> profiling and sharing model
+        usert_profiling = mf2c.user_management_profiling(service_instance['user'])
+        LOG.info("Lifecycle-Management: agent_decision: select_agents: usert_profiling: " + str(usert_profiling))
+
+        usert_sharing_model = mf2c.user_management_sharing_model(service_instance['user'])
+        LOG.info("Lifecycle-Management: agent_decision: select_agents: usert_sharing_model: " + str(usert_sharing_model))
+
+        # 3. TODO PROCESS INFORMATION AND SELECT BEST CANDIDATES
+        LOG.info("Lifecycle-Management: agent_decision: select_agents: not implemented")
+
+        if not service_instance_1:
+            LOG.error("Lifecycle-Management: agent_decision: select_agents: Error calling QoS Providing component")
+            return service_instance
+        return service_instance_1
     except:
         LOG.error('Lifecycle-Management: agent_decision: select_agents_list: Exception')
         return None

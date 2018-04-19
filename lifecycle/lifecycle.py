@@ -22,48 +22,125 @@ import lifecycle.mF2C.mf2c as mf2c
 from lifecycle.utils.logs import LOG
 
 
-# Submits a service (no access to external docker APIs; calls to other agent's lifecycle components)
-# IN:
-#   Service example:
-#       {
-#           "name": "hello-world",
-#           "description": "Hello World Service",
-#           "resourceURI": "/hello-world",
-#           "exec": "hello-world",
-#           "exec_type": "docker",
-#           "category": {
-#               "cpu": "low",
-#               "memory": "low",
-#               "storage": "low",
-#               "inclinometer": false,
-#               "temperature": false,
-#               "jammer": false,
-#               "location": false
-#           }
-#       }
-#
-# OUT:
-#   Service instance (example):
-#   {
-#       ...
-#       "id": "",
-#       "service_id": "",
-#       "agreement_id": "",
-#       "status": "waiting",
-#       "agents": [
-#           {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", "status": "waiting",
-#               "num_cpus": 3, "allow": true},
-#           {"agent": resource-link, "url": "192.168.1.34", "port": 8081, "container_id": "99asd673f", "status": "waiting",
-#               "num_cpus": 2, "allow": true}
-#      ]
-#   }
-#
-def submit(service, user_id):
+'''
+ Data managed by this component:
+ SERVICE:
+       {
+           "name": "hello-world",
+           "description": "Hello World Service",
+           "resourceURI": "/hello-world",
+           "exec": "hello-world",
+           "exec_type": "docker",
+           "exec_ports": ["8080", "8081"],
+           "category": {
+               "cpu": "low",
+               "memory": "low",
+               "storage": "low",
+               "inclinometer": false,
+               "temperature": false,
+               "jammer": false,
+               "location": false
+           }
+       }
+
+ SERVICE INSTANCE:
+   {
+       ...
+       "id": "",
+       "user_id": "testuser",
+       "service_id": "",
+       "agreement_id": "",
+       "status": "waiting",
+       "agents": [
+           {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", "status": "waiting",
+               "num_cpus": 3, "allow": true},
+           {"agent": resource-link, "url": "192.168.1.34", "port": 8081, "container_id": "99asd673f", "status": "waiting",
+               "num_cpus": 2, "allow": true}
+      ]
+   }
+'''
+
+
+# check_service_content:
+def check_service_content(service):
+    if 'category' not in service or 'exec_type' not in service or 'exec' not in service:
+        LOG.debug("Lifecycle-Management: Lifecycle: check_service_content: fields category/exec/exec_type not found")
+        return False
+    return True
+
+
+# submit_service_in_agents: Submits a service (no access to external docker APIs; calls to other agent's lifecycle components)
+#   agents_list:    [{"agent_ip": "192.168.252.41", "num_cpus": 4},
+#                    {"agent_ip": "192.168.252.42", "num_cpus": 2},
+#                    {"agent_ip": "192.168.252.43", "num_cpus": 2}]
+# IN: service, user_id, agreement_id, agents_list
+# OUT: service_instance
+def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_service=False):
     LOG.debug("Lifecycle-Management: Lifecycle: submit_v2: " + str(service) + ", user_id: " + user_id)
     try:
         # 1. check parameters content
-        if 'category' not in service or 'exec_type' not in service or 'exec' not in service:
-            LOG.debug("Lifecycle-Management: Lifecycle: submit_v2: fields category/exec/exec_type not found")
+        if check_service and not check_service_content(service):
+            return common.gen_response(500, 'field(s) category/exec/exec_type not found', 'service', str(service))
+
+        # 2. create new service instance
+        LOG.debug("Lifecycle-Management: Lifecycle: submit_v2: agents_list" + str(agents_list))
+
+        service_instance = data.create_service_instance(service, agents_list)
+        if not service_instance:
+            LOG.error("Lifecycle-Management: Lifecycle: submit_service_in_agents: error creating service_instance")
+            return common.gen_response(500, 'error creating service_instance', 'service', str(service))
+
+        # 3. select from agents list
+        r = agent_decision.select_agents(service_instance)
+        if not r is None:
+            service_instance = r
+
+        LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: service_instance: " + str(service_instance))
+
+        # 3. allocate service / call remote container
+        # allocate
+        #   Agent example:
+        #    {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", "status": "waiting",
+        #     "num_cpus": 3, "allow": true}
+        for agent in service_instance["agents"]:
+            LOG.info(">>> AGENT >>> " + agent['url'])
+            # LOCAL
+            if agent['url'] == common.get_ip():
+                LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service locally")
+                if allocation_adapter.allocate_service_agent(service, agent) == "waiting":
+                    LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: SLA & service exec")
+                    # initializes SLA
+                    sla_adapter.initializes_sla(service_instance, agreement_id)
+                    # executes service
+                    execution_adapter.execute_service_agent(service, agent)
+            # OTHER AGENT
+            elif common.check_ip(agent['url']):
+                LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service in other agent [" + agent['url'] + "]")
+                #  call lifecycle from x
+                mf2c.lifecycle_deploy(service, agent)
+            # NOT FOUND / NOT CONNECTED
+            else:
+                agent['status'] = "error"
+                LOG.error("Lifecycle-Management: Lifecycle: submit_service_in_agents: agent [" + agent['url'] + "] cannot be reached")
+
+        # 4. save / update service_instance
+        LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: UPDATING service_instance: " + str(service_instance))
+        data.update_service_instance(service_instance['id'], service_instance)
+
+        return common.gen_response_ok('Deploy service', 'service_instance', service_instance)
+    except:
+        LOG.error('Lifecycle-Management: Lifecycle: submit_service_in_agents: Exception')
+        return common.gen_response(500, 'Exception', 'service', str(service))
+
+
+# submit: Submits a service (no access to external docker APIs; calls to other agent's lifecycle components)
+# IN: service, user_id, agreement_id
+# OUT: service_instance
+def submit(service, user_id, agreement_id):
+    LOG.debug("Lifecycle-Management: Lifecycle: submit_v2: " + str(service) + ", user_id: " + user_id)
+    try:
+        # 1. check parameters content
+        if not check_service_content(service):
             return common.gen_response(500, 'field(s) category/exec/exec_type not found', 'service', str(service))
 
         # 2. get list of available agents / resources / VMs. Example: TODO!!!
@@ -80,50 +157,8 @@ def submit(service, user_id):
             LOG.error("Lifecycle-Management: Lifecycle: submit_v2: available_agents_list is empty")
             return common.gen_response(500, 'available_agents_list is empty', 'service', str(service))
         else:
-            # 3. select from agents list and Create new service instance
-            agents_list = agent_decision.select_agents_list(available_agents_list)
-            LOG.debug("Lifecycle-Management: Lifecycle: submit_v2: available_agents_list" + str(available_agents_list))
-
-            # agents_list is something like ["192.168.252.41", "192.168.252.42", "192.168.252.43"] # TODO
-            service_instance = data.create_service_instance(service, agents_list)
-            if not service_instance:
-                LOG.error("Lifecycle-Management: Lifecycle: submit_v2: error creating service_instance")
-                return common.gen_response(500, 'error creating service_instance', 'service', str(service))
-
-            LOG.debug("Lifecycle-Management: Lifecycle: submit_v2: service_instance: " + str(service_instance))
-            LOG.debug("Lifecycle-Management: Lifecycle: submit_v2: service_instance: " + str(service_instance.json))
-
-            # 4. allocate service / call remote container
-            # allocate
-            #   Agent example:
-            #    {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", "status": "waiting",
-            #     "num_cpus": 3, "allow": true}
-            for agent in service_instance.json["agents"]:
-                LOG.info(">>> AGENT >>> " + agent['url'])
-                # LOCAL
-                if agent['url'] == common.get_ip():
-                    LOG.debug("Lifecycle-Management: Lifecycle: submit_v2: allocate service locally")
-                    if allocation_adapter.allocate_service_agent(service, agent) == "waiting":
-                        LOG.debug("Lifecycle-Management: Lifecycle: submit_v2: SLA & service exec")
-                        # initializes SLA
-                        sla_adapter.initializes_sla(service_instance.json) # TODO
-                        # executes service
-                        execution_adapter.execute_service_agent(service, agent)
-                # OTHER AGENT
-                elif common.check_ip(agent['url']):
-                    LOG.debug("Lifecycle-Management: Lifecycle: submit_v2: allocate service in other agent [" + agent['url'] + "]")
-                    #  call lifecycle from x
-                    mf2c.lifecycle_deploy(service, agent)
-                # NOT FOUND / NOT CONNECTED
-                else:
-                    agent['status'] = "error"
-                    LOG.error("Lifecycle-Management: Lifecycle: submit_v2: agent [" + agent['url'] + "] cannot be reached")
-
-            # 5. save / update service_instance
-            LOG.debug("Lifecycle-Management: Lifecycle: submit_v2: UPDATING service_instance: " + str(service_instance.json))
-            data.update_service_instance(service_instance.json['id'], service_instance.json)
-
-            return common.gen_response_ok('Deploy service', 'service_instance', service_instance.json)
+            # 3. Create new service instance & allocate service / call other agents when needed
+            return submit_service_in_agents(service, user_id, agreement_id, available_agents_list)
     except:
         LOG.error('Lifecycle-Management: Lifecycle: submit_v2: Exception')
         return common.gen_response(500, 'Exception', 'service', str(service))
@@ -273,7 +308,7 @@ def get_all():
         obj_response_cimi = common.ResponseCIMI()
         service_instances = data.get_all_service_instances(obj_response_cimi)
 
-        if not service_instances is None and service_instances != -1:
+        if not service_instances is None:
             return common.gen_response_ok('Service instances content', 'service_instances', service_instances,
                                           "Msg", obj_response_cimi.msj)
         else:
@@ -290,9 +325,9 @@ def delete(service_instance_id):
         obj_response_cimi = common.ResponseCIMI()
         resp = data.del_service_instance(service_instance_id, obj_response_cimi)
 
-        if not resp is None and resp != -1:
+        if not resp is None:
             return common.gen_response_ok('Service instance content', 'service_instance_id', service_instance_id,
-                                          'Response', str(resp.json))
+                                          'Response', resp['message'])
         else:
             return common.gen_response(500, "Error in 'delete' function",
                                        "service_instance_id", service_instance_id,
