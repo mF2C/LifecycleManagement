@@ -41,15 +41,15 @@ from lifecycle import config
    {
        ...
        "id": "",
-       "user_id": "testuser",
-       "service_id": "",
-       "agreement_id": "",
+       "user": "testuser",
+       "service": "",
+       "agreement": "",
        "status": "waiting",
        "agents": [
            {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", "status": "waiting",
-               "num_cpus": 3, "allow": true},
+               "num_cpus": 3, "allow": true, "master_compss": true},
            {"agent": resource-link, "url": "192.168.1.34", "port": 8081, "container_id": "99asd673f", "status": "waiting",
-               "num_cpus": 2, "allow": true}
+               "num_cpus": 2, "allow": true, "master_compss": false}
       ]
    }
 '''
@@ -120,10 +120,9 @@ def create_service_instance(service, agents_list, user_id, agreement_id):
 # update_service_instance: Updates a service instance
 #       service_instance_id = "service-instance/250af452-959f-4ac6-9b06-54f757b46bf0"
 def update_service_instance(service_instance_id, service_instance):
-    LOG.info("Lifecycle-Management: Data: update_service_instance: " + service_instance_id + ", " + str(service_instance))
-    #service_instance_id = service_instance_id.replace("service-instance/","")
+    LOG.debug("Lifecycle-Management: Data: (1) update_service_instance: " + service_instance_id + ", " + str(service_instance))
     res = cimi.update_service_instance(service_instance_id, service_instance)
-
+    LOG.debug("Lifecycle-Management: Data: (2) update_service_instance: " + str(res))
     if not res:
         LOG.error("Lifecycle-Management: Data: update_service_instance: Error during the edition of the service_instance object")
         return None

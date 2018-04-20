@@ -141,11 +141,12 @@ def add_service_instance(resource_name, content):
 def update_service_instance(resource_id, content):
     try:
         LOG.info("Updating resource [" + resource_id + "] ... ")
+        resource_id = resource_id.replace('service-instance/', '')
 
         # complete map and update resource
         content.update(common_update_map_fields())
 
-        res = requests.put(config.dic['CIMI_URL'] + '/service-instance/' + resource_id,
+        res = requests.put(config.dic['CIMI_URL']  + '/service-instance/' + resource_id,
                             headers={'slipstream-authn-info': 'super ADMIN'},
                             verify=False,
                             json=content)

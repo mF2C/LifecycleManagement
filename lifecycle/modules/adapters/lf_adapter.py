@@ -32,11 +32,6 @@ def terminate_service(service_instance_id):
     return adpt.terminate_service(data.get_service_instance(service_instance_id))
 
 
-# Get service status
-def get_status(service_instance_id):
-    return adpt.get_status(data.get_service_instance(service_instance_id))
-
-
 # Stop service
 def stop(service_instance_id):
     return adpt.stop(data.get_service_instance(service_instance_id))
@@ -55,6 +50,11 @@ def start(service_instance_id):
 # Start service in agent
 def start_service_agent(service, agent):
     return adpt.start_service_agent(agent)
+
+
+# Starts job in agent
+def start_job(service_instance, parameters):
+    return adpt.start_compss_app(service_instance, parameters)
 
 
 # Execute service

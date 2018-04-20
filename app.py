@@ -38,9 +38,9 @@ REST API
             DELETE: delete service instance (from cimi)
 
         /api/v1/lifecycle
-            POST:   Submits a service
-            PUT:    starts / stops ... a service
-            DELETE: deletes a service
+            POST:   Submits a service; gets a service instance
+            PUT:    starts / stops ... a service instance
+            DELETE: terminates a service
 
         /api/v1/lifecycle/service-instance-operations (agent operations)
             POST:   Submits a service in a mF2C agent
@@ -81,6 +81,7 @@ try:
     common.set_value_env('URL_AC_USER_MANAGEMENT')
 
     LOG.info('Checking configuration...')
+    LOG.info('[HOST_IP=' + config.dic['HOST_IP'] + ']')
     LOG.info('[CIMI_URL=' + config.dic['CIMI_URL'] + ']')
     LOG.info('[CIMI_COOKIES_PATH=' + config.dic['CIMI_COOKIES_PATH'] + ']')
     LOG.info('[CIMI_USER=' + config.dic['CIMI_USER'] + ']')
@@ -262,6 +263,11 @@ api.add_resource(ServiceInstanceDelete, '/api/v1/lifecycle/service-instance')
 
 ###############################################################################
 # ServiceLifecycle route: submit, terminate, operations (start, stop, pause...)
+# /api/v1/lifecycle
+# 	POST:   Submits a service; gets a service instance
+# 	PUT:    starts / stops ... a service instance
+# 	DELETE: terminates a service
+#
 #   'data' from request (body) - content:
 #   {
 #       "service": {
@@ -289,8 +295,8 @@ api.add_resource(ServiceInstanceDelete, '/api/v1/lifecycle/service-instance')
 class ServiceLifecycle(Resource):
     # POST: Submits a service
     @swagger.operation(
-        summary="Submits a service ",
-        notes="Submits a service and returns a json with the content of the 'service_instance'",
+        summary="Submits a service (deployment)",
+        notes="Submits a service and returns a json with the content of a service instance",
         produces=["application/json"],
         authorizations=[],
         parameters=[{
@@ -345,14 +351,18 @@ class ServiceLifecycle(Resource):
 
     # PUT: Starts / stops / restarts ... a service and returns a JSON object with the result / status of the operation.
     @swagger.operation(
-        summary="Starts / stops / restarts a service ",
-        notes="Starts / stops / restarts a service.",
+        summary="start, stop, restart a <b>service instance</b> // start a <b>job</b>",
+        notes="Available operations:<br/>"
+              "<b>'start / stop / restart'</b> ... service instance operations<br/>"
+              "<b>'start-job'</b> ... starts a job",
         produces=["application/json"],
         authorizations=[],
         parameters=[{
             "name": "body",
             "description": "Parameters in JSON format.<br/>Example: <br/>"
-                           "{\"service_instance_id\":\"617f823c-43f6-4c1a-b482-5ca5cfd4ec93\", \"operation\":\"start/restart/stop\"}",
+                           "{\"service_instance_id\":\"617f823c-43f6-4c1a-b482-5ca5cfd4ec93\",<br/>"
+                           "\"operation\":\"start/restart/stop\",<br/>"
+                           "\"parameters\": {} }",
             "required": True,
             "paramType": "body",
             "type": "string"
@@ -377,6 +387,8 @@ class ServiceLifecycle(Resource):
             return lifecycle.stop(data['service_instance_id'])
         elif data['operation'] == 'restart':
             return lifecycle.restart(data['service_instance_id'])
+        elif data['operation'] == 'start-job':
+            return lifecycle.start_job(data)
         else:
             LOG.error('Lifecycle-Management: REST API: put: operation not defined / implemented')
             return Response(json.dumps({'error': True, 'message': 'operation not defined / implemented'}),
@@ -516,6 +528,8 @@ class ServiceLifecycleOperations(Resource):
             return operations.stop(data['agent'])
         elif data['operation'] == 'restart':
             return operations.restart(data['agent'])
+        elif data['operation'] == 'start-job':
+            return operations.start_job(data)
         else:
             LOG.error('Lifecycle-Management: REST API: put: operation not defined / implemented')
             return Response(json.dumps({'error': True, 'message': 'operation not defined / implemented'}),

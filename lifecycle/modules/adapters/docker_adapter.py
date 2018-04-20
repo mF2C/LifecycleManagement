@@ -14,7 +14,9 @@ Created on 09 feb. 2018
 import lifecycle.utils.common as common
 import docker
 import requests
+import datetime
 import sys, traceback
+from lifecycle import config
 from lifecycle.utils.logs import LOG
 
 
@@ -85,7 +87,7 @@ def deploy(service_instance):
         for agent in service_instance["agents"]:
             LOG.info("Lifecycle-Management: Docker adapter: deploy: agent: " + str(agent))
             # connect to docker api
-            client = get_client_agent_docker() # TODO
+            client = get_client_agent_docker() # TODO replace with IPs form agents
 
             if client:
                 # check if image already exists in agent
@@ -124,8 +126,10 @@ def deploy_service_agent(service, agent):
     LOG.debug("Lifecycle-Management: Docker adapter: (1) deploy_service_agent: " + str(service) + ", " + str(agent))
     try:
         # get service image / location
-        service_image = service['exec'] # "mf2c/compss-mf2c:1.0"      #""yeasy/simple-web"
-        service_name = service['name'] # "app-compss"                 #""simple-web-test"
+        service_image = service['exec'] # "mf2c/compss-mf2c:1.0", "yeasy/simple-web"
+        now = datetime.datetime.now()
+        # service_name examples: "app-compss", "simple-web-test"
+        service_name = service['name'] # + now.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
         #service_command = "/bin/sh -c 'python index.py'"
 
         # get url / port
@@ -167,16 +171,9 @@ def deploy_service_agent(service, agent):
         return common.gen_response(500, 'Exception: deploy_service_agent()', 'agent', str(agent), 'service', str(service))
 
 
-# Return service's status
-def get_status(service_instance):
-    LOG.info("Lifecycle-Management: Docker adapter: get_status: " + str(service_instance))
-    return service_instance['status']
-
-
 # Start app inside container
-def start_compss_app(service_instance, agent):
-    LOG.info("Lifecycle-Management: Docker adapter: start_app")
-
+def start_compss_app(service_instance, parameters):
+    LOG.debug("Lifecycle-Management: Docker adapter: start_app: [service_instance=None], [parameters=None]")
     try:
         xml = "<?xml version='1.0' encoding='utf-8'?>" \
               "<startApplication>" \
@@ -224,9 +221,10 @@ def start_compss_app(service_instance, agent):
               "  </resources>" \
               "</startApplication>"
 
-        requests.put("http://127.0.0.1:8080/COMPSs/startApplication",
-                     data=xml,
-                     headers={'Content-Type': 'application/xml'})
+        res = requests.put("http://" + config.dic['HOST_IP'] + ":8080/COMPSs/startApplication",
+                           data=xml,
+                           headers={'Content-Type': 'application/xml'})
+        LOG.debug("Lifecycle-Management: Docker adapter: start_app: [res=" + str(res) + "]")
 
         return True
     except:

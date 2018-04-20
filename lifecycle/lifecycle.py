@@ -47,15 +47,15 @@ from lifecycle.utils.logs import LOG
    {
        ...
        "id": "",
-       "user_id": "testuser",
-       "service_id": "",
-       "agreement_id": "",
+       "user": "testuser",
+       "service": "",
+       "agreement": "",
        "status": "waiting",
        "agents": [
            {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", "status": "waiting",
-               "num_cpus": 3, "allow": true},
+               "num_cpus": 3, "allow": true, "master_compss": true},
            {"agent": resource-link, "url": "192.168.1.34", "port": 8081, "container_id": "99asd673f", "status": "waiting",
-               "num_cpus": 2, "allow": true}
+               "num_cpus": 2, "allow": true, "master_compss": false}
       ]
    }
 '''
@@ -166,7 +166,7 @@ def submit(service, user_id, agreement_id):
 
 # Service Operation: start (version 2: no access to external docker APIs / calls to other agent's lifecycle components)
 def start(service_instance_id):
-    LOG.info("Lifecycle-Management: Lifecycle: start_v2: " + service_instance_id)
+    LOG.debug("Lifecycle-Management: Lifecycle: start_v2: " + service_instance_id)
     try:
         # 1. get service_instance object
         service_instance = data.get_service_instance(service_instance_id)
@@ -199,7 +199,7 @@ def start(service_instance_id):
 
 # Service Operation: restart (version 2: no access to external docker APIs / calls to other agent's lifecycle components)
 def restart(service_instance_id):
-    LOG.info("Lifecycle-Management: Lifecycle: restart_v2: " + service_instance_id)
+    LOG.debug("Lifecycle-Management: Lifecycle: restart_v2: " + service_instance_id)
     try:
         # 1. get service_instance object
         service_instance = data.get_service_instance(service_instance_id)
@@ -260,7 +260,7 @@ def stop(service_instance_id):
         obj_response_cimi = common.ResponseCIMI()
         resp = data.del_service_instance(service_instance_id, obj_response_cimi)
         if not resp is None and resp != -1:
-            LOG.info('Service instance deleted from CIMI')
+            LOG.debug('Service instance deleted from CIMI')
         else:
             LOG.error("Error: Service instance NOT deleted from CIMI")
 
@@ -271,9 +271,23 @@ def stop(service_instance_id):
         return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
 
 
+# Service Instance Operation: starts a job / app
+# TODO get agent with compss master
+def start_job(data):
+    LOG.debug("Lifecycle-Management: Lifecycle: start_job: " + str(data))
+    try:
+        #service_instance = data.get_service_instance(data['service_instance_id'])
+        #parameters = data['parameters']
+        res = lf_adapter.start_job(None, None) #service_instance, parameters)
+        return common.gen_response_ok('Start job', 'service_id', data['service_instance_id'], 'res', res)
+    except:
+        LOG.error('Lifecycle-Management: Lifecycle: start_job: Exception')
+        return common.gen_response(500, 'Exception', 'data', str(data))
+
+
 # Terminate service, Deallocate service's resources
 def terminate(service_id):
-    LOG.info("Lifecycle-Management: Lifecycle: terminate: " + service_id)
+    LOG.debug("Lifecycle-Management: Lifecycle: terminate: " + service_id)
     try:
         status = lf_adapter.terminate_service(service_id)
         return common.gen_response_ok('Terminate service', 'service_id', service_id, 'status', status)
@@ -284,7 +298,7 @@ def terminate(service_id):
 
 # Get service instance
 def get(service_instance_id):
-    LOG.info("Lifecycle-Management: Lifecycle: get: " + service_instance_id)
+    LOG.debug("Lifecycle-Management: Lifecycle: get: " + service_instance_id)
     try:
         obj_response_cimi = common.ResponseCIMI()
         service_instance = data.get_service_instance(service_instance_id, obj_response_cimi)
@@ -303,7 +317,7 @@ def get(service_instance_id):
 
 # Get all service instances
 def get_all():
-    LOG.info("Lifecycle-Management: Lifecycle: get_all ")
+    LOG.debug("Lifecycle-Management: Lifecycle: get_all ")
     try:
         obj_response_cimi = common.ResponseCIMI()
         service_instances = data.get_all_service_instances(obj_response_cimi)
@@ -320,7 +334,7 @@ def get_all():
 
 # Delete service instance from CIMI
 def delete(service_instance_id):
-    LOG.info("Lifecycle-Management: Lifecycle: delete: " + service_instance_id)
+    LOG.debug("Lifecycle-Management: Lifecycle: delete: " + service_instance_id)
     try:
         obj_response_cimi = common.ResponseCIMI()
         resp = data.del_service_instance(service_instance_id, obj_response_cimi)
