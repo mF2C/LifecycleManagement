@@ -76,13 +76,11 @@ def get_resources():
 
 # CALL TO SLA MANAGEMENT
 # start_sla_agreement: start SLA agreement
-# PUT /agreements/<id>
-# { "state": "started" }
+# PUT /agreements/<id>/start   (stop)
 def start_sla_agreement(agreement_id):
     LOG.info("Lifecycle-Management: MF2C: start_sla_agreement: agreement_id: " + agreement_id)
     try:
-        r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id,
-                         json={"state": "started"},
+        r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/start",
                          verify=config.dic['VERIFY_SSL'])
 
         LOG.debug("Lifecycle-Management: MF2C: start_sla_agreement:" + str(r))
@@ -95,6 +93,26 @@ def start_sla_agreement(agreement_id):
         return False
     except:
         LOG.error('Lifecycle-Management: MF2C: start_sla_agreement: Exception')
+        return False
+
+
+# PUT /agreements/<id>/stop
+def stop_sla_agreement(agreement_id):
+    LOG.info("Lifecycle-Management: MF2C: stop_sla_agreement: agreement_id: " + agreement_id)
+    try:
+        r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/stop",
+                         verify=config.dic['VERIFY_SSL'])
+
+        LOG.debug("Lifecycle-Management: MF2C: stop_sla_agreement:" + str(r))
+
+        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202:
+            LOG.debug('Lifecycle-Management: MF2C: stop_sla_agreement: status_code=' +  str(r.status_code))
+            return True
+
+        LOG.error('Lifecycle-Management: MF2C: stop_sla_agreement: Error: status_code=' +  str(r.status_code))
+        return False
+    except:
+        LOG.error('Lifecycle-Management: MF2C: stop_sla_agreement: Exception')
         return False
 
 
@@ -131,11 +149,12 @@ def user_management_profiling(user_id):
 
         r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/profiling/" + user_id,
                          verify=config.dic['VERIFY_SSL'])
+        json_data = json.loads(r.text)
 
-        LOG.debug("Lifecycle-Management: MF2C: user_management_profiling:" + str(r))
+        LOG.debug("Lifecycle-Management: MF2C: user_management_profiling:" + str(r) + ", json_data: " + str(json_data))
         if r.status_code == 200 or r.status_code == 201 or r.status_code == 202:
             LOG.debug('Lifecycle-Management: MF2C: user_management_profiling: status_code=' + str(r.status_code))
-            return r
+            return json_data
 
         LOG.error('Lifecycle-Management: MF2C: user_management_profiling: Error: status_code=' + str(r.status_code))
         return None
@@ -151,11 +170,12 @@ def user_management_sharing_model(user_id):
 
         r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharingmodel/" + user_id,
                          verify=config.dic['VERIFY_SSL'])
+        json_data = json.loads(r.text)
 
-        LOG.debug("Lifecycle-Management: MF2C: user_management_sharing_model:" + str(r))
+        LOG.debug("Lifecycle-Management: MF2C: user_management_sharing_model:" + str(r) + ", json_data: " + str(json_data))
         if r.status_code == 200 or r.status_code == 201 or r.status_code == 202:
             LOG.debug('Lifecycle-Management: MF2C: user_management_sharing_model: status_code=' + str(r.status_code))
-            return r
+            return json_data
 
         LOG.error('Lifecycle-Management: MF2C: user_management_sharing_model: Error: status_code=' + str(r.status_code))
         return None

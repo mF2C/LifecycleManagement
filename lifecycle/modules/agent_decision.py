@@ -25,7 +25,8 @@ from lifecycle.utils.logs import LOG
 #       }
 def get_available_agents_list(service):
     try:
-        LOG.info("Lifecycle-Management: agent_decision: get_available_agents_list: " + str(service))
+        LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list ################")
+        LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list: " + str(service))
 
         # 1. RECOMMENDER -> RECIPE = GET_RECIPE(SERVICE)
         # The Lifecycle Management module calls the Recommender in order to get the optimal deployment configuration
@@ -40,7 +41,7 @@ def get_available_agents_list(service):
         # If no resources were found, then the Lifecycle Management forwards the request (submit a service) upwards
         if not resources or len(resources) == 0:
             # forwards the request upwards
-            LOG.info("Lifecycle-Management: agent_decision: get_available_agents_list: forwards the request upwards" + service)
+            LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list: forwards the request upwards" + service)
             return []
 
         # If there are available resources ...
@@ -58,21 +59,22 @@ def get_available_agents_list(service):
 # 3. Select agents
 def select_agents(service_instance):
     try:
-        LOG.info("Lifecycle-Management: agent_decision: select_agents: " + str(service_instance))
+        LOG.debug("Lifecycle-Management: agent_decision: select_agents ############################")
+        LOG.debug("Lifecycle-Management: agent_decision: select_agents: " + str(service_instance))
 
         # 1. QoS PROVIDING
         service_instance_1 = mf2c.service_management_qos(service_instance)
-        LOG.info("Lifecycle-Management: agent_decision: select_agents: service_instance_1: " + str(service_instance_1))
+        LOG.debug("Lifecycle-Management: agent_decision: select_agents: service_instance_1: " + str(service_instance_1))
 
         # 2. USER MANAGEMENT -> profiling and sharing model
         usert_profiling = mf2c.user_management_profiling(service_instance['user'])
-        LOG.info("Lifecycle-Management: agent_decision: select_agents: usert_profiling: " + str(usert_profiling))
+        LOG.debug("Lifecycle-Management: agent_decision: select_agents: usert_profiling: " + str(usert_profiling))
 
         usert_sharing_model = mf2c.user_management_sharing_model(service_instance['user'])
-        LOG.info("Lifecycle-Management: agent_decision: select_agents: usert_sharing_model: " + str(usert_sharing_model))
+        LOG.debug("Lifecycle-Management: agent_decision: select_agents: usert_sharing_model: " + str(usert_sharing_model))
 
         # 3. TODO PROCESS INFORMATION AND SELECT BEST CANDIDATES
-        LOG.info("Lifecycle-Management: agent_decision: select_agents: not implemented")
+        LOG.debug("Lifecycle-Management: agent_decision: select_agents: not implemented")
 
         if not service_instance_1:
             LOG.error("Lifecycle-Management: agent_decision: select_agents: Error calling QoS Providing component")

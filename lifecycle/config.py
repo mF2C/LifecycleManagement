@@ -14,7 +14,7 @@ Created on 09 feb. 2018
 #!/usr/bin/python
 
 dic = { "SERVER_PORT":                  46000,
-        "HOST_IP":                      "192.168.252.40",                       # if possible, read from env values
+        "HOST_IP":                      "192.168.252.41",                       # if possible, read from env values
         "API_DOC_URL":                  "/api/v1/lifecycle",
         "CERT_CRT":                     "cert/ia.crt",
         "CERT_KEY":                     "cert/ia.key",

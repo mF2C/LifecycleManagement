@@ -55,7 +55,8 @@ from lifecycle.utils.logs import LOG
 #   }
 def initializes_sla(service_instance, agreement_id):
     try:
-        LOG.info("Lifecycle-Management: sla_adapter: initializes_sla: " + str(service_instance) + ", " + str(agreement_id))
+        LOG.debug("Lifecycle-Management: sla_adapter: initializes_sla #############################")
+        LOG.debug("Lifecycle-Management: sla_adapter: initializes_sla: " + str(service_instance) + ", " + str(agreement_id))
         return mf2c.start_sla_agreement(agreement_id)
     except:
         LOG.error('Lifecycle-Management: sla_adapter: initializes_sla: Exception')

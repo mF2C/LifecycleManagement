@@ -53,7 +53,7 @@ def check_ip(ip_adress):
     try:
         # '-c 1' ==> linux
         # '-n 1' ==> windows
-        response = os.system("ping -n 1 " + ip_adress)
+        response = os.system("ping -c 1 " + ip_adress)
         if response == 0:
             return True
     except:
@@ -74,14 +74,15 @@ def get_ip_address():
             # 2: Use the gethostname method
             ipaddr = socket.gethostbyname(socket.gethostname())
         except:
-            LOG.error('Lifecycle-Management: Lifecycle: check_ip: Exception')
+            LOG.error('Lifecycle-Management: common: check_ip: Exception')
 
+    LOG.info('Lifecycle-Management: common: ipaddr: ' + ipaddr)
     return ipaddr
 
 
 # Get IP
 def get_ip():
-    return get_ip_address() #config.dic['HOST_IP']
+    return config.dic['HOST_IP'] #get_ip_address() #config.dic['HOST_IP']
 
 
 ###############################################################################

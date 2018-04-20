@@ -85,7 +85,7 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
         # 2. create new service instance
         LOG.debug("Lifecycle-Management: Lifecycle: submit_v2: agents_list" + str(agents_list))
 
-        service_instance = data.create_service_instance(service, agents_list)
+        service_instance = data.create_service_instance(service, agents_list, user_id, agreement_id)
         if not service_instance:
             LOG.error("Lifecycle-Management: Lifecycle: submit_service_in_agents: error creating service_instance")
             return common.gen_response(500, 'error creating service_instance', 'service', str(service))

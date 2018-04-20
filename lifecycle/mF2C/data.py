@@ -79,9 +79,11 @@ def del_service_instance(service_instance_id, obj_response_cimi=None):
 #   IN: 1. service
 #       2. [{"agent_ip": "192.168.252.41", "num_cpus": 4}, {"agent_ip": "192.168.252.42", "num_cpus": 2},
 #           {"agent_ip": "192.168.252.43", "num_cpus": 2}] TODO IPs list until landscaper is ready
+#       3. user_id
+#       4. agreement_id
 #
 #   OUT: service_instance dict
-def create_service_instance(service, agents_list):
+def create_service_instance(service, agents_list, user_id, agreement_id):
     LOG.info("Lifecycle-Management: Data: create_service_instance: " + str(service) + ", " + str(agents_list))
 
     # create list of agents
@@ -100,8 +102,8 @@ def create_service_instance(service, agents_list):
                                "container_id":  "-"})
     # SERVICE_INSTANCE:
     new_service_instance = {"service":          service['id'],
-                            "agreement":        "not-defined",
-                            "user":             "not-defined",                      # TODO
+                            "agreement":        agreement_id,
+                            "user":             user_id,
                             "agents":           list_of_agents,
                             "status":           "not-defined"}
 

@@ -121,8 +121,7 @@ def deploy(service_instance):
 #     "num_cpus": 3, "allow": true}
 # OUT: status value
 def deploy_service_agent(service, agent):
-    LOG.info("Lifecycle-Management: Docker adapter: deploy_service_agent: " + str(service) + ", " + str(agent))
-
+    LOG.debug("Lifecycle-Management: Docker adapter: (1) deploy_service_agent: " + str(service) + ", " + str(agent))
     try:
         # get service image / location
         service_image = service['exec'] # "mf2c/compss-mf2c:1.0"      #""yeasy/simple-web"
@@ -139,16 +138,21 @@ def deploy_service_agent(service, agent):
             l_images = client.images(name=service_image)
             # if not, download image
             if not l_images or len(l_images) == 0:
-                LOG.info("Lifecycle-Management: Docker adapter: deploy: call to 'import_image' [" + service_image + "] ...")
+                LOG.info("Lifecycle-Management: Docker adapter: (2) deploy_service_agent: call to 'import_image' [" + service_image + "] ...")
                 client.import_image(image=service_image)  # (tag="latest", image="ubuntu") # (tag="latest", image="ubuntu")
 
-            LOG.info("Lifecycle-Management: Docker adapter: deploy_service_agent: " + service_image + ", " + service_name + " ...")
+            LOG.debug("Lifecycle-Management: Docker adapter: (3) deploy_service_agent: [service_image=" + service_image + "]"
+                     ", [service_name=" + service_name + "],  [port=" + str(port) + "]...")
+
             # create a new container: 'docker run'
             container = client.create_container(service_image, #command=service_command,
                                                 name=service_name,
                                                 tty=True,
                                                 ports=[port],
                                                 host_config=client.create_host_config(port_bindings={port: port}))
+
+            LOG.debug("Lifecycle-Management: Docker adapter: (4) deploy_service_agent: container: " + str(container))
+
             # update agent properties
             agent['container_id'] = container['Id']
             agent['status'] = "waiting"
