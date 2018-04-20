@@ -17,6 +17,7 @@ import lifecycle.lifecycle as lifecycle
 import lifecycle.operations as operations
 import lifecycle.mF2C.handler_um as handler_um
 import lifecycle.mF2C.handler_sla as handler_sla
+import lifecycle.utils.common as common
 import lifecycle.utils.auth as auth
 import os
 from lifecycle import config
@@ -67,39 +68,26 @@ try:
     LOG.info('[DEBUG=' + str(config.dic['DEBUG']) + ']')
 
     LOG.info('Reading values from ENVIRONMENT...')
-
     # HOST IP from environment values:
-    env_host_ip = os.getenv('HOST_IP', default='not-defined')
-    LOG.info('[HOST_IP=' + env_host_ip + ']')
-    if env_host_ip != 'not-defined':
-        config.dic['HOST_IP'] = env_host_ip
+    common.set_value_env('HOST_IP')
+    # CIMI environment values:
+    common.set_value_env('CIMI_URL')
+    common.set_value_env('CIMI_COOKIES_PATH')
+    common.set_value_env('CIMI_USER')
+    common.set_value_env('CIMI_PASSWORD')
+    # mF2C components: env variables
+    common.set_value_env('URL_PM_SLA_MANAGER')
+    common.set_value_env('URL_AC_QoS_PROVIDING')
+    common.set_value_env('URL_AC_USER_MANAGEMENT')
 
-    # CIMI from environment values:
-    env_cimi_url = os.getenv('CIMI_URL', default='not-defined')
-    LOG.info('[CIMI_URL=' + env_cimi_url + ']')
-    if env_cimi_url != 'not-defined':
-        config.dic['CIMI_URL'] = env_cimi_url
-
-    env_cimi_cookies_path = os.getenv('CIMI_COOKIES_PATH', default='not-defined')
-    LOG.info('[CIMI_COOKIES_PATH=' + env_cimi_cookies_path + ']')
-    if env_cimi_cookies_path != 'not-defined':
-        config.dic['CIMI_COOKIES_PATH'] = env_cimi_cookies_path
-
-    env_cimi_user = os.getenv('CIMI_USER', default='not-defined')
-    LOG.info('[CIMI_USER=' + env_cimi_user + ']')
-    if env_cimi_user != 'not-defined':
-        config.dic['CIMI_USER'] = env_cimi_user
-
-    env_cimi_password = os.getenv('CIMI_PASSWORD', default='not-defined')
-    LOG.info('[CIMI_PASSWORD=' + env_cimi_password + ']')
-    if env_cimi_password != 'not-defined':
-        config.dic['CIMI_PASSWORD'] = env_cimi_password
-
-    LOG.info('Checking CIMI configuration...')
+    LOG.info('Checking configuration...')
     LOG.info('[CIMI_URL=' + config.dic['CIMI_URL'] + ']')
     LOG.info('[CIMI_COOKIES_PATH=' + config.dic['CIMI_COOKIES_PATH'] + ']')
     LOG.info('[CIMI_USER=' + config.dic['CIMI_USER'] + ']')
     LOG.info('[CIMI_PASSWORD=' + config.dic['CIMI_PASSWORD'] + ']')
+    LOG.info('[URL_PM_SLA_MANAGER=' + config.dic['URL_PM_SLA_MANAGER'] + ']')
+    LOG.info('[URL_AC_QoS_PROVIDING=' + config.dic['URL_AC_QoS_PROVIDING'] + ']')
+    LOG.info('[URL_AC_USER_MANAGEMENT=' + config.dic['URL_AC_USER_MANAGEMENT'] + ']')
 
     # APP
     app = Flask(__name__)

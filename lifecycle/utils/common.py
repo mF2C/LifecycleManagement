@@ -18,6 +18,9 @@ from flask import Response, json
 from lifecycle.utils.logs import LOG
 
 
+###############################################################################
+# RESPONSEs:
+
 # CLASS ResponseCIMI
 class ResponseCIMI():
     msj = ""
@@ -43,9 +46,8 @@ def gen_response(status, message, key, value, key2=None, value2=None):
     return Response(json.dumps(dict), status=status, content_type='application/json')
 
 
-
-
-
+###############################################################################
+# IPs:
 # check_ip: Check if IP is alive
 def check_ip(ip_adress):
     try:
@@ -80,3 +82,13 @@ def get_ip_address():
 # Get IP
 def get_ip():
     return get_ip_address() #config.dic['HOST_IP']
+
+
+###############################################################################
+# ENV:
+# set_value_env: set value (in config dict) from environment
+def set_value_env(env_name):
+    res = os.getenv(env_name, default='not-defined')
+    LOG.debug('[' + env_name + '=' + res + ']')
+    if res != 'not-defined':
+        config.dic[env_name] = res

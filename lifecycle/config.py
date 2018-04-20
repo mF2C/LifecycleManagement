@@ -38,11 +38,11 @@ dic = { "SERVER_PORT":                  46000,
 
         # URLs from other mF2C components:
         # PM-SLA MANAGER
-        "URL_PM_SLA_MANAGER":           "https://localhost:46030",
+        "URL_PM_SLA_MANAGER":           "https://127.0.0.1:46030",
         # AC-QoS PROVIDING
-        "URL_AC_QoS_PROVIDING":         "https://localhost:46200/api/service-management",
+        "URL_AC_QoS_PROVIDING":         "https://127.0.0.1:46200/api/service-management",
         # AC-USER MANAGEMENT
-        "URL_AC_USER_MANAGEMENT":       "https://localhost:46300/api/v1/user-management",
+        "URL_AC_USER_MANAGEMENT":       "https://127.0.0.1:46300/api/v1/user-management",
 
         # TODO!! PM-RECOMMENDER get recipe: api/v1/recommender/recipe/...
         "URL_PM_RECOMMENDER":           "https://localhost:46020/api/",
