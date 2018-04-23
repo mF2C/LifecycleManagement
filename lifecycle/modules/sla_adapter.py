@@ -59,7 +59,7 @@ def initializes_sla(service_instance, agreement_id):
         LOG.debug("Lifecycle-Management: sla_adapter: initializes_sla #############################")
         LOG.debug("Lifecycle-Management: sla_adapter: initializes_sla: " + str(service_instance) + ", " + str(agreement_id))
 
-        if config['STANDALONE_MODE']:
+        if config.dic['STANDALONE_MODE'] or config.dic['STANDALONE_MODE'] == 'True':
             LOG.warning("Lifecycle-Management: agent_decision: select_agents: STANDALONE_MODE enabled")
             return None
 

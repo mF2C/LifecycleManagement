@@ -112,9 +112,9 @@ def del_service_instance_by_id(id, obj_response_cimi=None):
 
 # FUNCTION: add_service_instance: add resource to cimi
 # RETURNS: resource
-def add_service_instance(resource_name, content):
+def add_service_instance(content):
     try:
-        LOG.debug("Adding new resource to [" + resource_name + "] ... ")
+        LOG.debug("Adding new resource to service instances ... ")
 
         # complete map and update resource
         content.update(common_new_map_fields())
@@ -123,6 +123,7 @@ def add_service_instance(resource_name, content):
                             headers={'slipstream-authn-info': 'super ADMIN'},
                             verify=False,
                             json=content)
+        LOG.debug("res: " + str(res))
 
         if res.status_code == 201:
             id = res.json()['resource-id'].replace('service-instance/', '')
@@ -133,7 +134,7 @@ def add_service_instance(resource_name, content):
         return None
     except:
         traceback.print_exc(file=sys.stdout)
-        LOG.error('Exception')
+        LOG.error('Exception while adding new resource to service instances!')
         return None
 
 

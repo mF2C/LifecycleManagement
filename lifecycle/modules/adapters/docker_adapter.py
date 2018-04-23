@@ -173,27 +173,26 @@ def deploy_service_agent(service, agent):
 
 # Start app inside container
 def start_compss_app(agent, parameters):
-    LOG.debug("Lifecycle-Management: Docker adapter: start_app: [service_instance=None], [parameters=None]")
+    LOG.debug("Lifecycle-Management: Docker adapter: start_app: [agent=" + str(agent) + "], [parameters=" + parameters + "]")
     try:
+        # "  <ceiClass>es.bsc.compss.test.TestItf</ceiClass>" \
+        # "  <className>es.bsc.compss.test.Test</className>" \
+        # "  <methodName>main</methodName>" \
+        # "  <parameters>" \
+        # "    <array paramId=\"0\">" \
+        # "      <componentClassname>java.lang.String</componentClassname>" \
+        # "      <values>" \
+        # "        <element paramId=\"0\">" \
+        # "          <className>java.lang.String</className>" \
+        # "          <value xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " \
+        # "             xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"xs:string\">3</value>" \
+        # "        </element>" \
+        # "      </values>" \
+        # "    </array>" \
+        # "  </parameters>" \
         xml = "<?xml version='1.0' encoding='utf-8'?>" \
-              "<startApplication>" \
-              "  <ceiClass>es.bsc.compss.test.TestItf</ceiClass>" \
-              "  <className>es.bsc.compss.test.Test</className>" \
-              "  <methodName>main</methodName>" \
-              "  <parameters>" \
-              "    <array paramId=\"0\">" \
-              "      <componentClassname>java.lang.String</componentClassname>" \
-              "      <values>" \
-              "        <element paramId=\"0\">" \
-              "          <className>java.lang.String</className>" \
-              "          <value xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " \
-              "             xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"xs:string\">3</value>" \
-              "        </element>" \
-              "      </values>" \
-              "    </array>" \
-              "  </parameters>" \
-              "  <resources>" \
-              "    <resource name=\"localhost:8080\">" \
+              "<startApplication>" + parameters + "<resources>" \
+              "   <resource name=\"localhost:8080\">" \
               "      <description>" \
               "        <memorySize>4.0</memorySize>" \
               "        <memoryType>[unassigned]</memoryType>" \
@@ -220,6 +219,7 @@ def start_compss_app(agent, parameters):
               "    </resource>" \
               "  </resources>" \
               "</startApplication>"
+        LOG.debug("Lifecycle-Management: Docker adapter: start_app: [xml=" + xml + "]")
 
         res = requests.put("http://" + agent['url'] + ":8080/COMPSs/startApplication",
                            data=xml,

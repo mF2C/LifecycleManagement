@@ -273,18 +273,21 @@ def stop(service_instance_id):
 
 # Service Instance Operation: starts a job / app
 # TODO get agent with compss master
-def start_job(data):
-    LOG.debug("Lifecycle-Management: Lifecycle: start_job: " + str(data))
+def start_job(body):
+    LOG.debug("Lifecycle-Management: Lifecycle: start_job: " + str(body))
     try:
-        service_instance = data.get_service_instance(data['service_instance_id'])
+        LOG.debug("Lifecycle-Management: Lifecycle: start_job: [body['service_instance_id']=" + body['service_instance_id'] + "]")
+        service_instance = data.get_service_instance(body['service_instance_id'])
+        LOG.debug("Lifecycle-Management: Lifecycle: start_job: service_instance: " + str(service_instance))
+
         agent = service_instance['agents'][0]
         LOG.debug("Lifecycle-Management: Lifecycle: start_job: Starting job in agent [" + str(agent) + "] ...")
 
-        res = lf_adapter.start_job(agent, data['parameters'])
-        return common.gen_response_ok('Start job', 'service_id', data['service_instance_id'], 'res', res)
+        res = lf_adapter.start_job(agent, body['parameters'])
+        return common.gen_response_ok('Start job', 'service_id', body['service_instance_id'], 'res', res)
     except:
         LOG.error('Lifecycle-Management: Lifecycle: start_job: Exception')
-        return common.gen_response(500, 'Exception', 'data', str(data))
+        return common.gen_response(500, 'Exception', 'data', str(body))
 
 
 # Terminate service, Deallocate service's resources

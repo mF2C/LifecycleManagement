@@ -84,7 +84,7 @@ def del_service_instance(service_instance_id, obj_response_cimi=None):
 #
 #   OUT: service_instance dict
 def create_service_instance(service, agents_list, user_id, agreement_id):
-    LOG.info("Lifecycle-Management: Data: create_service_instance: " + str(service) + ", " + str(agents_list))
+    LOG.debug("Lifecycle-Management: Data: create_service_instance: " + str(service) + ", " + str(agents_list))
 
     # create list of agents
     list_of_agents = []
@@ -94,7 +94,7 @@ def create_service_instance(service, agents_list, user_id, agreement_id):
     #  "num_cpus": 2, "allow": true}
     for agent in agents_list:
         list_of_agents.append({"agent":         {"href": "agent/default-value"},
-                               "port":          service['exec_ports'][0],           # TODO it takes the first item
+                               "port":          service['exec_ports'][0],           # TODO now, it takes only the first item
                                "url":           agent['agent_ip'],
                                "status":        "not-defined",
                                "num_cpus":      agent['num_cpus'],
@@ -107,10 +107,10 @@ def create_service_instance(service, agents_list, user_id, agreement_id):
                             "agents":           list_of_agents,
                             "status":           "not-defined"}
 
-    LOG.info("Lifecycle-Management: Data: create_service_instance: adding service_intance to CIMI ...")
-    LOG.info("Lifecycle-Management: Data: create_service_instance: " + str(new_service_instance))
+    LOG.debug("Lifecycle-Management: Data: create_service_instance: adding service_intance to CIMI ...")
+    LOG.debug("Lifecycle-Management: Data: create_service_instance: " + str(new_service_instance))
 
-    res = cimi.add_service_instance(config.dic['CIMI_SERVICE_INSTANCES'], new_service_instance)
+    res = cimi.add_service_instance(new_service_instance)
     if not res:
         LOG.error("Lifecycle-Management: Data: create_service_instance: Error during the creation of the service_instance object")
         return new_service_instance

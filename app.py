@@ -83,6 +83,7 @@ try:
     common.set_value_env('URL_AC_USER_MANAGEMENT')
 
     LOG.info('Checking configuration...')
+    LOG.info('[STANDALONE_MODE=' + config.dic['STANDALONE_MODE'] + ']')
     LOG.info('[HOST_IP=' + config.dic['HOST_IP'] + ']')
     LOG.info('[CIMI_URL=' + config.dic['CIMI_URL'] + ']')
     LOG.info('[CIMI_COOKIES_PATH=' + config.dic['CIMI_COOKIES_PATH'] + ']')
@@ -91,6 +92,11 @@ try:
     LOG.info('[URL_PM_SLA_MANAGER=' + config.dic['URL_PM_SLA_MANAGER'] + ']')
     LOG.info('[URL_AC_QoS_PROVIDING=' + config.dic['URL_AC_QoS_PROVIDING'] + ']')
     LOG.info('[URL_AC_USER_MANAGEMENT=' + config.dic['URL_AC_USER_MANAGEMENT'] + ']')
+
+    if config.dic['STANDALONE_MODE'] or config.dic['STANDALONE_MODE'] == 'True':
+        LOG.warning("STANDALONE_MODE enabled")
+    else:
+        LOG.info("STANDALONE_MODE not enabled")
 
     # APP
     app = Flask(__name__)
