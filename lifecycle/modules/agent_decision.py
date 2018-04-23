@@ -13,6 +13,7 @@ Created on 09 feb. 2018
 
 import lifecycle.mF2C.mf2c as mf2c
 from lifecycle.utils.logs import LOG
+from lifecycle import config
 
 
 # get_available_agents_list: Gets a list of available agents
@@ -28,24 +29,29 @@ def get_available_agents_list(service):
         LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list ################")
         LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list: " + str(service))
 
-        # 1. RECOMMENDER -> RECIPE = GET_RECIPE(SERVICE)
-        # The Lifecycle Management module calls the Recommender in order to get the optimal deployment configuration
-        # to run the service
-        #recipe = mf2c.get_recipe(service) # TODO
+        if config['STANDALONE_MODE']:
+            LOG.warning("Lifecycle-Management: agent_decision: get_available_agents_list: STANDALONE_MODE enabled")
+            return config.dic['AVAILABLE_AGENTS']
 
-        # 2. LANDSCAPER -> RESOURCES = GET_RESOURCES(RECIPE)
-        # Based on this optimal configuration returned by the Recommender, the Lifecycle module asks the Landscaper
-        # for a list of resources that match this recommendation.
-        resources = mf2c.get_resources() # TODO resources = config.dic['AVAILABLE_AGENTS']
+        else:
+            # 1. RECOMMENDER -> RECIPE = GET_RECIPE(SERVICE)
+            # The Lifecycle Management module calls the Recommender in order to get the optimal deployment configuration
+            # to run the service
+            #recipe = mf2c.get_recipe(service) # TODO
 
-        # If no resources were found, then the Lifecycle Management forwards the request (submit a service) upwards
-        if not resources or len(resources) == 0:
-            # forwards the request upwards
-            LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list: forwards the request upwards" + service)
-            return []
+            # 2. LANDSCAPER -> RESOURCES = GET_RESOURCES(RECIPE)
+            # Based on this optimal configuration returned by the Recommender, the Lifecycle module asks the Landscaper
+            # for a list of resources that match this recommendation.
+            resources = mf2c.get_resources() # TODO resources = config.dic['AVAILABLE_AGENTS']
 
-        # If there are available resources ...
-        return resources
+            # If no resources were found, then the Lifecycle Management forwards the request (submit a service) upwards
+            if not resources or len(resources) == 0:
+                # forwards the request upwards
+                LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list: forwards the request upwards" + service)
+                return []
+
+            # If there are available resources ...
+            return resources
     except:
         LOG.error('Lifecycle-Management: agent_decision: get_available_agents_list: Exception')
         return None
@@ -62,24 +68,29 @@ def select_agents(service_instance):
         LOG.debug("Lifecycle-Management: agent_decision: select_agents ############################")
         LOG.debug("Lifecycle-Management: agent_decision: select_agents: " + str(service_instance))
 
-        # 1. QoS PROVIDING
-        service_instance_1 = mf2c.service_management_qos(service_instance)
-        LOG.debug("Lifecycle-Management: agent_decision: select_agents: service_instance_1: " + str(service_instance_1))
-
-        # 2. USER MANAGEMENT -> profiling and sharing model
-        usert_profiling = mf2c.user_management_profiling(service_instance['user'])
-        LOG.debug("Lifecycle-Management: agent_decision: select_agents: usert_profiling: " + str(usert_profiling))
-
-        usert_sharing_model = mf2c.user_management_sharing_model(service_instance['user'])
-        LOG.debug("Lifecycle-Management: agent_decision: select_agents: usert_sharing_model: " + str(usert_sharing_model))
-
-        # 3. TODO PROCESS INFORMATION AND SELECT BEST CANDIDATES
-        LOG.debug("Lifecycle-Management: agent_decision: select_agents: not implemented")
-
-        if not service_instance_1:
-            LOG.error("Lifecycle-Management: agent_decision: select_agents: Error calling QoS Providing component")
+        if config['STANDALONE_MODE']:
+            LOG.warning("Lifecycle-Management: agent_decision: select_agents: STANDALONE_MODE enabled")
             return service_instance
-        return service_instance_1
+
+        else:
+            # 1. QoS PROVIDING
+            service_instance_1 = mf2c.service_management_qos(service_instance)
+            LOG.debug("Lifecycle-Management: agent_decision: select_agents: service_instance_1: " + str(service_instance_1))
+
+            # 2. USER MANAGEMENT -> profiling and sharing model
+            usert_profiling = mf2c.user_management_profiling(service_instance['user'])
+            LOG.debug("Lifecycle-Management: agent_decision: select_agents: usert_profiling: " + str(usert_profiling))
+
+            usert_sharing_model = mf2c.user_management_sharing_model(service_instance['user'])
+            LOG.debug("Lifecycle-Management: agent_decision: select_agents: usert_sharing_model: " + str(usert_sharing_model))
+
+            # 3. TODO PROCESS INFORMATION AND SELECT BEST CANDIDATES
+            LOG.debug("Lifecycle-Management: agent_decision: select_agents: not implemented")
+
+            if not service_instance_1:
+                LOG.error("Lifecycle-Management: agent_decision: select_agents: Error calling QoS Providing component")
+                return service_instance
+            return service_instance_1
     except:
         LOG.error('Lifecycle-Management: agent_decision: select_agents_list: Exception')
         return None

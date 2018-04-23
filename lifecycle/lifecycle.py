@@ -276,9 +276,11 @@ def stop(service_instance_id):
 def start_job(data):
     LOG.debug("Lifecycle-Management: Lifecycle: start_job: " + str(data))
     try:
-        #service_instance = data.get_service_instance(data['service_instance_id'])
-        #parameters = data['parameters']
-        res = lf_adapter.start_job(None, None) #service_instance, parameters)
+        service_instance = data.get_service_instance(data['service_instance_id'])
+        agent = service_instance['agents'][0]
+        LOG.debug("Lifecycle-Management: Lifecycle: start_job: Starting job in agent [" + str(agent) + "] ...")
+
+        res = lf_adapter.start_job(agent, data['parameters'])
         return common.gen_response_ok('Start job', 'service_id', data['service_instance_id'], 'res', res)
     except:
         LOG.error('Lifecycle-Management: Lifecycle: start_job: Exception')

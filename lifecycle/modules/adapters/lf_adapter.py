@@ -53,8 +53,8 @@ def start_service_agent(service, agent):
 
 
 # Starts job in agent
-def start_job(service_instance, parameters):
-    return adpt.start_compss_app(service_instance, parameters)
+def start_job(agent, parameters):
+    return adpt.start_compss_app(agent, parameters)
 
 
 # Execute service

@@ -68,6 +68,8 @@ try:
     LOG.info('[DEBUG=' + str(config.dic['DEBUG']) + ']')
 
     LOG.info('Reading values from ENVIRONMENT...')
+    # STANDALONE_MODE
+    common.set_value_env('STANDALONE_MODE')
     # HOST IP from environment values:
     common.set_value_env('HOST_IP')
     # CIMI environment values:
@@ -354,22 +356,37 @@ class ServiceLifecycle(Resource):
         summary="start, stop, restart a <b>service instance</b> // start a <b>job</b>",
         notes="Available operations:<br/>"
               "<b>'start / stop / restart'</b> ... service instance operations<br/>"
-              "<b>'start-job'</b> ... starts a job",
+              "<b>'start-job'</b> ... starts a job<br/><br/>"
+              "Field 'parameters' is used only for starting a job in an agent.",
         produces=["application/json"],
         authorizations=[],
         parameters=[{
             "name": "body",
             "description": "Parameters in JSON format.<br/>Example: <br/>"
-                           "{\"service_instance_id\":\"617f823c-43f6-4c1a-b482-5ca5cfd4ec93\",<br/>"
-                           "\"operation\":\"start/restart/stop\",<br/>"
-                           "\"parameters\": {} }",
+                           "{<font color='blue'>\"service_instance_id\":</font>\"617f823c-43f6-4c1a-b482-5ca5cfd4ec93\",<br/>"
+                           "<font color='blue'>\"operation\":</font>\"start/restart/stop\",<br/>"
+                           "<font color='blue'>\"parameters\":</font>\"&lt;ceiClass&gt;es.bsc.compss.test.TestItf&lt;/ceiClass&gt; "
+                                          "  &lt;className&gt;es.bsc.compss.test.Test&lt;/className&gt;" 
+                                          "  &lt;methodName&gt;main&lt;/methodName&gt;" 
+                                          "  &lt;parameters&gt;" 
+                                          "    &lt;array paramId=\"0\"&gt;" 
+                                          "      &lt;componentClassname&gt;java.lang.String&lt;/componentClassname&gt;" 
+                                          "      &lt;values&gt;" 
+                                          "        &lt;element paramId=\"0\"&gt;" 
+                                          "          &lt;className&gt;java.lang.String&lt;/className&gt;" 
+                                          "          &lt;value xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " 
+                                          "             xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"xs:string\"&gt;3&lt;/value&gt;" 
+                                          "        &lt;/element&gt;" 
+                                          "      &lt;/values&gt;" 
+                                          "    &lt;/array&gt;" 
+                                          "  &lt;/parameters&gt;\" <br/>}",
             "required": True,
             "paramType": "body",
             "type": "string"
         }],
         responseMessages=[{
             "code": 406,
-            "message": "'service_instance_id' / 'operation' parameter not found"
+            "message": "('service_instance_id' / 'operation' / 'parameters') Parameter not found"
         }, {
             "code": 500,
             "message": "Exception processing request"
@@ -388,6 +405,10 @@ class ServiceLifecycle(Resource):
         elif data['operation'] == 'restart':
             return lifecycle.restart(data['service_instance_id'])
         elif data['operation'] == 'start-job':
+            if 'parameters' not in data:
+                LOG.error('Lifecycle-Management: REST API: put: Parameter not found: parameters')
+                return Response(json.dumps({'error': True, 'message': 'parameter not found: parameters'}),
+                                status=406, content_type='application/json')
             return lifecycle.start_job(data)
         else:
             LOG.error('Lifecycle-Management: REST API: put: operation not defined / implemented')
@@ -485,31 +506,49 @@ class ServiceLifecycleOperations(Resource):
     # PUT: Starts / stops / restarts ... a service in an agent, and returns a JSON object with the result / status of
     # the operation.
     @swagger.operation(
-        summary="Starts / stops / restarts a service instance in a mF2C agent ",
-        notes="Starts / stops / restarts a service instance (mF2C agent).",
+        summary="Starts / stops / restarts a <b>service instance</b> in a mF2C agent // starts a <b>job</b> in the selected agent",
+        notes="Available operations:<br/>"
+              "<b>'start / stop / restart'</b> ... service instance operations<br/>"
+              "<b>'start-job'</b> ... starts a job in an agent<br/><br/>"
+              "Field 'parameters' is used only for starting a job in an agent.",
         produces=["application/json"],
         authorizations=[],
         parameters=[{
             "name": "body",
             "description": "Parameters in JSON format.<br/>Service example: <br/>"
                            "{"
-                               "\"operation\": \"start\" ,"
-                               "\"agent\": {"
+                               "<font color='blue'>\"operation\":</font> \"start\" ,<br/>"
+                               "<font color='blue'>\"agent\":</font> {"
                                     "\"agent\": {\"href\": \"agent/asdasd\"},"
                                     "\"url\": \"192.168.252.41\","
                                     "\"port\": 8080," 
                                     "\"container_id\": \"-\","
                                     "\"status\": \"waiting\"," 
                                     "\"num_cpus\": 1," 
-                                    "\"allow\": true}"
-                           "}",
+                                    "\"allow\": true}, <br/>"
+                               "<font color='blue'>\"parameters\":</font>"
+                                          " \"&lt;ceiClass&gt;es.bsc.compss.test.TestItf&lt;/ceiClass&gt; "
+                                          "  &lt;className&gt;es.bsc.compss.test.Test&lt;/className&gt;" 
+                                          "  &lt;methodName&gt;main&lt;/methodName&gt;" 
+                                          "  &lt;parameters&gt;" 
+                                          "    &lt;array paramId=\"0\"&gt;" 
+                                          "      &lt;componentClassname&gt;java.lang.String&lt;/componentClassname&gt;" 
+                                          "      &lt;values&gt;" 
+                                          "        &lt;element paramId=\"0\"&gt;" 
+                                          "          &lt;className&gt;java.lang.String&lt;/className&gt;" 
+                                          "          &lt;value xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " 
+                                          "             xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"xs:string\"&gt;3&lt;/value&gt;" 
+                                          "        &lt;/element&gt;" 
+                                          "      &lt;/values&gt;" 
+                                          "    &lt;/array&gt;" 
+                                          "  &lt;/parameters&gt;\" <br/>}",
             "required": True,
             "paramType": "body",
             "type": "string"
         }],
         responseMessages=[{
             "code": 406,
-            "message": "'agent' / 'operation' parameter not found"
+            "message": "('agent' / 'operation' / 'parameters') Parameter not found"
         }, {
             "code": 500,
             "message": "Exception processing request"
@@ -529,6 +568,10 @@ class ServiceLifecycleOperations(Resource):
         elif data['operation'] == 'restart':
             return operations.restart(data['agent'])
         elif data['operation'] == 'start-job':
+            if 'parameters' not in data:
+                LOG.error('Lifecycle-Management: REST API: put: Parameter not found: parameters')
+                return Response(json.dumps({'error': True, 'message': 'parameter not found: parameters'}),
+                                status=406, content_type='application/json')
             return operations.start_job(data)
         else:
             LOG.error('Lifecycle-Management: REST API: put: operation not defined / implemented')

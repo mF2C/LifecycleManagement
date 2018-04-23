@@ -172,7 +172,7 @@ def deploy_service_agent(service, agent):
 
 
 # Start app inside container
-def start_compss_app(service_instance, parameters):
+def start_compss_app(agent, parameters):
     LOG.debug("Lifecycle-Management: Docker adapter: start_app: [service_instance=None], [parameters=None]")
     try:
         xml = "<?xml version='1.0' encoding='utf-8'?>" \
@@ -221,7 +221,7 @@ def start_compss_app(service_instance, parameters):
               "  </resources>" \
               "</startApplication>"
 
-        res = requests.put("http://" + config.dic['HOST_IP'] + ":8080/COMPSs/startApplication",
+        res = requests.put("http://" + agent['url'] + ":8080/COMPSs/startApplication",
                            data=xml,
                            headers={'Content-Type': 'application/xml'})
         LOG.debug("Lifecycle-Management: Docker adapter: start_app: [res=" + str(res) + "]")

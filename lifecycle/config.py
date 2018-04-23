@@ -19,6 +19,7 @@ dic = { "SERVER_PORT":                  46000,
         "CERT_CRT":                     "cert/ia.crt",
         "CERT_KEY":                     "cert/ia.key",
         "DEBUG":                        False,
+        "STANDALONE_MODE":              True,
 
         # VERIFY_SSL controls whether we verify the server's TLS certificate or not
         "VERIFY_SSL":                   False,
@@ -31,14 +32,15 @@ dic = { "SERVER_PORT":                  46000,
         "CIMI_SERVICE_INSTANCE":        "service-instance",
 
         # CIMI:  https://dashboard.mf2c-project.eu/api/cloud-entry-point
-        "CIMI_URL":                     "https://dashboard.mf2c-project.eu/api",    # https://proxy
-        "CIMI_COOKIES_PATH":            "~./cookies",
-        "CIMI_USER":                    "rsucasas",
-        "CIMI_PASSWORD":                "password",
+        "CIMI_URL":                     "",    # https://proxy
+        "CIMI_COOKIES_PATH":            "",
+        "CIMI_USER":                    "",
+        "CIMI_PASSWORD":                "",
 
         # URLs from other mF2C components:
         # PM-SLA MANAGER
         "URL_PM_SLA_MANAGER":           "https://127.0.0.1:46030",
+
         # AC-QoS PROVIDING
         "URL_AC_QoS_PROVIDING":         "https://127.0.0.1:46200/api/service-management",
         # AC-USER MANAGEMENT

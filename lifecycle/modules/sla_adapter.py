@@ -13,6 +13,7 @@ Created on 09 feb. 2018
 
 import lifecycle.mF2C.mf2c as mf2c
 from lifecycle.utils.logs import LOG
+from lifecycle import config
 
 
 # initialize all the SLA processes
@@ -57,7 +58,13 @@ def initializes_sla(service_instance, agreement_id):
     try:
         LOG.debug("Lifecycle-Management: sla_adapter: initializes_sla #############################")
         LOG.debug("Lifecycle-Management: sla_adapter: initializes_sla: " + str(service_instance) + ", " + str(agreement_id))
-        return mf2c.start_sla_agreement(agreement_id)
+
+        if config['STANDALONE_MODE']:
+            LOG.warning("Lifecycle-Management: agent_decision: select_agents: STANDALONE_MODE enabled")
+            return None
+
+        else:
+            return mf2c.start_sla_agreement(agreement_id)
     except:
         LOG.error('Lifecycle-Management: sla_adapter: initializes_sla: Exception')
         return None
