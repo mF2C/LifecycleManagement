@@ -76,7 +76,7 @@ cd LifecycleManagement
 sudo docker build -t lm-app .
 ```
 
-5. Run application:
+5. Run application exposing port `46000`:
 
 ```bash
 sudo docker run -p 46000:46000 lm-app
@@ -86,19 +86,29 @@ sudo docker run -p 46000:46000 lm-app
 
 ### Usage Guide
 
-1. Create one or more users in CIMI
+1. Create a user in CIMI
 
 2. Start the Lifecycle Management module with access to the docker socket ('-v /var/run/docker.sock:/var/run/docker.sock')
 
 ```bash
-sudo docker run --env CIMI_URL=https://cimi_rest_api --env CIMISER="user" --env CIMI_PASSWORD="password"  --env CIMI_COOKIES_PATH="~./cookies" --env HOST_IP="host_ip" -v /var/run/docker.sock:/var/run/docker.sock -p 46000:46000 lm-app
+sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:46000 lm-app
 ```
 
+  - Other environment variables to take into account:
+    - **STANDALONE_MODE** `False` if working in an agent with other mF2C components; `True` if working without external dependencies (except docker)
+    - **CIMI_URL**
+    - **HOST_IP** Machine's IP address (needed to see if lifecycle is in local host or if it is in another agent/machine)
+    - **CIMI_USER** CIMI user
+    - **CIMI_PASSWORD** CIMI password
+    - **URL_PM_SLA_MANAGER** URL of the Plantform Manager - SLA Manager; e.g. https://192.168.192.192:46030
+    - **URL_AC_QoS_PROVIDING** URL of the Agent Controller - QoS Providing; e.g. https://192.168.192.192:46200/api/service-management
+    - **URL_AC_USER_MANAGEMENT** URL of the Agent Controller - User Management; e.g. https://192.168.192.192:46300/api/v1/user-management
+
 3. After launching the Lifecycle Management module, the REST API services can be accessed at port 46000:
+    - List of services (json): _https://localhost:46000/api/v1/lifecycle_
+    - List of services (swagger ui): _https://localhost:46000/api/v1/lifecycle.html_
 
-     - List of services (json): _https://localhost:46000/api/v1/lifecycle_
-
-     - List of services (swagger ui): _https://localhost:46000/api/v1/lifecycle.html_
+4. View [example](LifecycleExample.md) (complete lifecycle of a service): `LifecycleExample.md`
 
 -----------------------
 
