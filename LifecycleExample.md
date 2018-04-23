@@ -76,18 +76,69 @@ The body of this request requires a `service` object, the `user` (user_id) that 
 	"agreement_id": "not-defined",
 	"operation": "stop",
 	"agents_list": [
-		{"agent_ip": "192.168.252.41", "num_cpus": 4},
-		{"agent_ip": "192.168.252.42", "num_cpus": 2},
-		{"agent_ip": "192.168.252.43", "num_cpus": 2}]
+		{"agent_ip": "192.168.192.192", "num_cpus": 4}]
 }
 ```
 
 RESPONSE:
 
-If deployment was successful, the response includes the id of the new service instance.
+If deployment was successful, the response includes the id of the new service instance, and for each of the agents, it includes the container identifiers.
 
-```
-...
+```json
+  "service_instance": {
+    "created": "2018-04-23T12:53:35.575Z",
+    "resourceURI": "http://schemas.dmtf.org/cimi/2/ServiceInstance",
+    "service": "service_v2_test_01",
+    "updated": "2018-04-23T12:53:36.198791Z",
+    "agents": [
+      {
+        "status": "waiting",
+        "num_cpus": 4,
+        "url": "192.168.192.192",
+        "port": 8080,
+        "allow": true,
+        "agent": {
+          "href": "agent/default-value"
+        },
+        "container_id": "57c39fbe9adc8525b09d5074b0e197126fb836bbf525986d9dc46df3583f6511"
+      }
+    ],
+    "user": "user",
+    "agreement": "not-defined",
+    "status": "not-defined",
+    "id": "service-instance/3a1faff6-59dd-47eb-a052-9a773856a706",
+    "acl": {
+      "owner": {
+        "type": "ROLE",
+        "principal": "user"
+      },
+      "rules": [
+        {
+          "right": "ALL",
+          "type": "ROLE",
+          "principal": "user"
+        },
+        {
+          "right": "ALL",
+          "type": "ROLE",
+          "principal": "ANON"
+        }
+      ]
+    },
+    "operations": [
+      {
+        "href": "service-instance/3a1faff6-59dd-47eb-a052-9a773856a706",
+        "rel": "edit"
+      },
+      {
+        "href": "service-instance/3a1faff6-59dd-47eb-a052-9a773856a706",
+        "rel": "delete"
+      }
+    ]
+  },
+  "message": "Deploy service",
+  "error": false
+}
 ```
 
 ### 3. Start a service
@@ -103,7 +154,7 @@ PUT /api/v1/lifecycle
 REQUEST BODY:
 
 ```json
-{"service_instance_id":"11c9994d-1913-4213-9cb4-41ff0f9e46fe",
+{"service_instance_id":"3a1faff6-59dd-47eb-a052-9a773856a706",
 "operation":"start"}
 ```
 
@@ -127,7 +178,7 @@ The body requires the part of the `XML` needed by the COMPSs service. This part 
 
 ```json
 {
-  "service_instance_id":"11c9994d-1913-4213-9cb4-41ff0f9e46fe",
+  "service_instance_id":"3a1faff6-59dd-47eb-a052-9a773856a706",
   "operation":"start-job",
   "parameters":"<ceiClass>es.bsc.compss.test.TestItf</ceiClass><className>es.bsc.compss.test.Test</className><methodName>main</methodName><parameters><array paramId='0'><componentClassname>java.lang.String</componentClassname><values><element paramId='0'><className>java.lang.String</className><value xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xs='http://www.w3.org/2001/XMLSchema' xsi:type='xs:string'>3</value></element></values></array></parameters>"
 }
@@ -160,7 +211,7 @@ RESPONSE:
       "agreement": "agreement_temp_id",
       "created": "2018-04-23T12:02:27.353Z",
       "status": "not-defined",
-      "id": "service-instance/11c9994d-1913-4213-9cb4-41ff0f9e46fe",
+      "id": "service-instance/3a1faff6-59dd-47eb-a052-9a773856a706",
       "acl": {
         "owner": {
           "principal": "user",
@@ -187,11 +238,11 @@ RESPONSE:
       "operations": [
         {
           "rel": "edit",
-          "href": "service-instance/11c9994d-1913-4213-9cb4-41ff0f9e46fe"
+          "href": "service-instance/3a1faff6-59dd-47eb-a052-9a773856a706"
         },
         {
           "rel": "delete",
-          "href": "service-instance/11c9994d-1913-4213-9cb4-41ff0f9e46fe"
+          "href": "service-instance/3a1faff6-59dd-47eb-a052-9a773856a706"
         }
       ],
       "resourceURI": "http://schemas.dmtf.org/cimi/2/ServiceInstance",
@@ -206,30 +257,7 @@ RESPONSE:
           "num_cpus": 4,
           "allow": true,
           "container_id": "-"
-        },
-        {
-          "agent": {
-            "href": "agent/default-value"
-          },
-          "port": 8080,
-          "url": "192.168.252.42",
-          "status": "not-defined",
-          "num_cpus": 2,
-          "allow": true,
-          "container_id": "-"
-        },
-        {
-          "agent": {
-            "href": "agent/default-value"
-          },
-          "port": 8080,
-          "url": "192.168.252.43",
-          "status": "not-defined",
-          "num_cpus": 2,
-          "allow": true,
-          "container_id": "-"
-        }
-      ],
+        }],
       "user": "rsucasas"
     }
   ],
@@ -256,8 +284,13 @@ REQUEST BODY:
 
 RESPONSE:
 
-```
-...
+```json
+{
+  "service_instance": "{'status': 'not-defined', 'created': '2018-04-23T12:53:35.575Z', 'resourceURI': 'http://schemas.dmtf.org/cimi/2/ServiceInstance', 'user': 'user', 'id': 'service-instance/3a1faff6-59dd-47eb-a052-9a773856a706', 'updated': '2018-04-23T12:53:36.494Z', 'operations': [{'href': 'service-instance/3a1faff6-59dd-47eb-a052-9a773856a706', 'rel': 'edit'}, {'href': 'service-instance/3a1faff6-59dd-47eb-a052-9a773856a706', 'rel': 'delete'}], 'agents': [{'status': 'Stopped', 'num_cpus': 4, 'url': '192.168.252.41', 'port': 8080, 'allow': True, 'agent': {'href': 'agent/default-value'}, 'container_id': '57c39fbe9adc8525b09d5074b0e197126fb836bbf525986d9dc46df3583f6511'}], 'service': 'service_v2_test_01', 'acl': {'owner': {'type': 'ROLE', 'principal': 'user'}, 'rules': [{'right': 'ALL', 'type': 'ROLE', 'principal': 'user'}, {'right': 'ALL', 'type': 'ROLE', 'principal': 'ANON'}, {'right': 'ALL', 'type': 'ROLE', 'principal': 'ADMIN'}]}, 'agreement': 'not-defined'}",
+  "message": "Stop service",
+  "service_instance_id": "3a1faff6-59dd-47eb-a052-9a773856a706",
+  "error": false
+}
 ```
 
 ### 7. Get all service instances

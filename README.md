@@ -58,28 +58,39 @@ CMD ["python", "app.py"]
 
 1. [Install and launch the CIMI server](https://github.com/mF2C/cimi/tree/master/_demo)
 
-2. Clone / download repository
+2. Pull image (skip steps 3, 4 and 5):
+
+```bash
+docker pull mf2c/lifecycle
+```
+
+3. Clone / download repository
 
 ```bash
 git clone https://github.com/mF2C/LifecycleManagement.git
 ```
 
-3. Go to LifecycleManagement folder
+4. Go to LifecycleManagement folder
 
 ```bash
 cd LifecycleManagement
 ```
 
-4. Build application:
+5. Build application:
 
 ```bash
 sudo docker build -t lm-app .
 ```
 
-5. Run application exposing port `46000`:
+6. Run application exposing port `46000`:
 
 ```bash
 sudo docker run -p 46000:46000 lm-app
+```
+Or
+
+```bash
+sudo docker run -p 46000:46000 mf2c/lifecycle
 ```
 
 -----------------------
