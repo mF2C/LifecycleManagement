@@ -18,11 +18,6 @@ import lifecycle.mF2C.data as data
 
 
 # Deploy / allocate service
-def deploy(service_instance):
-    return adpt.deploy(service_instance)
-
-
-# Deploy / allocate service
 def deploy_service_agent(service, agent):
     return adpt.deploy_service_agent(service, agent)
 
@@ -53,8 +48,8 @@ def start_service_agent(service, agent):
 
 
 # Starts job in agent
-def start_job(agent, parameters):
-    return adpt.start_compss_app(agent, parameters)
+def start_job_compss(agent, parameters):
+    return compss_adpt.start_job(agent, parameters)
 
 
 # Execute service
@@ -65,13 +60,3 @@ def execute(service_instance):
 # Execute service in agent
 def execute_service_agent(service, agent):
     return adpt.start_service_agent(agent)
-
-
-# Restart service
-def restart(service_instance_id):
-    return adpt.restart(data.get_service_instance(service_instance_id))
-
-
-# Restart service in agent
-def restart_service_agent(service, agent):
-    return adpt.restart_service_agent(agent)

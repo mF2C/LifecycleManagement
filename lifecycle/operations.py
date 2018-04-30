@@ -56,17 +56,6 @@ def start(agent):
         return common.gen_response(500, 'Exception', 'agent', str(agent))
 
 
-# Service Operation: restart
-def restart(agent):
-    LOG.info("Lifecycle-Management: Operations: restart: " + str(agent))
-    try:
-        status = lf_adapter.restart_service_agent(None, agent)
-        return common.gen_response_ok('Restart service', 'agent', str(agent), 'status', status)
-    except:
-        LOG.error('Lifecycle-Management: Operations: restart: Exception')
-        return common.gen_response(500, 'Exception', 'agent', str(agent))
-
-
 # Service Operation: stop
 def stop(agent):
     LOG.info("Lifecycle-Management: Operations: stop: " + str(agent))

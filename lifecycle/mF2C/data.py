@@ -83,6 +83,11 @@ def del_service_instance(service_instance_id, obj_response_cimi=None):
 #       4. agreement_id
 #
 #   OUT: service_instance dict
+#
+# TODO new fields needed!!!
+#   - service_instance: [exec_compss=boolean], [agents/compss_master=boolean]
+#   - service: [exec_compss=boolean]
+#
 def create_service_instance(service, agents_list, user_id, agreement_id):
     LOG.debug("Lifecycle-Management: Data: create_service_instance: " + str(service) + ", " + str(agents_list))
 

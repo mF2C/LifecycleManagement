@@ -27,6 +27,7 @@ from flask import Flask, request, Response, json
 from flask_restful import Resource, Api
 from flask_restful_swagger import swagger
 
+
 '''
 REST API
     Routes:
@@ -37,6 +38,9 @@ REST API
         /api/v1/lifecycle/service-instance
             DELETE: delete service instance (from cimi)
 
+        /api/v1/lifecycle/app
+            POST:   Submits a service (file); gets a service instance
+            
         /api/v1/lifecycle
             POST:   Submits a service; gets a service instance
             PUT:    starts / stops ... a service instance
@@ -100,6 +104,7 @@ try:
 
     # APP
     app = Flask(__name__)
+    app.config['UPLOAD_FOLDER'] = "C://TMP/docker_files"
     CORS(app)
 
     # API DOC
@@ -265,6 +270,40 @@ class ServiceInstanceDelete(Resource):
                             status=406, content_type='application/json')
         return lifecycle.delete(data['service_instance_id'])
 
+    # POST: Test docker-compose
+    @swagger.operation(
+        summary="Test docker-compose",
+        notes="Test docker-compose",
+        produces=["application/json"],
+        authorizations=[],
+        parameters=[{
+            "name": "body",
+            "description": "Parameters in JSON format.<br/>Example: <br/>"
+                           "{\"command\":\"ls /home/atos/mF2C/compose_examples\"}",
+            "required": True,
+            "paramType": "body",
+            "type": "string"
+        }],
+        responseMessages=[{
+            "code": 406,
+            "message": "'command' parameter not found"
+        }, {
+            "code": 500,
+            "message": "Exception processing request"
+        }])
+    def post(self):
+        data = request.get_json()
+        if 'command' not in data:
+            LOG.error(
+                'Lifecycle-Management: REST API: post: Exception - parameter not found: command')
+            return Response(json.dumps({'error': True, 'message': 'parameter not found: command'}),
+                            status=406, content_type='application/json')
+
+        os.system(data['command'])
+        #os.system("/home/atos/mF2C/compose_examples/dc-script.sh")
+        #os.system("/usr/bin/docker-compose up")
+        return common.gen_response_ok('Test docker-compose', 'data', data)
+
 
 api.add_resource(ServiceInstanceDelete, '/api/v1/lifecycle/service-instance')
 
@@ -276,26 +315,9 @@ api.add_resource(ServiceInstanceDelete, '/api/v1/lifecycle/service-instance')
 # 	PUT:    starts / stops ... a service instance
 # 	DELETE: terminates a service
 #
-#   'data' from request (body) - content:
+#   'data' from request -POST- (body) - content:
 #   {
-#       "service": {
-#           "id": "123hgaksd",
-#           "name": "hello-world",
-#           "description": "Hello World Service",
-#           "resourceURI": "/hello-world",
-#           "exec": "hello-world",
-#           "exec_type": "docker",
-#           "exec_ports": ["8080", "8081"]
-#           "category": {
-#               "cpu": "low",
-#               "memory": "low",
-#               "storage": "low",
-#               "inclinometer": false,
-#               "temperature": false,
-#               "jammer": false,
-#               "location": false
-#           }
-#       },
+#       "service": {...},
 #       "service_id": "",
 #       "user_id": "",
 #       "operation": "stop"
@@ -303,8 +325,10 @@ api.add_resource(ServiceInstanceDelete, '/api/v1/lifecycle/service-instance')
 class ServiceLifecycle(Resource):
     # POST: Submits a service
     @swagger.operation(
-        summary="Submits a service (deployment)",
-        notes="Submits a service and returns a json with the content of a service instance",
+        summary="Submits a <b>service</b> (deployment phase)",
+        notes="Submits a service and returns a json with the content of a service instance:<br/>"
+              "<b>'exec_type'</b>='docker' ........... deploy a docker image<br/>"
+              "<b>'exec_type'</b>='docker-compose' ... deploy a docker compose serive<br/>",
         produces=["application/json"],
         authorizations=[],
         parameters=[{
@@ -348,6 +372,7 @@ class ServiceLifecycle(Resource):
             LOG.error('Lifecycle-Management: REST API: post: Exception - parameter not found: service / user_id / agreement_id')
             return Response(json.dumps({'error': True, 'message': 'parameter not found: service /  user_id / agreement_id'}),
                             status=406, content_type='application/json')
+
         # submit function returns a json with the content of the 'service_instance'
         if 'agents_list' in data:
             # using a predefined list of agents:
@@ -409,7 +434,7 @@ class ServiceLifecycle(Resource):
         elif data['operation'] == 'stop':
             return lifecycle.stop(data['service_instance_id'])
         elif data['operation'] == 'restart':
-            return lifecycle.restart(data['service_instance_id'])
+            return lifecycle.start(data['service_instance_id'])
         elif data['operation'] == 'start-job':
             if 'parameters' not in data:
                 LOG.error('Lifecycle-Management: REST API: put: Parameter not found: parameters')
@@ -572,7 +597,7 @@ class ServiceLifecycleOperations(Resource):
         elif data['operation'] == 'stop':
             return operations.stop(data['agent'])
         elif data['operation'] == 'restart':
-            return operations.restart(data['agent'])
+            return operations.start(data['agent'])
         elif data['operation'] == 'start-job':
             if 'parameters' not in data:
                 LOG.error('Lifecycle-Management: REST API: put: Parameter not found: parameters')

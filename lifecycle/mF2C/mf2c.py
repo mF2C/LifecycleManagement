@@ -12,7 +12,7 @@ Created on 09 feb. 2018
 """
 
 import requests
-import json
+import json, ast
 from lifecycle import config
 from lifecycle.utils.logs import LOG
 
@@ -27,19 +27,20 @@ def lifecycle_deploy(service, agent):
                           json={"service": service,
                                 "agent": agent},
                           verify=config.dic['VERIFY_SSL'])
+        LOG.debug("Lifecycle-Management: MF2C: lifecycle_operation: r:" + str(r))
         json_data = json.loads(r.text)
         agent = json_data['agent']
         LOG.debug("Lifecycle-Management: MF2C: lifecycle_deploy:" + str(agent))
 
-        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202:
+        if r.status_code == 200:
             LOG.debug('Lifecycle-Management: MF2C: lifecycle_deploy: status_code=' + str(r.status_code) + '; response: ' + str(json_data))
-            return True
+            return ast.literal_eval(agent)
 
         LOG.error('Lifecycle-Management: MF2C: lifecycle_deploy: Error: status_code=' + str(r.status_code))
-        return False
+        return None
     except:
         LOG.error('Lifecycle-Management: MF2C: lifecycle_deploy: Exception')
-        return False
+        return None
 
 
 # lifecycle_operation: call to lifceycle from other agent in order to start/stop... a service
@@ -50,19 +51,20 @@ def lifecycle_operation(agent, operation):
                          json={"operation": operation,
                                "agent": agent},
                          verify=config.dic['VERIFY_SSL'])
+        LOG.debug("Lifecycle-Management: MF2C: lifecycle_operation: r:" + str(r))
         json_data = json.loads(r.text)
         agent = json_data['agent']
         LOG.debug("Lifecycle-Management: MF2C: lifecycle_operation:" + str(agent))
 
-        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202:
+        if r.status_code == 200:
             LOG.debug('Lifecycle-Management: MF2C: lifecycle_operation: status_code=' +  str(r.status_code) + '; response: ' + str(json_data))
-            return True
+            return ast.literal_eval(agent)
 
         LOG.error('Lifecycle-Management: MF2C: lifecycle_operation: Error: status_code=' +  str(r.status_code))
-        return False
+        return None
     except:
         LOG.error('Lifecycle-Management: MF2C: lifecycle_operation: Exception')
-        return False
+        return None
 
 
 ###############################################################################

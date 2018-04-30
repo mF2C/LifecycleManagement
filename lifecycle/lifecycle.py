@@ -42,7 +42,10 @@ from lifecycle.utils.logs import LOG
                "location": false
            }
        }
-
+       
+       "exec_type": "docker" ........... "exec" = docker image (docker hub)
+                    "docker-compose" ... "exec" = docker-compose.yml location
+-----------------------------------------------------------------------------------------------
  SERVICE INSTANCE:
    {
        ...
@@ -58,6 +61,14 @@ from lifecycle.utils.logs import LOG
                "num_cpus": 2, "allow": true, "master_compss": false}
       ]
    }
+   
+    Agent example: {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", 
+                    "status": "waiting", "num_cpus": 3, "allow": true}
+-----------------------------------------------------------------------------------------------
+ AGENTS_LIST:
+    agents_list: [{"agent_ip": "192.168.252.41", "num_cpus": 4}, {"agent_ip": "192.168.252.42", "num_cpus": 2},
+                  {"agent_ip": "192.168.252.43", "num_cpus": 2}]
+   
 '''
 
 
@@ -70,9 +81,6 @@ def check_service_content(service):
 
 
 # submit_service_in_agents: Submits a service (no access to external docker APIs; calls to other agent's lifecycle components)
-#   agents_list:    [{"agent_ip": "192.168.252.41", "num_cpus": 4},
-#                    {"agent_ip": "192.168.252.42", "num_cpus": 2},
-#                    {"agent_ip": "192.168.252.43", "num_cpus": 2}]
 # IN: service, user_id, agreement_id, agents_list
 # OUT: service_instance
 def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_service=False):
@@ -98,32 +106,50 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
         LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: service_instance: " + str(service_instance))
 
         # 3. allocate service / call remote container
-        # allocate
-        #   Agent example:
-        #    {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", "status": "waiting",
-        #     "num_cpus": 3, "allow": true}
         for agent in service_instance["agents"]:
-            LOG.info(">>> AGENT >>> " + agent['url'])
+            LOG.info(">>> AGENT >>> " + agent['url'] + " <<<")
             # LOCAL
             if agent['url'] == common.get_ip():
                 LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service locally")
-                if allocation_adapter.allocate_service_agent(service, agent) == "waiting":
-                    LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: SLA & service exec")
-                    # initializes SLA
-                    sla_adapter.initializes_sla(service_instance, agreement_id)
+                resp_deploy = allocation_adapter.allocate_service_agent(service, agent)
+                LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service locally: "
+                          "[resp_deploy=" + str(resp_deploy) + "]")
+                if agent['status'] == "waiting":
+                    LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: execute service locally")
                     # executes service
                     execution_adapter.execute_service_agent(service, agent)
-            # OTHER AGENT
+                else:
+                    LOG.error("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service locally: NOT DEPLOYED")
+                    agent['status'] = "not-deployed"
+
+            # 'REMOTE' AGENT: calls to lifecycle from remote agent
             elif common.check_ip(agent['url']):
-                LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service in other agent [" + agent['url'] + "]")
-                #  call lifecycle from x
-                mf2c.lifecycle_deploy(service, agent)
+                LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service in remote agent [" + agent['url'] + "]")
+                resp_deploy = mf2c.lifecycle_deploy(service, agent)
+                if resp_deploy is not None:
+                    agent['status'] = resp_deploy['status']
+                    agent['container_id'] = resp_deploy['container_id']
+                    LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service in remote agent: "
+                              "[agent=" + str(agent) + "]")
+                    # executes / starts service
+                    resp_start = mf2c.lifecycle_operation(agent, "start")
+                    if resp_start is not None:
+                        agent['status'] = resp_start['status']
+                        LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: execute service in remote agent: "
+                            "[agent=" + str(agent) + "]")
+                else:
+                    LOG.error("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service in remote agent: NOT DEPLOYED")
+                    agent['status'] = "not-deployed"
+
             # NOT FOUND / NOT CONNECTED
             else:
                 agent['status'] = "error"
                 LOG.error("Lifecycle-Management: Lifecycle: submit_service_in_agents: agent [" + agent['url'] + "] cannot be reached")
 
-        # 4. save / update service_instance
+        # 4. initializes SLA
+        sla_adapter.initializes_sla(service_instance, agreement_id)
+
+        # 5. save / update service_instance
         LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: UPDATING service_instance: " + str(service_instance))
         data.update_service_instance(service_instance['id'], service_instance)
 
@@ -180,11 +206,17 @@ def start(service_instance_id):
             if agent['url'] == common.get_ip():
                 LOG.debug("Lifecycle-Management: Lifecycle: start_v2: start service locally")
                 lf_adapter.start_service_agent(None, agent)
+
             # OTHER AGENT
             elif common.check_ip(agent['url']):
-                LOG.debug("Lifecycle-Management: Lifecycle: start_v2: start service in other agent")
+                LOG.debug("Lifecycle-Management: Lifecycle: start_v2: start service in remote agent")
                 #  call lifecycle from x
-                mf2c.lifecycle_operation(agent, "start")
+                resp_start = mf2c.lifecycle_operation(agent, "start")
+                if resp_start is not None:
+                    agent['status'] = resp_start['status']
+                    LOG.debug("Lifecycle-Management: Lifecycle: start_v2: start service in remote agent: "
+                              "[agent=" + str(agent) + "]")
+
             # NOT FOUND / NOT CONNECTED
             else:
                 agent['status'] = "error"
@@ -194,39 +226,6 @@ def start(service_instance_id):
                                       'service_instance', str(service_instance))
     except:
         LOG.error('Lifecycle-Management: Lifecycle: start_v2: Exception')
-        return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
-
-
-# Service Operation: restart (version 2: no access to external docker APIs / calls to other agent's lifecycle components)
-def restart(service_instance_id):
-    LOG.debug("Lifecycle-Management: Lifecycle: restart_v2: " + service_instance_id)
-    try:
-        # 1. get service_instance object
-        service_instance = data.get_service_instance(service_instance_id)
-        if not service_instance:
-            return common.gen_response(500, 'Error getting service instance object', 'service_instance_id', service_instance_id)
-
-        # 2. restart service in all agents
-        for agent in service_instance["agents"]:
-            LOG.info(">>> AGENT >>> " + agent['url'])
-            # LOCAL
-            if agent['url'] == common.get_ip():
-                LOG.debug("Lifecycle-Management: Lifecycle: restart_v2: start service locally")
-                lf_adapter.restart_service_agent(None, agent)
-            # OTHER AGENT
-            elif common.check_ip(agent['url']):
-                LOG.debug("Lifecycle-Management: Lifecycle: restart_v2: start service in other agent")
-                #  call lifecycle from x
-                mf2c.lifecycle_operation(agent, "restart")
-            # NOT FOUND / NOT CONNECTED
-            else:
-                agent['status'] = "error"
-                LOG.error("Lifecycle-Management: Lifecycle: restart_v2: agent [" + agent['url'] + "] cannot be reached")
-
-        return common.gen_response_ok('Restart service', 'service_instance_id', service_instance_id,
-                                      'service_instance', str(service_instance))
-    except:
-        LOG.error('Lifecycle-Management: Lifecycle: restart_v2: Exception')
         return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
 
 
@@ -244,13 +243,19 @@ def stop(service_instance_id):
             LOG.info(">>> AGENT >>> " + agent['url'])
             # LOCAL
             if agent['url'] == common.get_ip():
-                LOG.debug("Lifecycle-Management: Lifecycle: stop_v2: start service locally")
+                LOG.debug("Lifecycle-Management: Lifecycle: stop_v2: stop service locally")
                 lf_adapter.stop_service_agent(None, agent)
+
             # OTHER AGENT
             elif common.check_ip(agent['url']):
-                LOG.debug("Lifecycle-Management: Lifecycle: stop_v2: start service in other agent")
+                LOG.debug("Lifecycle-Management: Lifecycle: stop_v2: stop service in other agent")
                 #  call lifecycle from x
-                mf2c.lifecycle_operation(agent, "stop")
+                resp_stop = mf2c.lifecycle_operation(agent, "stop")
+                if resp_stop is not None:
+                    agent['status'] = resp_stop['status']
+                    LOG.debug("Lifecycle-Management: Lifecycle: start_v2: stop service in remote agent: "
+                              "[agent=" + str(agent) + "]")
+
             # NOT FOUND / NOT CONNECTED
             else:
                 agent['status'] = "error"
@@ -283,7 +288,8 @@ def start_job(body):
         agent = service_instance['agents'][0]
         LOG.debug("Lifecycle-Management: Lifecycle: start_job: Starting job in agent [" + str(agent) + "] ...")
 
-        res = lf_adapter.start_job(agent, body['parameters'])
+        # TODO COMPSs app? Normal app?
+        res = lf_adapter.start_job_compss(agent, body['parameters'])
         return common.gen_response_ok('Start job', 'service_id', body['service_instance_id'], 'res', res)
     except:
         LOG.error('Lifecycle-Management: Lifecycle: start_job: Exception')

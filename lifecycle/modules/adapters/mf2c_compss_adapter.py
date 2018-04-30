@@ -11,126 +11,197 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-
+import requests
+import sys, traceback
 from lifecycle.utils.logs import LOG
 
 
-# Deploy / allocate service
-# IN:
-#   Service instance (example):
-#       {
-#           "service_instance_id": "service_id",
-#           "service_id": service['service_id'],
-#           "list_of_agents": ["tcp://192.168.252.7:2375", "tcp://192.168.252.8:2375", "tcp://192.168.252.9:2375" ...],
-#           "status": "",
-#           ("service": service)
-#       }
-def deploy(service_instance):
-    LOG.info("Lifecycle-Management: Docker adapter: deploy: " + str(service_instance))
+'''
+Lifecycle & COMPSs:
 
-    for agent in service_instance["list_of_agents"]:
-        LOG.info("Lifecycle-Management: Docker adapter: deploy: agent: " + agent)
-        #client = docker.APIClient(base_url='tcp://192.168.252.42:2375')
-
-        #LOG.info("---------------------")
-        #LOG.info("version: " + str(client.version()))
-        #LOG.info("api_version: " + str(client.api_version))
-        #LOG.info("containers: " + str(client.containers()))
-        #LOG.info("---------------------")
-
-        #LOG.info("- Start container from image (already downloaded in server)")
-        #container = client.create_container("yeasy/simple-web",
-        #                                   "/bin/sh -c 'python index.py'",
-        #                                   name="simple-web-test",
-        #                                   #detach=True,
-        #                                   ports = [80],
-        #                                   host_config = client.create_host_config(port_bindings={80: 81})) #{80: 80, 8080: None}))
-        #LOG.info(str(container))
-        #LOG.info(container['Id'])
-        #client.start(container['Id'])
-
-        LOG.info("---------------------")
-
-        #client.import_image(tag="latest", image="ubuntu")
-
-    return True
-
-
-# Terminate service
-# IN:
-#   Service instance (example):
-#       {
-#           "service_instance_id": "service_id",
-#           "service_id": service['service_id'],
-#           "list_of_agents": ["tcp://192.168.252.7:2375", "tcp://192.168.252.8:2375", "tcp://192.168.252.9:2375" ...],
-#           "status": "",
-#           ("service": service)
-#       }
-def terminate_service(service_instance):
-    LOG.info("Lifecycle-Management: Docker adapter: terminate_service: " + str(service_instance))
-    LOG.warn("Lifecycle-Management: Docker adapter: terminate_service not implemented ")
-    return "Terminated"
-
-
-# Terminate service
-# IN:
-#   Service instance (example):
-#       {
-#           "service_instance_id": "service_id",
-#           "service_id": service['service_id'],
-#           "list_of_agents": ["tcp://192.168.252.7:2375", "tcp://192.168.252.8:2375", "tcp://192.168.252.9:2375" ...],
-#           "status": "",
-#           ("service": service)
-#       }
-def get_status(service_instance):
-    LOG.info("Lifecycle-Management: Docker adapter: get_status: " + str(service_instance))
-    LOG.warn("Lifecycle-Management: Docker adapter: get_status not implemented ")
-    return "Running"
-
-
-# Terminate service
-# IN:
-#   Service instance (example):
-#       {
-#           "service_instance_id": "service_id",
-#           "service_id": service['service_id'],
-#           "list_of_agents": ["tcp://192.168.252.7:2375", "tcp://192.168.252.8:2375", "tcp://192.168.252.9:2375" ...],
-#           "status": "",
-#           ("service": service)
-#       }
-def stop(service_instance):
-    LOG.info("Lifecycle-Management: Docker adapter: stop: " + str(service_instance))
-    LOG.warn("Lifecycle-Management: Docker adapter: stop not implemented ")
-    return "Stopped"
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<startApplication>
+    <ceiClass>es.bsc.compss.test.TestItf</ceiClass>
+    <className>es.bsc.compss.test.Test</className>
+    <methodName>main</methodName>
+    <parameters>
+        <params paramId="0">
+            <direction>IN</direction>
+            <type>OBJECT_T</type>
+            <array paramId="0">
+                <componentClassname>java.lang.String</componentClassname>
+                <values>
+                    <element paramId="0">
+                        <className>java.lang.String</className>
+                        <value xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema" xsi:type="xs:string">3</value>
+                    </element>
+                </values>
+            </array>
+        </params>
+    </parameters>
+    <resources>
+        <resource name="COMPSsWorker01:8080">
+            <description>
+                <memorySize>4.0</memorySize>
+                <memoryType>[unassigned]</memoryType>
+                <operatingSystemDistribution>[unassigned]</operatingSystemDistribution>
+                <operatingSystemType>[unassigned]</operatingSystemType>
+                <operatingSystemVersion>[unassigned]</operatingSystemVersion>
+                <pricePerUnit>-1.0</pricePerUnit>
+                <priceTimeUnit>-1</priceTimeUnit>
+                <processors>
+                    <architecture>[unassigned]</architecture>
+                    <computingUnits>1</computingUnits>
+                    <internalMemory>-1.0</internalMemory>
+                    <name>[unassigned]</name>
+                    <propName>[unassigned]</propName>
+                    <propValue>[unassigned]</propValue>
+                    <speed>-1.0</speed>
+                    <type>CPU</type>
+                </processors>
+                <storageSize>-1.0</storageSize>
+                <storageType>[unassigned]</storageType>
+                <value>0.0</value>
+                <wallClockLimit>-1</wallClockLimit>
+            </description>
+        </resource>
+        <resource name="COMPSsWorker02:1200">
+            <description>
+                <memorySize>4.0</memorySize>
+                <memoryType>[unassigned]</memoryType>
+                <operatingSystemDistribution>[unassigned]</operatingSystemDistribution>
+                <operatingSystemType>[unassigned]</operatingSystemType>
+                <operatingSystemVersion>[unassigned]</operatingSystemVersion>
+                <pricePerUnit>-1.0</pricePerUnit>
+                <priceTimeUnit>-1</priceTimeUnit>
+                <processors>
+                    <architecture>[unassigned]</architecture>
+                    <computingUnits>1</computingUnits>
+                    <internalMemory>-1.0</internalMemory>
+                    <name>[unassigned]</name>
+                    <propName>[unassigned]</propName>
+                    <propValue>[unassigned]</propValue>
+                    <speed>-1.0</speed>
+                    <type>CPU</type>
+                </processors>
+                <storageSize>-1.0</storageSize>
+                <storageType>[unassigned]</storageType>
+                <value>0.0</value>
+                <wallClockLimit>-1</wallClockLimit>
+            </description>
+        </resource>
+    </resources>
+</startApplication>
+'''
 
 
-# Terminate service
-# IN:
-#   Service instance (example):
-#       {
-#           "service_instance_id": "service_id",
-#           "service_id": service['service_id'],
-#           "list_of_agents": ["tcp://192.168.252.7:2375", "tcp://192.168.252.8:2375", "tcp://192.168.252.9:2375" ...],
-#           "status": "",
-#           ("service": service)
-#       }
-def start(service_instance):
-    LOG.info("Lifecycle-Management: Docker adapter: start: " + str(service_instance))
-    LOG.warn("Lifecycle-Management: Docker adapter: start not implemented ")
-    return "Started"
+# start_job: Start app in COMPSs container
+# parameters:
+#   "  <ceiClass>es.bsc.compss.test.TestItf</ceiClass>" \
+#   "  <className>es.bsc.compss.test.Test</className>" \
+#   "  <methodName>main</methodName>" \
+#   "  <parameters>" \
+#   "    <array paramId=\"0\">" \
+#   "      <componentClassname>java.lang.String</componentClassname>" \
+#   "      <values>" \
+#   "        <element paramId=\"0\">" \
+#   "          <className>java.lang.String</className>" \
+#   "          <value xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " \
+#   "             xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"xs:string\">3</value>" \
+#   "        </element>" \
+#   "      </values>" \
+#   "    </array>" \
+#   "  </parameters>" \
+def start_job(agent, parameters):
+    LOG.debug("Lifecycle-Management: COMPSs adapter: start_app: [agent=" + str(agent) + "], [parameters=" + parameters + "]")
+    try:
+        xml = "<?xml version='1.0' encoding='utf-8'?>" \
+              "<startApplication>" + parameters + "<resources>" \
+              "   <resource name=\"localhost:8080\">" \
+              "      <description>" \
+              "        <memorySize>4.0</memorySize>" \
+              "        <memoryType>[unassigned]</memoryType>" \
+              "        <operatingSystemDistribution>[unassigned]</operatingSystemDistribution>" \
+              "        <operatingSystemType>[unassigned]</operatingSystemType>" \
+              "        <operatingSystemVersion>[unassigned]</operatingSystemVersion>" \
+              "        <pricePerUnit>-1.0</pricePerUnit>" \
+              "        <priceTimeUnit>-1</priceTimeUnit>" \
+              "        <processors>" \
+              "          <architecture>[unassigned]</architecture>" \
+              "          <computingUnits>2</computingUnits>" \
+              "          <internalMemory>-1.0</internalMemory>" \
+              "          <name>[unassigned]</name>" \
+              "          <propName>[unassigned]</propName>" \
+              "          <propValue>[unassigned]</propValue>" \
+              "          <speed>-1.0</speed>" \
+              "          <type>CPU</type>" \
+              "        </processors>" \
+              "        <storageSize>-1.0</storageSize>" \
+              "        <storageType>[unassigned]</storageType>" \
+              "        <value>0.0</value>" \
+              "        <wallClockLimit>-1</wallClockLimit>" \
+              "      </description>" \
+              "    </resource>" \
+              "  </resources>" \
+              "</startApplication>"
+        LOG.debug("Lifecycle-Management: COMPSs adapter: start_app: [xml=" + xml + "]")
+
+        res = requests.put("http://" + agent['url'] + ":8080/COMPSs/startApplication",
+                           data=xml,
+                           headers={'Content-Type': 'application/xml'})
+        LOG.debug("Lifecycle-Management: COMPSs adapter: start_app: [res=" + str(res) + "]")
+
+        return True
+    except:
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('Lifecycle-Management: COMPSs adapter: start_app: Exception')
+        return False
 
 
-# Terminate service
-# IN:
-#   Service instance (example):
-#       {
-#           "service_instance_id": "service_id",
-#           "service_id": service['service_id'],
-#           "list_of_agents": ["tcp://192.168.252.7:2375", "tcp://192.168.252.8:2375", "tcp://192.168.252.9:2375" ...],
-#           "status": "",
-#           ("service": service)
-#       }
-def restart(service_instance):
-    LOG.info("Lifecycle-Management: Docker adapter: restart: " + str(service_instance))
-    LOG.warn("Lifecycle-Management: Docker adapter: restart not implemented ")
-    return "Restarted"
+# start_job_in_agents: Start app in COMPSs container (more than one agent involved in the execution of this job)
+def start_job_in_agents(service_instance, parameters):
+    LOG.debug("Lifecycle-Management: COMPSs adapter: start_app: [service_instance=" + str(service_instance) + "], "
+              "[parameters=" + parameters + "]")
+    try:
+        xml = "<?xml version='1.0' encoding='utf-8'?>" \
+              "<startApplication>" + parameters + "<resources>" \
+              "   <resource name=\"localhost:8080\">" \
+              "      <description>" \
+              "        <memorySize>4.0</memorySize>" \
+              "        <memoryType>[unassigned]</memoryType>" \
+              "        <operatingSystemDistribution>[unassigned]</operatingSystemDistribution>" \
+              "        <operatingSystemType>[unassigned]</operatingSystemType>" \
+              "        <operatingSystemVersion>[unassigned]</operatingSystemVersion>" \
+              "        <pricePerUnit>-1.0</pricePerUnit>" \
+              "        <priceTimeUnit>-1</priceTimeUnit>" \
+              "        <processors>" \
+              "          <architecture>[unassigned]</architecture>" \
+              "          <computingUnits>2</computingUnits>" \
+              "          <internalMemory>-1.0</internalMemory>" \
+              "          <name>[unassigned]</name>" \
+              "          <propName>[unassigned]</propName>" \
+              "          <propValue>[unassigned]</propValue>" \
+              "          <speed>-1.0</speed>" \
+              "          <type>CPU</type>" \
+              "        </processors>" \
+              "        <storageSize>-1.0</storageSize>" \
+              "        <storageType>[unassigned]</storageType>" \
+              "        <value>0.0</value>" \
+              "        <wallClockLimit>-1</wallClockLimit>" \
+              "      </description>" \
+              "    </resource>" \
+              "  </resources>" \
+              "</startApplication>"
+        LOG.debug("Lifecycle-Management: COMPSs adapter: start_app: [xml=" + xml + "]")
+
+        res = requests.put("http://" + service_instance['agents'][0]['url'] + ":" +
+                                       service_instance['agents'][0]['port'] + "/COMPSs/startApplication",
+                           data=xml,
+                           headers={'Content-Type': 'application/xml'})
+        LOG.debug("Lifecycle-Management: COMPSs adapter: start_app: [res=" + str(res) + "]")
+
+        return True
+    except:
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('Lifecycle-Management: COMPSs adapter: start_app: Exception')
+        return False
