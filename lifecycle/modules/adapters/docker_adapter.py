@@ -240,25 +240,31 @@ def deploy_service_agent(service, agent):
 # operation_service_agent: service operation (start, stop...)
 def operation_service_agent(agent, operation):
     LOG.debug("Lifecycle-Management: Docker adapter: operation_service_agent [" + operation + "]: " + str(agent))
-    # connect to docker api
-    client = get_client_agent_docker()
-    # if connecetd to agent...
-    if client:
-        if operation == OPERATION_START:
-            client.start(agent['container_id'])
-            agent['status'] = STATUS_STARTED
-        elif operation == OPERATION_STOP:
-            client.stop(agent['container_id'])
-            agent['status'] = STATUS_STOPPED
-        elif operation == OPERATION_TERMINATE:
-            client.remove_container(agent['container_id'], force=True)
-            agent['status'] = STATUS_TERMINATED
-    # if error when connecting to agent...
-    else:
-        LOG.error("Lifecycle-Management: Docker adapter: operation_service_agent: Could not connect to DOCKER API")
-        agent['status'] = STATUS_UNKNOWN
-    # return status
-    return agent['status']
+    try:
+        # connect to docker api
+        client = get_client_agent_docker()
+        # if connecetd to agent...
+        if client:
+            if operation == OPERATION_START:
+                client.start(agent['container_id'])
+                agent['status'] = STATUS_STARTED
+            elif operation == OPERATION_STOP:
+                client.stop(agent['container_id'])
+                agent['status'] = STATUS_STOPPED
+            elif operation == OPERATION_TERMINATE:
+                client.remove_container(agent['container_id'], force=True)
+                agent['status'] = STATUS_TERMINATED
+        # if error when connecting to agent...
+        else:
+            LOG.error("Lifecycle-Management: Docker adapter: operation_service_agent: Could not connect to DOCKER API")
+            agent['status'] = STATUS_UNKNOWN
+        # return status
+        return agent['status']
+    except:
+        agent['status'] = STATUS_ERROR
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('Lifecycle-Management: Docker adapter: operation_service_agent: Exception')
+        return STATUS_ERROR
 
 
 # start_service_agent: Start service in agent

@@ -95,9 +95,12 @@ def get_all_service_instances(obj_response_cimi=None):
 
 
 # del_service_instance_by_id: delete service instance
-def del_service_instance_by_id(id, obj_response_cimi=None):
+def del_service_instance_by_id(resource_id, obj_response_cimi=None):
     try:
-        res = requests.delete(config.dic['CIMI_URL'] + '/service-instance/' + id,
+        LOG.info("Deleting resource [" + resource_id + "] ... ")
+        resource_id = resource_id.replace('service-instance/', '')
+
+        res = requests.delete(config.dic['CIMI_URL'] + '/service-instance/' + resource_id,
                               headers={'slipstream-authn-info': 'super ADMIN'},
                               verify=False)
 
