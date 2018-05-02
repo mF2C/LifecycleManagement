@@ -22,24 +22,9 @@ def deploy_service_agent(service, agent):
     return adpt.deploy_service_agent(service, agent)
 
 
-# Terminate service
-def terminate_service(service_instance_id):
-    return adpt.terminate_service(data.get_service_instance(service_instance_id))
-
-
-# Stop service
-def stop(service_instance_id):
-    return adpt.stop(data.get_service_instance(service_instance_id))
-
-
 # Stop service in agent
 def stop_service_agent(service, agent):
     return adpt.stop_service_agent(agent)
-
-
-# Start service
-def start(service_instance_id):
-    return adpt.start(data.get_service_instance(service_instance_id))
 
 
 # Start service in agent
@@ -47,16 +32,16 @@ def start_service_agent(service, agent):
     return adpt.start_service_agent(agent)
 
 
-# Starts job in agent
+# terminate service in agent
+def terminate_service_agent(service, agent):
+    return adpt.terminate_service_agent(agent)
+
+
+# start_job_compss: Starts job in one agent
 def start_job_compss(agent, parameters):
     return compss_adpt.start_job(agent, parameters)
 
 
-# Execute service
-def execute(service_instance):
-    return adpt.start(service_instance)
-
-
-# Execute service in agent
-def execute_service_agent(service, agent):
-    return adpt.start_service_agent(agent)
+# start_job_compss_multiple_agents: Starts job in multiple agents
+def start_job_compss_multiple_agents(service_instance, parameters):
+    return compss_adpt.start_job_in_agents(service_instance, parameters)

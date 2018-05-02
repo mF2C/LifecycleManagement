@@ -18,6 +18,21 @@ import threading
 import time
 
 
+###############################################################################
+# SLA Notifications: handles warnings coming from User Management Assessment
+#   {
+#       "type": "sla_notification",
+#       "data"
+#           {
+#               "user_id": "",
+#               "device_id": "",
+#               "service_instance_id": "",
+#               "warning_id": "",
+#               "warning_txt": ""
+#           }
+#   }
+
+
 # thread
 def thr(service_instance_id, notification):
     try:

@@ -20,6 +20,9 @@ import lifecycle.utils.common as common
 import lifecycle.mF2C.data as data
 import lifecycle.mF2C.mf2c as mf2c
 from lifecycle.utils.logs import LOG
+from lifecycle.utils.common import OPERATION_START, OPERATION_STOP, OPERATION_RESTART, OPERATION_TERMINATE, \
+    OPERATION_START_JOB, STATUS_ERROR, STATUS_NOT_DEPLOYED, STATUS_WAITING, STATUS_STARTED, STATUS_STOPPED, \
+    STATUS_TERMINATED, STATUS_UNKNOWN
 
 
 '''
@@ -79,6 +82,9 @@ def check_service_content(service):
         return False
     return True
 
+
+###############################################################################
+# DEPLOYMENT / SUBMIT:
 
 # submit_service_in_agents: Submits a service (no access to external docker APIs; calls to other agent's lifecycle components)
 # IN: service, user_id, agreement_id, agents_list
@@ -151,6 +157,7 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
 
         # 5. save / update service_instance
         LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: UPDATING service_instance: " + str(service_instance))
+        service_instance['status'] = STATUS_STARTED
         data.update_service_instance(service_instance['id'], service_instance)
 
         return common.gen_response_ok('Deploy service', 'service_instance', service_instance)
@@ -190,9 +197,12 @@ def submit(service, user_id, agreement_id):
         return common.gen_response(500, 'Exception', 'service', str(service))
 
 
-# Service Operation: start (version 2: no access to external docker APIs / calls to other agent's lifecycle components)
-def start(service_instance_id):
-    LOG.debug("Lifecycle-Management: Lifecycle: start_v2: " + service_instance_id)
+###############################################################################
+# OPERATIONS:
+
+# operation_service: start/stop/terminate service instance in agents
+def operation_service(service_instance_id, operation):
+    LOG.debug("Lifecycle-Management: Docker adapter: operation_service: [" + operation + "]: " + service_instance_id)
     try:
         # 1. get service_instance object
         service_instance = data.get_service_instance(service_instance_id)
@@ -201,78 +211,110 @@ def start(service_instance_id):
 
         # 2. start service in all agents
         for agent in service_instance["agents"]:
-            LOG.info(">>> AGENT >>> " + agent['url'])
+            LOG.info(">>> AGENT >>> " + agent['url'] + " <<<")
             # LOCAL
             if agent['url'] == common.get_ip():
-                LOG.debug("Lifecycle-Management: Lifecycle: start_v2: start service locally")
-                lf_adapter.start_service_agent(None, agent)
+                if operation == OPERATION_START:
+                    LOG.debug("Lifecycle-Management: Lifecycle: operation_service: start service locally")
+                    lf_adapter.start_service_agent(None, agent)
 
-            # OTHER AGENT
+                elif operation == OPERATION_STOP:
+                    LOG.debug("Lifecycle-Management: Lifecycle: operation_service: stop service locally")
+                    lf_adapter.stop_service_agent(None, agent)
+
+                elif operation == OPERATION_TERMINATE:
+                    LOG.debug("Lifecycle-Management: Lifecycle: operation_service: terminate service locally")
+                    lf_adapter.terminate_service_agent(None, agent)
+
+            # REMOTE AGENT (call lifecycle from agent)
             elif common.check_ip(agent['url']):
-                LOG.debug("Lifecycle-Management: Lifecycle: start_v2: start service in remote agent")
-                #  call lifecycle from x
-                resp_start = mf2c.lifecycle_operation(agent, "start")
-                if resp_start is not None:
-                    agent['status'] = resp_start['status']
-                    LOG.debug("Lifecycle-Management: Lifecycle: start_v2: start service in remote agent: "
-                              "[agent=" + str(agent) + "]")
+                if operation == OPERATION_START:
+                    LOG.debug("Lifecycle-Management: Lifecycle: operation_service: start service in remote agent")
+                    resp_start = mf2c.lifecycle_operation(agent, OPERATION_START)
+                    if resp_start is not None:
+                        agent['status'] = resp_start['status']
+                        LOG.debug("Lifecycle-Management: Lifecycle: operation_service: result (start service): [agent=" + str(agent) + "]")
+                    else:
+                        agent['status'] = STATUS_UNKNOWN
+                        LOG.error("Lifecycle-Management: Lifecycle: operation_service: result (start service): ERROR")
+
+                elif operation == OPERATION_STOP:
+                    LOG.debug("Lifecycle-Management: Lifecycle: operation_service: stop service in remote agent")
+                    resp_stop = mf2c.lifecycle_operation(agent, OPERATION_STOP)
+                    if resp_stop is not None:
+                        agent['status'] = resp_stop['status']
+                        LOG.debug("Lifecycle-Management: Lifecycle: operation_service: result (stop service): [agent=" + str(agent) + "]")
+                    else:
+                        agent['status'] = STATUS_UNKNOWN
+                        LOG.error("Lifecycle-Management: Lifecycle: operation_service: result (stop service): ERROR")
+
+                elif operation == OPERATION_TERMINATE:
+                    LOG.debug("Lifecycle-Management: Lifecycle: operation_service: terminate service in remote agent")
+                    resp_terminate = mf2c.lifecycle_operation(agent, OPERATION_TERMINATE)
+                    if resp_terminate is not None:
+                        agent['status'] = resp_terminate['status']
+                        LOG.debug("Lifecycle-Management: Lifecycle: operation_service: result (terminate service): [agent=" + str(agent) + "]")
+                    else:
+                        agent['status'] = STATUS_UNKNOWN
+                        LOG.error("Lifecycle-Management: Lifecycle: operation_service: result (terminate service): ERROR")
 
             # NOT FOUND / NOT CONNECTED
             else:
-                agent['status'] = "error"
-                LOG.error("Lifecycle-Management: Lifecycle: start_v2: agent [" + agent['url'] + "] cannot be reached")
+                agent['status'] = STATUS_ERROR
+                LOG.error("Lifecycle-Management: Lifecycle: operation_service: agent [" + agent['url'] + "] cannot be reached")
 
-        return common.gen_response_ok('Start service', 'service_instance_id', service_instance_id,
+        # 3. save / update / terminate service_instance
+        LOG.debug("Lifecycle-Management: Lifecycle: operation_service: UPDATING service_instance [" + operation + "]: " + str(service_instance))
+        if operation == OPERATION_START:
+            service_instance['status'] = STATUS_STARTED
+            data.update_service_instance(service_instance['id'], service_instance)                  # cimi
+            sla_adapter.initializes_sla(service_instance, service_instance['agreement'])            # sla
+
+        elif operation == OPERATION_STOP:
+            service_instance['status'] = STATUS_STOPPED
+            data.update_service_instance(service_instance['id'], service_instance)                  # cimi
+            sla_adapter.stop_sla_agreement(service_instance, service_instance['agreement'])         # sla
+
+        elif operation == OPERATION_TERMINATE:
+            service_instance['status'] = STATUS_TERMINATED
+            data.del_service_instance(service_instance['id'])                                       # cimi
+            sla_adapter.terminate_sla_agreement(service_instance, service_instance['agreement'])    # sla
+
+        # response
+        return common.gen_response_ok(operation + " service", 'service_instance_id', service_instance_id,
                                       'service_instance', str(service_instance))
     except:
-        LOG.error('Lifecycle-Management: Lifecycle: start_v2: Exception')
+        LOG.error('Lifecycle-Management: Lifecycle: operation_service: Exception')
         return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
+
+
+# Service Operation: start (version 2: no access to external docker APIs / calls to other agent's lifecycle components)
+def start(service_instance_id):
+    return operation_service(service_instance_id, OPERATION_START)
 
 
 # Service Operation: stop (version 2: no access to external docker APIs / calls to other agent's lifecycle components)
 def stop(service_instance_id):
-    LOG.info("Lifecycle-Management: Lifecycle: stop_v2: " + service_instance_id)
+    return operation_service(service_instance_id, OPERATION_STOP)
+
+
+# Terminate service, Deallocate service's resources
+def terminate(service_instance_id):
+    LOG.debug("Lifecycle-Management: Lifecycle: terminate: " + service_instance_id)
     try:
         # 1. get service_instance object
         service_instance = data.get_service_instance(service_instance_id)
         if not service_instance:
             return common.gen_response(500, 'Error getting service instance object', 'service_instance_id', service_instance_id)
 
-        # 2. stop service in all agents
-        for agent in service_instance["agents"]:
-            LOG.info(">>> AGENT >>> " + agent['url'])
-            # LOCAL
-            if agent['url'] == common.get_ip():
-                LOG.debug("Lifecycle-Management: Lifecycle: stop_v2: stop service locally")
-                lf_adapter.stop_service_agent(None, agent)
+        # 2. service instance status = Stopped
+        if service_instance['status'] != "Stopped":
+            stop(service_instance_id)
 
-            # OTHER AGENT
-            elif common.check_ip(agent['url']):
-                LOG.debug("Lifecycle-Management: Lifecycle: stop_v2: stop service in other agent")
-                #  call lifecycle from x
-                resp_stop = mf2c.lifecycle_operation(agent, "stop")
-                if resp_stop is not None:
-                    agent['status'] = resp_stop['status']
-                    LOG.debug("Lifecycle-Management: Lifecycle: start_v2: stop service in remote agent: "
-                              "[agent=" + str(agent) + "]")
-
-            # NOT FOUND / NOT CONNECTED
-            else:
-                agent['status'] = "error"
-                LOG.error("Lifecycle-Management: Lifecycle: stop_v2: agent [" + agent['url'] + "] cannot be reached")
-
-        # 3. deletes service_instance from cimi
-        obj_response_cimi = common.ResponseCIMI()
-        resp = data.del_service_instance(service_instance_id, obj_response_cimi)
-        if not resp is None and resp != -1:
-            LOG.debug('Service instance deleted from CIMI')
-        else:
-            LOG.error("Error: Service instance NOT deleted from CIMI")
-
-        return common.gen_response_ok('Stop service', 'service_instance_id', service_instance_id,
-                                      'service_instance', str(service_instance))
+        # 3. terminate
+        return operation_service(service_instance_id, OPERATION_TERMINATE)
     except:
-        LOG.error('Lifecycle-Management: Lifecycle: stop_v2: Exception')
+        LOG.error('Lifecycle-Management: Lifecycle: terminate: Exception')
         return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
 
 
@@ -288,24 +330,56 @@ def start_job(body):
         agent = service_instance['agents'][0]
         LOG.debug("Lifecycle-Management: Lifecycle: start_job: Starting job in agent [" + str(agent) + "] ...")
 
-        # TODO COMPSs app? Normal app?
-        res = lf_adapter.start_job_compss(agent, body['parameters'])
-        return common.gen_response_ok('Start job', 'service_id', body['service_instance_id'], 'res', res)
+        # start job in agent(s)
+        if len(service_instance['agents']) == 1:
+            res = lf_adapter.start_job_compss(agent, body['parameters'])
+        elif len(service_instance['agents']) == 2:
+            res = lf_adapter.start_job_compss_multiple_agents(service_instance, body['parameters'])
+        else:
+            LOG.warning("Lifecycle-Management: Lifecycle: start_job: Execution supported in only 1-2 agents! agents size="
+                        + str(len(service_instance['agents'])))
+            res = lf_adapter.start_job_compss_multiple_agents(service_instance, body['parameters'])
+
+        if res:
+            return common.gen_response_ok('Start job', 'service_id', body['service_instance_id'], 'res', res)
+        else:
+            return common.gen_response(500, 'Error when starting job', 'service_instance', str(service_instance))
     except:
         LOG.error('Lifecycle-Management: Lifecycle: start_job: Exception')
         return common.gen_response(500, 'Exception', 'data', str(body))
 
 
 # Terminate service, Deallocate service's resources
-def terminate(service_id):
-    LOG.debug("Lifecycle-Management: Lifecycle: terminate: " + service_id)
+# TODO check errors / exceptions
+'''
+def terminate(service_instance_id):
+    LOG.debug("Lifecycle-Management: Lifecycle: terminate: " + service_instance_id)
     try:
-        status = lf_adapter.terminate_service(service_id)
-        return common.gen_response_ok('Terminate service', 'service_id', service_id, 'status', status)
+        # 1. get service_instance object
+        service_instance = data.get_service_instance(service_instance_id)
+        if not service_instance:
+            return common.gen_response(500, 'Error getting service instance object', 'service_instance_id', service_instance_id)
+
+        # 2. service instance status = Stopped
+        if service_instance['status'] != "Stopped":
+            stop(service_instance_id)
+
+        # 3. deletes service_instance from cimi
+        obj_response_cimi = common.ResponseCIMI()
+        resp = data.del_service_instance(service_instance_id, obj_response_cimi)
+        if not resp is None and resp != -1:
+            LOG.debug('Service instance deleted from CIMI')
+        else:
+            LOG.error("Error: Service instance NOT deleted from CIMI")
+
+        # 4. terminate SLA
+        sla_adapter.terminate_sla_agreement(service_instance, service_instance['agreement'])
+
+        return common.gen_response_ok('Terminate service', 'service_instance_id', service_instance_id)
     except:
         LOG.error('Lifecycle-Management: Lifecycle: terminate: Exception')
-        return common.gen_response(500, 'Exception', 'service_id', service_id)
-
+        return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
+'''
 
 # Get service instance
 def get(service_instance_id):
@@ -342,21 +416,3 @@ def get_all():
         LOG.error('Lifecycle-Management: Lifecycle: get_all: Exception')
         return common.gen_response(500, 'Exception', 'get_all', "-")
 
-
-# Delete service instance from CIMI
-def delete(service_instance_id):
-    LOG.debug("Lifecycle-Management: Lifecycle: delete: " + service_instance_id)
-    try:
-        obj_response_cimi = common.ResponseCIMI()
-        resp = data.del_service_instance(service_instance_id, obj_response_cimi)
-
-        if not resp is None:
-            return common.gen_response_ok('Service instance content', 'service_instance_id', service_instance_id,
-                                          'Response', resp['message'])
-        else:
-            return common.gen_response(500, "Error in 'delete' function",
-                                       "service_instance_id", service_instance_id,
-                                       "Error_Msg", obj_response_cimi.msj)
-    except:
-        LOG.error('Lifecycle-Management: Lifecycle: delete: Exception')
-        return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)

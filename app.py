@@ -17,10 +17,10 @@ import lifecycle.lifecycle as lifecycle
 import lifecycle.operations as operations
 import lifecycle.mF2C.handler_um as handler_um
 import lifecycle.mF2C.handler_sla as handler_sla
-import lifecycle.utils.common as common
+import lifecycle.utils.init_config as init_config
 import lifecycle.utils.auth as auth
-import os
 from lifecycle import config
+from lifecycle.utils.common import OPERATION_START, OPERATION_STOP, OPERATION_RESTART, OPERATION_TERMINATE, OPERATION_START_JOB
 from lifecycle.utils.logs import LOG
 from flask_cors import CORS
 from flask import Flask, request, Response, json
@@ -31,85 +31,36 @@ from flask_restful_swagger import swagger
 '''
 REST API
     Routes:
+    
+        /api/v1/
+            GET:    get rest api service status
+        
         /api/v1/lifecycle/service-instance/<string:service_instance_id>
             GET:    get service instance / all service instances (from cimi)
             POST:   SLA / UM notifications
-
-        /api/v1/lifecycle/service-instance
-            DELETE: delete service instance (from cimi)
-
-        /api/v1/lifecycle/app
-            POST:   Submits a service (file); gets a service instance
             
         /api/v1/lifecycle
             POST:   Submits a service; gets a service instance
-            PUT:    starts / stops ... a service instance
-            DELETE: terminates a service
+            PUT:    starts / stops ... a service instance; start-job ... starts a job in COMPSs
+            DELETE: terminates a service instance; deletes service instance (from cimi)
 
         /api/v1/lifecycle/service-instance-operations (agent operations)
             POST:   Submits a service in a mF2C agent
-            PUT:    starts / stops ... a service in a mF2C agent
+            PUT:    starts / stops ... a service in a mF2C agent; start-job
             DELETE: deletes a service in a mF2C agent
-            
-ENV VARIABLES
-    CIMI_USER=
-    CIMI_PASSWORD=
-    CIMI_API_KEY=
-    CIMI_API_SECRET=
-    CIMI_SSL_INSECURE=
-    
-CIMI URL
-    https://proxy
 '''
 
 
 try:
-    # CONFIGURATION values
-    LOG.info('[SERVER_PORT=' + str(config.dic['SERVER_PORT']) + ']')
-    LOG.info('[API_DOC_URL=' + config.dic['API_DOC_URL'] + ']')
-    LOG.info('[CERT_CRT=' + config.dic['CERT_CRT'] + ']')
-    LOG.info('[CERT_KEY=' + config.dic['CERT_KEY'] + ']')
-    LOG.info('[DEBUG=' + str(config.dic['DEBUG']) + ']')
-
-    LOG.info('Reading values from ENVIRONMENT...')
-    # STANDALONE_MODE
-    common.set_value_env('STANDALONE_MODE')
-    # HOST IP from environment values:
-    common.set_value_env('HOST_IP')
-    # CIMI environment values:
-    common.set_value_env('CIMI_URL')
-    common.set_value_env('CIMI_COOKIES_PATH')
-    common.set_value_env('CIMI_USER')
-    common.set_value_env('CIMI_PASSWORD')
-    # mF2C components: env variables
-    common.set_value_env('URL_PM_SLA_MANAGER')
-    common.set_value_env('URL_AC_QoS_PROVIDING')
-    common.set_value_env('URL_AC_USER_MANAGEMENT')
-
-    LOG.info('Checking configuration...')
-    LOG.info('[STANDALONE_MODE=' + str(config.dic['STANDALONE_MODE']) + ']')
-    LOG.info('[HOST_IP=' + config.dic['HOST_IP'] + ']')
-    LOG.info('[CIMI_URL=' + config.dic['CIMI_URL'] + ']')
-    LOG.info('[CIMI_COOKIES_PATH=' + config.dic['CIMI_COOKIES_PATH'] + ']')
-    LOG.info('[CIMI_USER=' + config.dic['CIMI_USER'] + ']')
-    LOG.info('[CIMI_PASSWORD=' + config.dic['CIMI_PASSWORD'] + ']')
-    LOG.info('[URL_PM_SLA_MANAGER=' + config.dic['URL_PM_SLA_MANAGER'] + ']')
-    LOG.info('[URL_AC_QoS_PROVIDING=' + config.dic['URL_AC_QoS_PROVIDING'] + ']')
-    LOG.info('[URL_AC_USER_MANAGEMENT=' + config.dic['URL_AC_USER_MANAGEMENT'] + ']')
-
-    if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE']:
-        LOG.warning("STANDALONE_MODE enabled")
-    else:
-        LOG.info("STANDALONE_MODE not enabled")
+    init_config.init()
 
     # APP
     app = Flask(__name__)
-    app.config['UPLOAD_FOLDER'] = "C://TMP/docker_files"
     CORS(app)
 
     # API DOC
     api = swagger.docs(Api(app),
-                       apiVersion='1.0',
+                       apiVersion='1.0.1',
                        api_spec_url=config.dic['API_DOC_URL'],
                        produces=["application/json", "text/html"],
                        swaggerVersion="1.2",
@@ -117,12 +68,16 @@ try:
                        basePath='http://localhost:' + str(config.dic['SERVER_PORT']),
                        resourcePath='/')
 except ValueError:
-    LOG.error('ERROR')
+    LOG.error('Lifecycle-Management: app: Exception: Error while initializing app / api')
 
 
-###############################################################################
-## API Route
-###############################################################################
+'''
+ API 'home' Route
+
+    '/api/v1/'
+    
+        GET:    get rest api service status
+'''
 @app.route('/api/v1/', methods=['GET'])
 # @auth.requires_auth # test basic auth
 def default_route():
@@ -136,33 +91,14 @@ def default_route():
     return resp
 
 
-###############################################################################
-# Service route: status, service events handler
-#   Warnings Handler: handles warnings coming from User Management Assessment:
-#   {
-#       "type": "um_warning",
-#       "data"
-#           {
-#               "user_id": "",
-#               "device_id": "",
-#               "service_instance_id": "",
-#               "warning_id": "",
-#               "warning_txt": ""
-#           }
-#   }
-#
-#   SLA Notifications: handles warnings coming from User Management Assessment
-#   {
-#       "type": "sla_notification",
-#       "data"
-#           {
-#               "user_id": "",
-#               "device_id": "",
-#               "service_instance_id": "",
-#               "warning_id": "",
-#               "warning_txt": ""
-#           }
-#   }
+'''
+ Service route: status, service events handler
+
+    '/api/v1/lifecycle/service-instance/<string:service_instance_id>'
+    
+        GET:    get service instance / all service instances (from cimi)
+        POST:   SLA / UM notifications
+'''
 class Service(Resource):
     # GET: get service instance
     @swagger.operation(
@@ -237,93 +173,24 @@ class Service(Resource):
 api.add_resource(Service, '/api/v1/lifecycle/service-instance/<string:service_instance_id>')
 
 
-###############################################################################
-# ServiceInstanceDelete route: delete service instance
-class ServiceInstanceDelete(Resource):
-    # DELETE: Terminate service, Deallocate service's resources
-    @swagger.operation(
-        summary="Deletes a service instance and deallocates the service's resources",
-        notes="Terminate service instance, Deallocate service's resources.",
-        produces=["application/json"],
-        authorizations=[],
-        parameters=[{
-            "name": "body",
-            "description": "Parameters in JSON format.<br/>Example: <br/>"
-                           "{\"service_instance_id\":\"2122f75b-4dd5-49f1-ac30-dda18e2e1e00\"}",
-            "required": True,
-            "paramType": "body",
-            "type": "string"
-        }],
-        responseMessages=[{
-            "code": 406,
-            "message": "'service_instance_id' parameter not found"
-        }, {
-            "code": 500,
-            "message": "Exception processing request"
-        }])
-    def delete(self):
-        data = request.get_json()
-        if 'service_instance_id' not in data:
-            LOG.error(
-                'Lifecycle-Management: REST API: delete: Exception - parameter not found: service_instance_id')
-            return Response(json.dumps({'error': True, 'message': 'parameter not found: service_instance_id'}),
-                            status=406, content_type='application/json')
-        return lifecycle.delete(data['service_instance_id'])
-
-    # POST: Test docker-compose
-    @swagger.operation(
-        summary="Test docker-compose",
-        notes="Test docker-compose",
-        produces=["application/json"],
-        authorizations=[],
-        parameters=[{
-            "name": "body",
-            "description": "Parameters in JSON format.<br/>Example: <br/>"
-                           "{\"command\":\"ls /home/atos/mF2C/compose_examples\"}",
-            "required": True,
-            "paramType": "body",
-            "type": "string"
-        }],
-        responseMessages=[{
-            "code": 406,
-            "message": "'command' parameter not found"
-        }, {
-            "code": 500,
-            "message": "Exception processing request"
-        }])
-    def post(self):
-        data = request.get_json()
-        if 'command' not in data:
-            LOG.error(
-                'Lifecycle-Management: REST API: post: Exception - parameter not found: command')
-            return Response(json.dumps({'error': True, 'message': 'parameter not found: command'}),
-                            status=406, content_type='application/json')
-
-        os.system(data['command'])
-        #os.system("/home/atos/mF2C/compose_examples/dc-script.sh")
-        #os.system("/usr/bin/docker-compose up")
-        return common.gen_response_ok('Test docker-compose', 'data', data)
-
-
-api.add_resource(ServiceInstanceDelete, '/api/v1/lifecycle/service-instance')
-
-
-###############################################################################
-# ServiceLifecycle route: submit, terminate, operations (start, stop, pause...)
-# /api/v1/lifecycle
-# 	POST:   Submits a service; gets a service instance
-# 	PUT:    starts / stops ... a service instance
-# 	DELETE: terminates a service
-#
-#   'data' from request -POST- (body) - content:
-#   {
-#       "service": {...},
-#       "service_id": "",
-#       "user_id": "",
-#       "operation": "stop"
-#   }
+'''
+ ServiceLifecycle route: submit, terminate, operations (start, stop, pause...)
+ 
+    '/api/v1/lifecycle'
+    
+        POST:       Submits a service; gets a service instance
+        PUT:        starts / stops ... a service instance; start-job ... starts a job in COMPSs
+        DELETE:     terminates a service instance; deletes service instance (from cimi)
+'''
 class ServiceLifecycle(Resource):
     # POST: Submits a service
+    #   'data' from request -POST- (body) - content:
+    #   {
+    #       "service": {...},
+    #       "service_id": "",
+    #       "user_id": "",
+    #       "operation": "stop"
+    #   }
     @swagger.operation(
         summary="Submits a <b>service</b> (deployment phase)",
         notes="Submits a service and returns a json with the content of a service instance:<br/>"
@@ -429,13 +296,13 @@ class ServiceLifecycle(Resource):
             return Response(json.dumps({'error': True, 'message': 'parameter not found: service_instance_id / operation'}),
                             status=406, content_type='application/json')
         # operations
-        if data['operation'] == 'start':
+        if data['operation'] == OPERATION_START:
             return lifecycle.start(data['service_instance_id'])
-        elif data['operation'] == 'stop':
+        elif data['operation'] == OPERATION_STOP:
             return lifecycle.stop(data['service_instance_id'])
-        elif data['operation'] == 'restart':
+        elif data['operation'] == OPERATION_RESTART:
             return lifecycle.start(data['service_instance_id'])
-        elif data['operation'] == 'start-job':
+        elif data['operation'] == OPERATION_START_JOB:
             if 'parameters' not in data:
                 LOG.error('Lifecycle-Management: REST API: put: Parameter not found: parameters')
                 return Response(json.dumps({'error': True, 'message': 'parameter not found: parameters'}),
@@ -448,14 +315,14 @@ class ServiceLifecycle(Resource):
 
     # DELETE: Terminate service, Deallocate service's resources
     @swagger.operation(
-        summary="Terminates a service and deallocates the service's resources",
-        notes="Terminate service, Deallocate service's resources.",
+        summary="Terminates a service instance and deallocates the service's resources",
+        notes="Terminates a service instance, and deallocates all the resources.",
         produces=["application/json"],
         authorizations=[],
         parameters=[{
             "name": "body",
             "description": "Parameters in JSON format.<br/>Example: <br/>"
-                           "{\"service_id\":\"...\"}",
+                           "{\"service_instance_id\":\"2122f75b-4dd5-49f1-ac30-dda18e2e1e00\"}",
             "required": True,
             "paramType": "body",
             "type": "string"
@@ -469,18 +336,24 @@ class ServiceLifecycle(Resource):
         }])
     def delete(self):
         data = request.get_json()
-        if 'service_id' not in data:
+        if 'service_instance_id' not in data:
             LOG.error('Lifecycle-Management: REST API: delete: Parameter not found: service_instance_id')
             return Response(json.dumps({'error': True, 'message': 'parameter not found: service_instance_id'}),
                             status=406, content_type='application/json')
-        return lifecycle.terminate(data['service_id'])
+        return lifecycle.terminate(data['service_instance_id'])
 
 
 api.add_resource(ServiceLifecycle, '/api/v1/lifecycle')
 
 
-###############################################################################
-# ServiceLifecycleOperations route: deploy a service, start, stop, ...
+'''
+ ServiceLifecycleOperations route: deploy a service, start, stop, ...
+    /api/v1/lifecycle/service-instance-operations (agent operations)
+    
+        POST:   Submits a service in a mF2C agent
+        PUT:    starts / stops ... a service in a mF2C agent; start-job
+        DELETE: deletes a service in a mF2C agent
+'''
 class ServiceLifecycleOperations(Resource):
     # POST: Submits a service in an agent
     @swagger.operation(
@@ -539,7 +412,7 @@ class ServiceLifecycleOperations(Resource):
     @swagger.operation(
         summary="Starts / stops / restarts a <b>service instance</b> in a mF2C agent // starts a <b>job</b> in the selected agent",
         notes="Available operations:<br/>"
-              "<b>'start / stop / restart'</b> ... service instance operations<br/>"
+              "<b>'start / stop / restart / terminate'</b> ... service instance operations<br/>"
               "<b>'start-job'</b> ... starts a job in an agent<br/><br/>"
               "Field 'parameters' is used only for starting a job in an agent.",
         produces=["application/json"],
@@ -592,13 +465,15 @@ class ServiceLifecycleOperations(Resource):
                 json.dumps({'error': True, 'message': 'parameter not found: agent / operation'}),
                 status=406, content_type='application/json')
         # operations
-        if data['operation'] == 'start':
+        if data['operation'] == OPERATION_START:
             return operations.start(data['agent'])
-        elif data['operation'] == 'stop':
+        elif data['operation'] == OPERATION_STOP:
             return operations.stop(data['agent'])
-        elif data['operation'] == 'restart':
+        elif data['operation'] == OPERATION_RESTART:
             return operations.start(data['agent'])
-        elif data['operation'] == 'start-job':
+        elif data['operation'] == OPERATION_TERMINATE:
+            return operations.terminate(data['agent'])
+        elif data['operation'] == OPERATION_START_JOB:
             if 'parameters' not in data:
                 LOG.error('Lifecycle-Management: REST API: put: Parameter not found: parameters')
                 return Response(json.dumps({'error': True, 'message': 'parameter not found: parameters'}),
@@ -614,6 +489,7 @@ api.add_resource(ServiceLifecycleOperations, '/api/v1/lifecycle/service-instance
 
 
 ###############################################################################
+
 
 def main():
     # START SERVER

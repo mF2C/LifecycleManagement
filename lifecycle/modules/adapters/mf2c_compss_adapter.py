@@ -113,7 +113,7 @@ Lifecycle & COMPSs:
 #   "    </array>" \
 #   "  </parameters>" \
 def start_job(agent, parameters):
-    LOG.debug("Lifecycle-Management: COMPSs adapter: start_app: [agent=" + str(agent) + "], [parameters=" + parameters + "]")
+    LOG.debug("Lifecycle-Management: COMPSs adapter: start_job: [agent=" + str(agent) + "], [parameters=" + parameters + "]")
     try:
         xml = "<?xml version='1.0' encoding='utf-8'?>" \
               "<startApplication>" + parameters + "<resources>" \
@@ -144,28 +144,44 @@ def start_job(agent, parameters):
               "    </resource>" \
               "  </resources>" \
               "</startApplication>"
-        LOG.debug("Lifecycle-Management: COMPSs adapter: start_app: [xml=" + xml + "]")
+        LOG.debug("Lifecycle-Management: COMPSs adapter: start_job: [xml=" + xml + "]")
 
-        res = requests.put("http://" + agent['url'] + ":8080/COMPSs/startApplication",
+        res = requests.put("http://" + agent['url'] + ":" + str(agent['port']) + "/COMPSs/startApplication",
                            data=xml,
                            headers={'Content-Type': 'application/xml'})
-        LOG.debug("Lifecycle-Management: COMPSs adapter: start_app: [res=" + str(res) + "]")
+        LOG.debug("Lifecycle-Management: COMPSs adapter: start_job: [res=" + str(res) + "]")
 
         return True
     except:
         traceback.print_exc(file=sys.stdout)
-        LOG.error('Lifecycle-Management: COMPSs adapter: start_app: Exception')
+        LOG.error('Lifecycle-Management: COMPSs adapter: start_job: Exception')
         return False
 
 
 # start_job_in_agents: Start app in COMPSs container (more than one agent involved in the execution of this job)
+# parameters:
+#   "  <ceiClass>es.bsc.compss.test.TestItf</ceiClass>" \
+#   "  <className>es.bsc.compss.test.Test</className>" \
+#   "  <methodName>main</methodName>" \
+#   "  <parameters>" \
+#   "    <array paramId=\"0\">" \
+#   "      <componentClassname>java.lang.String</componentClassname>" \
+#   "      <values>" \
+#   "        <element paramId=\"0\">" \
+#   "          <className>java.lang.String</className>" \
+#   "          <value xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " \
+#   "             xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"xs:string\">3</value>" \
+#   "        </element>" \
+#   "      </values>" \
+#   "    </array>" \
+#   "  </parameters>" \
 def start_job_in_agents(service_instance, parameters):
-    LOG.debug("Lifecycle-Management: COMPSs adapter: start_app: [service_instance=" + str(service_instance) + "], "
+    LOG.debug("Lifecycle-Management: COMPSs adapter: start_job_in_agents: [service_instance=" + str(service_instance) + "], "
               "[parameters=" + parameters + "]")
     try:
         xml = "<?xml version='1.0' encoding='utf-8'?>" \
               "<startApplication>" + parameters + "<resources>" \
-              "   <resource name=\"localhost:8080\">" \
+              "   <resource name=\"" + service_instance['agents'][0]['url'] + ":8080\">" \
               "      <description>" \
               "        <memorySize>4.0</memorySize>" \
               "        <memoryType>[unassigned]</memoryType>" \
@@ -176,7 +192,32 @@ def start_job_in_agents(service_instance, parameters):
               "        <priceTimeUnit>-1</priceTimeUnit>" \
               "        <processors>" \
               "          <architecture>[unassigned]</architecture>" \
-              "          <computingUnits>2</computingUnits>" \
+              "          <computingUnits>1</computingUnits>" \
+              "          <internalMemory>-1.0</internalMemory>" \
+              "          <name>[unassigned]</name>" \
+              "          <propName>[unassigned]</propName>" \
+              "          <propValue>[unassigned]</propValue>" \
+              "          <speed>-1.0</speed>" \
+              "          <type>CPU</type>" \
+              "        </processors>" \
+              "        <storageSize>-1.0</storageSize>" \
+              "        <storageType>[unassigned]</storageType>" \
+              "        <value>0.0</value>" \
+              "        <wallClockLimit>-1</wallClockLimit>" \
+              "      </description>" \
+              "    </resource>" \
+              "   <resource name=\"" + service_instance['agents'][1]['url'] + ":8080\">" \
+              "      <description>" \
+              "        <memorySize>4.0</memorySize>" \
+              "        <memoryType>[unassigned]</memoryType>" \
+              "        <operatingSystemDistribution>[unassigned]</operatingSystemDistribution>" \
+              "        <operatingSystemType>[unassigned]</operatingSystemType>" \
+              "        <operatingSystemVersion>[unassigned]</operatingSystemVersion>" \
+              "        <pricePerUnit>-1.0</pricePerUnit>" \
+              "        <priceTimeUnit>-1</priceTimeUnit>" \
+              "        <processors>" \
+              "          <architecture>[unassigned]</architecture>" \
+              "          <computingUnits>1</computingUnits>" \
               "          <internalMemory>-1.0</internalMemory>" \
               "          <name>[unassigned]</name>" \
               "          <propName>[unassigned]</propName>" \
@@ -192,16 +233,16 @@ def start_job_in_agents(service_instance, parameters):
               "    </resource>" \
               "  </resources>" \
               "</startApplication>"
-        LOG.debug("Lifecycle-Management: COMPSs adapter: start_app: [xml=" + xml + "]")
+        LOG.debug("Lifecycle-Management: COMPSs adapter: start_job_in_agents: [xml=" + xml + "]")
 
         res = requests.put("http://" + service_instance['agents'][0]['url'] + ":" +
-                                       service_instance['agents'][0]['port'] + "/COMPSs/startApplication",
+                                       str(service_instance['agents'][0]['port']) + "/COMPSs/startApplication",
                            data=xml,
                            headers={'Content-Type': 'application/xml'})
-        LOG.debug("Lifecycle-Management: COMPSs adapter: start_app: [res=" + str(res) + "]")
+        LOG.debug("Lifecycle-Management: COMPSs adapter: start_job_in_agents: [res=" + str(res) + "]")
 
         return True
     except:
         traceback.print_exc(file=sys.stdout)
-        LOG.error('Lifecycle-Management: COMPSs adapter: start_app: Exception')
+        LOG.error('Lifecycle-Management: COMPSs adapter: start_job_in_agents: Exception')
         return False

@@ -12,10 +12,12 @@ Created on 09 feb. 2018
 """
 
 import lifecycle.modules.adapters.lf_adapter as lf_adapter
+from lifecycle.utils.logs import LOG
 
 
 # allocate_service_agent: Deploy service in an agent
 # IN: Service, Agent
 # OUT: status value
 def allocate_service_agent(service, agent):
+    LOG.debug("Lifecycle-Management: allocation_adapter: allocate_service_agent: " + str(service) + ", " + str(agent))
     return lf_adapter.deploy_service_agent(service, agent)

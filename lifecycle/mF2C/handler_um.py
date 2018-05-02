@@ -18,6 +18,21 @@ import threading
 import time
 
 
+###############################################################################
+#  Warnings Handler: handles warnings coming from User Management Assessment:
+#   {
+#       "type": "um_warning",
+#       "data"
+#           {
+#               "user_id": "",
+#               "device_id": "",
+#               "service_instance_id": "",
+#               "warning_id": "",
+#               "warning_txt": ""
+#           }
+#   }
+
+
 # thread
 def thr(service_instance_id, warning):
     try:

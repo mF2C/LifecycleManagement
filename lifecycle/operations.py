@@ -67,6 +67,17 @@ def stop(agent):
         return common.gen_response(500, 'Exception', 'agent', str(agent))
 
 
+# Service Operation: terminate
+def terminate(agent):
+    LOG.info("Lifecycle-Management: Operations: terminate: " + str(agent))
+    try:
+        status = lf_adapter.terminate_service_agent(None, agent)
+        return common.gen_response_ok('Terminate service', 'agent', str(agent), 'status', status)
+    except:
+        LOG.error('Lifecycle-Management: Operations: terminate: Exception')
+        return common.gen_response(500, 'Exception', 'agent', str(agent))
+
+
 # TODO start compss job!! master & workers!!!!
 def start_job(agent):
     LOG.warning("Lifecycle-Management: Operations: start_job: not implemented: " + str(agent))

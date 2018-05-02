@@ -94,12 +94,19 @@ def create_service_instance(service, agents_list, user_id, agreement_id):
     # create list of agents
     list_of_agents = []
 
+    # ports: TODO now, it takes only the first item
+    port_1 = 9876
+    try:
+        port_1 = service['exec_ports'][0]
+    except:
+        LOG.warning("Lifecycle-Management: Data: No port value found in service definition")
+
     # AGENT:
     # {"agent": resource-link, "url": "192.168.1.34", "port": 8081, "container_id": "99asd673f", "status": "waiting",
     #  "num_cpus": 2, "allow": true}
     for agent in agents_list:
         list_of_agents.append({"agent":         {"href": "agent/default-value"},
-                               "port":          service['exec_ports'][0],           # TODO now, it takes only the first item
+                               "port":          port_1,
                                "url":           agent['agent_ip'],
                                "status":        "not-defined",
                                "num_cpus":      agent['num_cpus'],

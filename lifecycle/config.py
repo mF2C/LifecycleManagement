@@ -14,7 +14,7 @@ Created on 09 feb. 2018
 #!/usr/bin/python
 
 dic = { "SERVER_PORT":                  46000,
-        "HOST_IP":                      "192.168.252.41",                       # if possible, read from env values
+        "HOST_IP":                      "192.192.192.1",                       # if possible, read from env values
         "API_DOC_URL":                  "/api/v1/lifecycle",
         "CERT_CRT":                     "cert/ia.crt",
         "CERT_KEY":                     "cert/ia.key",
@@ -33,9 +33,17 @@ dic = { "SERVER_PORT":                  46000,
 
         # CIMI:  https://dashboard.mf2c-project.eu/api/cloud-entry-point
         "CIMI_URL":                     "",    # https://proxy
-        "CIMI_COOKIES_PATH":            "",
+        "CIMI_COOKIES_PATH":            "~./cookies",
         "CIMI_USER":                    "",
         "CIMI_PASSWORD":                "",
+
+        # docker:
+        # working dir for docker compose applications / services
+        "WORKING_DIR_VOLUME":           "/home/atos/mF2C/compose_examples",
+        # docker compose image: needed to deploy docker compose based services
+        "DOCKER_COMPOSE_IMAGE":         "docker/compose:1.21.0",
+        # docker socket volume
+        "DOCKER_SOCKET_VOLUME":         "/var/run/docker.sock",
 
         # URLs from other mF2C components:
         # PM-SLA MANAGER
@@ -53,7 +61,7 @@ dic = { "SERVER_PORT":                  46000,
 
         # TESTS
         #"AVAILABLE_AGENTS": ["192.168.252.41", "192.168.252.42", "192.168.252.43"]
-        "AVAILABLE_AGENTS": [{"agent_ip": "192.168.252.41", "num_cpus": 4},
-                             {"agent_ip": "192.168.252.42", "num_cpus": 2},
-                             {"agent_ip": "192.168.252.43", "num_cpus": 2}]
+        "AVAILABLE_AGENTS": [{"agent_ip": "192.192.192.1", "num_cpus": 4},
+                             {"agent_ip": "192.192.192.2", "num_cpus": 2},
+                             {"agent_ip": "192.192.192.3", "num_cpus": 2}]
 }

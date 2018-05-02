@@ -19,6 +19,26 @@ from lifecycle.utils.logs import LOG
 
 
 ###############################################################################
+# GLOBAL VARS:
+
+# Operations:
+OPERATION_START = "start"
+OPERATION_STOP = "stop"
+OPERATION_RESTART = "restart"
+OPERATION_TERMINATE = "terminate"
+OPERATION_START_JOB = "start-job"
+
+# service instance / agent status
+STATUS_ERROR = "error"
+STATUS_UNKNOWN = "??"
+STATUS_NOT_DEPLOYED = "not-deployed"
+STATUS_WAITING = "waiting"
+STATUS_STARTED = "started"
+STATUS_STOPPED = "stopped"
+STATUS_TERMINATED = "terminated"
+
+
+###############################################################################
 # RESPONSEs:
 
 # CLASS ResponseCIMI
