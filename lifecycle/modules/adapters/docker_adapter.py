@@ -11,10 +11,11 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
+import lifecycle.modules.adapters.docker_client as docker_client
 import lifecycle.utils.common as common
-import docker, wget
-import sys, traceback
-import uuid
+import lifecycle.utils.db as db
+import sys, traceback, wget, uuid
+from lifecycle.utils.db import SERVICE_INSTANCES_LIST
 from lifecycle.utils.logs import LOG
 from lifecycle import config
 from lifecycle.utils.common import OPERATION_START, OPERATION_STOP, OPERATION_RESTART, OPERATION_TERMINATE, \
@@ -67,24 +68,6 @@ from lifecycle.utils.common import OPERATION_START, OPERATION_STOP, OPERATION_RE
 '''
 
 
-# docker socket connection
-DOCKER_SOCKET = "unix://var/run/docker.sock"
-
-
-# get_client_agent_docker: Get docker api client
-# connect to docker api: Examples: base_url='tcp://192.168.252.42:2375'; base_url='unix://var/run/docker.sock'
-def get_client_agent_docker():
-    LOG.debug("Connecting to DOCKER API [" + DOCKER_SOCKET + "]...")
-    try:
-        client = docker.APIClient(base_url=DOCKER_SOCKET)
-        LOG.debug("Connected to DOCKER in [" + DOCKER_SOCKET + "]; version: " + str(client.version()))
-        return client
-    except:
-        LOG.error("Lifecycle-Management: Docker adapter: get_client_agent_docker: " 
-                  "Error when connecting to DOCKER API: " + DOCKER_SOCKET)
-        return None
-
-
 ###############################################################################
 # DEPLOYMENT:
 
@@ -98,35 +81,20 @@ def deploy_docker_image(service, agent):
         service_name = service['name'] + "-" + str(uuid.uuid4())
         # command. Docker examples: "/bin/sh -c 'python index.py'"
         service_command = ""
-
-        # get url / port
+        # port(s)
         port = agent['port']  # TODO check/improve ports
 
-        # connect to docker api
-        client = get_client_agent_docker()
-
-        if client:
-            # check if image already exists in agent
-            l_images = client.images(name=service_image)
-            # if not, download image
-            if not l_images or len(l_images) == 0:
-                LOG.debug("Lifecycle-Management: Docker adapter: (2) deploy_docker_image: call to 'import_image' [" + service_image + "] ...")
-                client.import_image(image=service_image)  # (tag="latest", image="ubuntu") # (tag="latest", image="ubuntu")
-
-            LOG.debug("Lifecycle-Management: Docker adapter: (3) deploy_docker_image: [service_image=" + service_image
-                      + "], [service_name=" + service_name + "],  [port=" + str(port) + "]...")
-
-            # create a new container: 'docker run'
-            container = client.create_container(service_image,  # command=service_command,
-                                                name=service_name,
-                                                tty=True,
-                                                ports=[port],
-                                                host_config=client.create_host_config(port_bindings={port: port}))
-
-            LOG.debug("Lifecycle-Management: Docker adapter: (4) deploy_docker_image: container: " + str(container))
+        container1 = docker_client.create_docker_container(service_image, service_name, service_command, port)
+        if container1 is not None:
+            SERVICE_INSTANCES_LIST.append({
+                "type": "docker",
+                "container_main": container1['Id'],
+                "container_2": "-"
+            })
+            LOG.debug("  > container: " + str(container1))
 
             # update agent properties
-            agent['container_id'] = container['Id']
+            agent['container_id'] = container1['Id']
             agent['status'] = STATUS_WAITING
             return common.gen_response_ok('Deploy service in agent', 'agent', str(agent), 'service', str(service))
         else:
@@ -147,57 +115,39 @@ def deploy_docker_compose(service, agent):
     LOG.debug("Lifecycle-Management: Docker adapter: (1) deploy_docker_compose: " + str(service) + ", " + str(agent))
     try:
         # 1. Download docker-compose.yml file
-        location = service['exec']
-        LOG.debug("Lifecycle-Management: Docker adapter: (2) deploy_docker_compose: Getting docker-compose.yml from "
-                  + location + " ...")
-        # url = 'https://raw.githubusercontent.com/mF2C/mF2C/master/docker-compose/docker-compose.yml'
-        res = wget.download(location, config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml") #'C://TMP/docker_files/docker-compose.yml')
-        LOG.debug("Lifecycle-Management: Docker adapter: (3) deploy_docker_compose: res: " + str(res))
+        location = service['exec'] # location = 'https://raw.githubusercontent.com/mF2C/mF2C/master/docker-compose/docker-compose.yml'
+        LOG.debug("  > Getting docker-compose.yml from " + location + " ...")
+        res = wget.download(location, config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
+        LOG.debug("  > wget download result: " + str(res))
 
         # 2. Deploy container
-        # UP:
-        # service_name
-        service_name = service['name'] + "-" + str(uuid.uuid4())
-        # command
-        service_command = "up"
+        service_name = service['name'] + "-" + str(uuid.uuid4()) # service_name
+        service_command = "up" # command
 
-        # connect to docker api
-        client = get_client_agent_docker()
-
-        if client:
-            # check if image already exists in agent
-            l_images = client.images(name=config.dic['DOCKER_COMPOSE_IMAGE'])  # TODO not tested
-            if not l_images or len(l_images) == 0:
-                LOG.debug("Lifecycle-Management: Docker adapter: (4) deploy_docker_compose: call to 'import_image' [" + config.dic['DOCKER_COMPOSE_IMAGE'] + "] ...")
-                client.import_image(tag="1.21.0", image=config.dic['DOCKER_COMPOSE_IMAGE'])
-
-            LOG.debug("Lifecycle-Management: Docker adapter: (5) deploy_docker_compose: [service_image=" + config.dic['DOCKER_COMPOSE_IMAGE']
-                      + "], [service_name=" + service_name + "]...")
-
-            # create a new container: 'docker run'
-            container = client.create_container(config.dic['DOCKER_COMPOSE_IMAGE'],
-                                                command=service_command,
-                                                name=service_name,
-                                                tty=True,
-                                                volumes=[config.dic['WORKING_DIR_VOLUME'], config.dic['DOCKER_SOCKET_VOLUME']],
-                                                host_config=client.create_host_config(
-                                                    binds={
-                                                        config.dic['WORKING_DIR_VOLUME']: {
-                                                            'bind': config.dic['WORKING_DIR_VOLUME'],
-                                                            'mode': 'rw',
-                                                        },
-                                                        '/var/run/docker.sock': {
-                                                            'bind': config.dic['DOCKER_SOCKET_VOLUME'],
-                                                            'mode': 'rw',
-                                                        }
-                                                    }
-                                                ),
-                                                working_dir=config.dic['WORKING_DIR_VOLUME'])
-
-            LOG.debug("Lifecycle-Management: Docker adapter: (6) deploy_docker_compose: container: " + str(container))
+        # container 1 => command 'up'
+        container1 = docker_client.create_docker_compose_container(service_name, service_command)
+        if container1 is not None:
+            LOG.debug("  > container1: " + str(container1))
+            # container 2 => command 'down'
+            container2 = docker_client.create_docker_compose_container(service_name + "-" + str(uuid.uuid4()), "down")
+            if container2 is not None:
+                SERVICE_INSTANCES_LIST.append({
+                    "type": "docker-compose",
+                    "container_main": container1['Id'],
+                    "container_2": container2['Id']
+                })
+                LOG.debug("  > container2: " + str(container2))
+                LOG.debug("  > container '1' & '2' created")
+            else:
+                SERVICE_INSTANCES_LIST.append({
+                    "type": "docker-compose",
+                    "container_main": container1['Id'],
+                    "container_2": 'error'
+                })
+                LOG.error("  > container '2' not created")
 
             # update agent properties
-            agent['container_id'] = container['Id']
+            agent['container_id'] = container1['Id']
             agent['status'] = STATUS_WAITING
             return common.gen_response_ok('Deploy service in agent', 'agent', str(agent), 'service', str(service))
         else:
@@ -242,18 +192,44 @@ def operation_service_agent(agent, operation):
     LOG.debug("Lifecycle-Management: Docker adapter: operation_service_agent [" + operation + "]: " + str(agent))
     try:
         # connect to docker api
-        client = get_client_agent_docker()
+        client = docker_client.get_client_agent_docker()
         # if connecetd to agent...
         if client:
             if operation == OPERATION_START:
                 client.start(agent['container_id'])
                 agent['status'] = STATUS_STARTED
             elif operation == OPERATION_STOP:
-                client.stop(agent['container_id'])
+                # docker-compose
+                l_elem = db.get_elem_from_list(agent['container_id'])
+                LOG.debug("  > docker-compose? [l_elem=" + str(l_elem) + "]")
+                if l_elem is not None and l_elem['type'] == "docker-compose":
+                    LOG.debug("  >> Docker-compose down [" + l_elem['container_2'] + "] ...")
+                    client.start(l_elem['container_2'])
+                    LOG.debug("  >> Stop container 1 [" + agent['container_id'] + "] ...")
+                    client.stop(agent['container_id'])
+                    LOG.debug("  >> Stop container 2 [" + l_elem['container_2'] + "] ...")
+                    client.stop(l_elem['container_2'])
+                # 'normal' container
+                else:
+                    LOG.debug("  >> Stop container: " + agent['container_id'])
+                    client.stop(agent['container_id'])
                 agent['status'] = STATUS_STOPPED
+
             elif operation == OPERATION_TERMINATE:
-                client.remove_container(agent['container_id'], force=True)
+                # docker-compose
+                l_elem = db.get_elem_from_list(agent['container_id'])
+                LOG.debug("  > docker-compose? [l_elem=" + str(l_elem) + "]")
+                if l_elem is not None and l_elem['type'] == "docker-compose":
+                    LOG.debug("  >> Remove container 1 [" + agent['container_id'] + "] ...")
+                    client.remove_container(agent['container_id'], force=True)
+                    LOG.debug("  >> Remove container 2 [" + l_elem['container_2'] + "] ...")
+                    client.remove_container(l_elem['container_2'], force=True)
+                # 'normal' container
+                else:
+                    LOG.debug("  >> Remove container: " + agent['container_id'])
+                    client.remove_container(agent['container_id'], force=True)
                 agent['status'] = STATUS_TERMINATED
+
         # if error when connecting to agent...
         else:
             LOG.error("Lifecycle-Management: Docker adapter: operation_service_agent: Could not connect to DOCKER API")

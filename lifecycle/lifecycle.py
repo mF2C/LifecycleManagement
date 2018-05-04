@@ -90,14 +90,14 @@ def check_service_content(service):
 # IN: service, user_id, agreement_id, agents_list
 # OUT: service_instance
 def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_service=False):
-    LOG.debug("Lifecycle-Management: Lifecycle: submit_v2: " + str(service) + ", user_id: " + user_id)
+    LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: " + str(service) + ", user_id: " + user_id)
     try:
         # 1. check parameters content
         if check_service and not check_service_content(service):
             return common.gen_response(500, 'field(s) category/exec/exec_type not found', 'service', str(service))
 
         # 2. create new service instance
-        LOG.debug("Lifecycle-Management: Lifecycle: submit_v2: agents_list" + str(agents_list))
+        LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: agents_list" + str(agents_list))
 
         service_instance = data.create_service_instance(service, agents_list, user_id, agreement_id)
         if not service_instance:
