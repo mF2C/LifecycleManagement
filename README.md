@@ -56,56 +56,64 @@ CMD ["python", "app.py"]
 
 #### 2. Install & Launch with Docker
 
-1. [Install and launch the CIMI server](https://github.com/mF2C/cimi/tree/master/_demo)
+1. [Install and launch the CIMI server](https://github.com/mF2C/cimi/tree/master/_demo) / or connect to a remote CIMI server
 
-2. Pull image (skip steps 3, 4 and 5):
+###### 2.1. From 'mf2c/lifecycle'...
+
+1. Pull image:
 
 ```bash
 docker pull mf2c/lifecycle
 ```
 
-3. Clone / download repository
+2. Run application and expose port `46000`:
+
+
+```bash
+sudo docker run -p 46000:46000 mf2c/lifecycle
+```
+
+Read [Usage Guide](#usage-guide) section to see how to properly start the component.
+
+###### 2.2. From mF2C repository...
+
+1. Clone / download repository
 
 ```bash
 git clone https://github.com/mF2C/LifecycleManagement.git
 ```
 
-4. Go to LifecycleManagement folder
+2. Go to LifecycleManagement folder
 
 ```bash
 cd LifecycleManagement
 ```
 
-5. Build application:
+3. Build application:
 
 ```bash
 sudo docker build -t lm-app .
 ```
 
-6. Run application exposing port `46000`:
+4. Run application and expose port `46000`:
 
 ```bash
 sudo docker run -p 46000:46000 lm-app
 ```
-Or
 
-```bash
-sudo docker run -p 46000:46000 mf2c/lifecycle
-```
+Read next section to see how to properly start the component.
 
 -----------------------
 
 ### Usage Guide
 
 1. Create a user in CIMI
-
 2. Start the Lifecycle Management module with access to the docker socket ('-v /var/run/docker.sock:/var/run/docker.sock')
 
 ```bash
 sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:46000 lm-app
 ```
-
-  - Other environment variables to take into account:
+  - Available environment variables:
     - **STANDALONE_MODE** `False` if working in an agent with other mF2C components; `True` if working without external dependencies (except docker)
     - **CIMI_URL**
     - **HOST_IP** Machine's IP address (needed to see if lifecycle is in local host or if it is in another agent/machine)
@@ -118,8 +126,9 @@ sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:4600
 3. After launching the Lifecycle Management module, the REST API services can be accessed at port 46000:
     - List of services (json): _https://localhost:46000/api/v1/lifecycle_
     - List of services (swagger ui): _https://localhost:46000/api/v1/lifecycle.html_
-
-4. View [example](LifecycleExample.md) (complete lifecycle of a service): `LifecycleExample.md`
+4. View the following examples:
+   - [example 1](LifecycleExample_01.md): (complete lifecycle of a service): `LifecycleExample.md`
+   - [GitLab application](LifecycleExample_02.md): Deployment of a service based on a docker-compose file
 
 -----------------------
 

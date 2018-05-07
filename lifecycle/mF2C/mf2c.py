@@ -145,12 +145,16 @@ def service_management_qos(service_instance):
 
 
 # CALL TO User Management (Profiling)
-def user_management_profiling(user_id):
+def user_management_profiling(user_id, remote=None):
     try:
         LOG.info("Lifecycle-Management: MF2C: user_management_profiling: user_id: " + user_id)
 
-        r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/profiling/" + user_id,
-                         verify=config.dic['VERIFY_SSL'])
+        if remote is None:
+            r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/profiling/" + user_id,
+                             verify=config.dic['VERIFY_SSL'])
+        else:
+            r = requests.get("https://" + remote + ":46300/api/v1/user-management/profiling/" + user_id,
+                             verify=config.dic['VERIFY_SSL'])
         json_data = json.loads(r.text)
 
         LOG.debug("Lifecycle-Management: MF2C: user_management_profiling:" + str(r) + ", json_data: " + str(json_data))
@@ -166,12 +170,16 @@ def user_management_profiling(user_id):
 
 
 # CALL TO User Management (Sharing Model)
-def user_management_sharing_model(user_id):
+def user_management_sharing_model(user_id, remote=None):
     try:
         LOG.info("Lifecycle-Management: MF2C: user_management_sharing_model: user_id: " + user_id)
 
-        r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharingmodel/" + user_id,
-                         verify=config.dic['VERIFY_SSL'])
+        if remote is None:
+            r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharingmodel/" + user_id,
+                             verify=config.dic['VERIFY_SSL'])
+        else:
+            r = requests.get("https://" + remote + ":46300/api/v1/user-management/sharingmodel/" + user_id,
+                             verify=config.dic['VERIFY_SSL'])
         json_data = json.loads(r.text)
 
         LOG.debug("Lifecycle-Management: MF2C: user_management_sharing_model:" + str(r) + ", json_data: " + str(json_data))

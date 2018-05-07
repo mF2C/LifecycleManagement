@@ -3,7 +3,7 @@
 ### Launch Lifecycle Management module (STANDALONE MODE)
 
 ```bash
-sudo docker run --env CIMI_URL=https://cimi_url/api --env STANDALONE_MODE=True --env CIMI_USER="user" --env CIMI_PASSWORD="password" --env HOST_IP="192.168.192.192" -v /var/run/docker.sock:/var/run/docker.sock -p 46000:46000 lm-app
+sudo docker run --env CIMI_URL=https://cimi_url/api --env STANDALONE_MODE=True --env CIMI_USER="user" --env CIMI_PASSWORD="password" --env HOST_IP="192.168.111.111" -v /var/run/docker.sock:/var/run/docker.sock -v /home/user/mF2C/compose_examples:/home/user/mF2C/compose_examples -p 46000:46000 mf2c/lifecycle
 ```
 
 Application URL: https://192.168.192.192:46000/api/v1/lifecycle.html

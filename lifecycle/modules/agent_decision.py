@@ -12,6 +12,7 @@ Created on 09 feb. 2018
 """
 
 import lifecycle.mF2C.mf2c as mf2c
+import lifecycle.utils.common as common
 from lifecycle.utils.logs import LOG
 from lifecycle import config
 
@@ -78,11 +79,28 @@ def select_agents(service_instance):
             LOG.debug("Lifecycle-Management: agent_decision: select_agents: service_instance_1: " + str(service_instance_1))
 
             # 2. USER MANAGEMENT -> profiling and sharing model
-            usert_profiling = mf2c.user_management_profiling(service_instance['user'])
-            LOG.debug("Lifecycle-Management: agent_decision: select_agents: usert_profiling: " + str(usert_profiling))
+            # TODO information from User Management module not used
+            for agent in service_instance["agents"]:
+                LOG.info(">>> AGENT >>> " + agent['url'] + " <<<")
+                # LOCAL
+                if agent['url'] == common.get_local_ip():
+                    LOG.debug("Lifecycle-Management: agent_decision: select_agents: local user_profiling and user_sharing_model")
 
-            usert_sharing_model = mf2c.user_management_sharing_model(service_instance['user'])
-            LOG.debug("Lifecycle-Management: agent_decision: select_agents: usert_sharing_model: " + str(usert_sharing_model))
+                    user_profiling = mf2c.user_management_profiling(service_instance['user'])
+                    LOG.debug("Lifecycle-Management: agent_decision: select_agents: user_profiling: " + str(user_profiling))
+
+                    user_sharing_model = mf2c.user_management_sharing_model(service_instance['user'])
+                    LOG.debug("Lifecycle-Management: agent_decision: select_agents: user_sharing_model: " + str(user_sharing_model))
+
+                # 'REMOTE' AGENT
+                elif common.check_ip(agent['url']):
+                    LOG.debug("Lifecycle-Management: agent_decision: select_agents: remote user_profiling and user_sharing_model")
+
+                    user_profiling = mf2c.user_management_profiling(service_instance['user'])
+                    LOG.debug("Lifecycle-Management: agent_decision: select_agents: user_profiling: " + str(user_profiling))
+
+                    user_sharing_model = mf2c.user_management_sharing_model(service_instance['user'])
+                    LOG.debug("Lifecycle-Management: agent_decision: select_agents: user_sharing_model: " + str(user_sharing_model))
 
             # 3. TODO PROCESS INFORMATION AND SELECT BEST CANDIDATES
             LOG.debug("Lifecycle-Management: agent_decision: select_agents: not implemented")

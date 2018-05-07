@@ -115,7 +115,7 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
         for agent in service_instance["agents"]:
             LOG.info(">>> AGENT >>> " + agent['url'] + " <<<")
             # LOCAL
-            if agent['url'] == common.get_ip():
+            if agent['url'] == common.get_local_ip():
                 LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service locally")
                 resp_deploy = allocation_adapter.allocate_service_agent(service, agent)
                 LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service locally: "
@@ -213,7 +213,7 @@ def operation_service(service_instance_id, operation):
         for agent in service_instance["agents"]:
             LOG.info(">>> AGENT >>> " + agent['url'] + " <<<")
             # LOCAL
-            if agent['url'] == common.get_ip():
+            if agent['url'] == common.get_local_ip():
                 if operation == OPERATION_START:
                     LOG.debug("Lifecycle-Management: Lifecycle: operation_service: start service locally")
                     lf_adapter.start_service_agent(None, agent)

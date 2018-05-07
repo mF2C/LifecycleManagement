@@ -100,8 +100,8 @@ def get_ip_address():
     return ipaddr
 
 
-# Get IP
-def get_ip():
+# get_local_ip: Get local / host IP
+def get_local_ip():
     return config.dic['HOST_IP'] #get_ip_address() #config.dic['HOST_IP']
 
 

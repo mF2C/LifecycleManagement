@@ -14,7 +14,7 @@ Created on 09 feb. 2018
 import lifecycle.modules.adapters.docker_client as docker_client
 import lifecycle.utils.common as common
 import lifecycle.utils.db as db
-import sys, traceback, wget, uuid
+import sys, traceback, wget, uuid, os, time
 from lifecycle.utils.db import SERVICE_INSTANCES_LIST
 from lifecycle.utils.logs import LOG
 from lifecycle import config
@@ -117,8 +117,20 @@ def deploy_docker_compose(service, agent):
         # 1. Download docker-compose.yml file
         location = service['exec'] # location = 'https://raw.githubusercontent.com/mF2C/mF2C/master/docker-compose/docker-compose.yml'
         LOG.debug("  > Getting docker-compose.yml from " + location + " ...")
-        res = wget.download(location, config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
-        LOG.debug("  > wget download result: " + str(res))
+
+        try:
+            os.remove(config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
+        except:
+            LOG.error("Error when removing file: " + config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
+
+        try:
+            res = wget.download(location, config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
+            LOG.debug("  > wget download result: " + str(res))
+        except:
+            LOG.error("Error when downloading file: " + config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
+            return common.gen_response(500, "Exception: deploy_docker_compose(): Error when downloading file to WORKING_DIR_VOLUME",
+                                       "agent", str(agent),
+                                       "WORKING_DIR_VOLUME", config.dic['WORKING_DIR_VOLUME'])
 
         # 2. Deploy container
         service_name = service['name'] + "-" + str(uuid.uuid4()) # service_name
@@ -191,43 +203,46 @@ def deploy_service_agent(service, agent):
 def operation_service_agent(agent, operation):
     LOG.debug("Lifecycle-Management: Docker adapter: operation_service_agent [" + operation + "]: " + str(agent))
     try:
-        # connect to docker api
-        client = docker_client.get_client_agent_docker()
-        # if connecetd to agent...
-        if client:
+        # connect to docker api / check existing connection
+        if docker_client.get_client_agent_docker() is not None:
             if operation == OPERATION_START:
-                client.start(agent['container_id'])
+                docker_client.start_container(agent['container_id'])
                 agent['status'] = STATUS_STARTED
+
             elif operation == OPERATION_STOP:
-                # docker-compose
                 l_elem = db.get_elem_from_list(agent['container_id'])
                 LOG.debug("  > docker-compose? [l_elem=" + str(l_elem) + "]")
+
+                # docker-compose
                 if l_elem is not None and l_elem['type'] == "docker-compose":
                     LOG.debug("  >> Docker-compose down [" + l_elem['container_2'] + "] ...")
-                    client.start(l_elem['container_2'])
+                    docker_client.start_container(l_elem['container_2'])
+                    LOG.debug("  >> Docker-compose down: waiting 90 seconds...")
+                    time.sleep(90)  # TODO !!
                     LOG.debug("  >> Stop container 1 [" + agent['container_id'] + "] ...")
-                    client.stop(agent['container_id'])
+                    docker_client.stop_container(agent['container_id'])
                     LOG.debug("  >> Stop container 2 [" + l_elem['container_2'] + "] ...")
-                    client.stop(l_elem['container_2'])
+                    docker_client.stop_container(l_elem['container_2'])
                 # 'normal' container
                 else:
                     LOG.debug("  >> Stop container: " + agent['container_id'])
-                    client.stop(agent['container_id'])
+                    docker_client.stop_container(agent['container_id'])
                 agent['status'] = STATUS_STOPPED
 
             elif operation == OPERATION_TERMINATE:
-                # docker-compose
                 l_elem = db.get_elem_from_list(agent['container_id'])
                 LOG.debug("  > docker-compose? [l_elem=" + str(l_elem) + "]")
+
+                # docker-compose
                 if l_elem is not None and l_elem['type'] == "docker-compose":
                     LOG.debug("  >> Remove container 1 [" + agent['container_id'] + "] ...")
-                    client.remove_container(agent['container_id'], force=True)
+                    docker_client.remove_container(agent['container_id'])
                     LOG.debug("  >> Remove container 2 [" + l_elem['container_2'] + "] ...")
-                    client.remove_container(l_elem['container_2'], force=True)
+                    docker_client.remove_container(l_elem['container_2'])
                 # 'normal' container
                 else:
                     LOG.debug("  >> Remove container: " + agent['container_id'])
-                    client.remove_container(agent['container_id'], force=True)
+                    docker_client.remove_container(agent['container_id'])
                 agent['status'] = STATUS_TERMINATED
 
         # if error when connecting to agent...
