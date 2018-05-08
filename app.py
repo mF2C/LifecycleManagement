@@ -351,7 +351,7 @@ api.add_resource(ServiceLifecycle, '/api/v1/lifecycle')
     /api/v1/lifecycle/service-instance-operations (agent operations)
     
         POST:   Submits a service in a mF2C agent
-        PUT:    starts / stops ... a service in a mF2C agent; start-job
+        PUT:    starts / stops ... a service in a mF2C agent
         DELETE: deletes a service in a mF2C agent
 '''
 class ServiceLifecycleOperations(Resource):
@@ -410,11 +410,9 @@ class ServiceLifecycleOperations(Resource):
     # PUT: Starts / stops / restarts ... a service in an agent, and returns a JSON object with the result / status of
     # the operation.
     @swagger.operation(
-        summary="Starts / stops / restarts a <b>service instance</b> in a mF2C agent // starts a <b>job</b> in the selected agent",
+        summary="Starts / stops / restarts a <b>service instance</b> in a mF2C agent",
         notes="Available operations:<br/>"
-              "<b>'start / stop / restart / terminate'</b> ... service instance operations<br/>"
-              "<b>'start-job'</b> ... starts a job in an agent<br/><br/>"
-              "Field 'parameters' is used only for starting a job in an agent.",
+              "<b>'start / stop / restart / terminate'</b> ... service instance operations<br/>",
         produces=["application/json"],
         authorizations=[],
         parameters=[{
@@ -429,23 +427,7 @@ class ServiceLifecycleOperations(Resource):
                                     "\"container_id\": \"-\","
                                     "\"status\": \"waiting\"," 
                                     "\"num_cpus\": 1," 
-                                    "\"allow\": true}, <br/>"
-                               "<font color='blue'>\"parameters\":</font>"
-                                          " \"&lt;ceiClass&gt;es.bsc.compss.test.TestItf&lt;/ceiClass&gt; "
-                                          "  &lt;className&gt;es.bsc.compss.test.Test&lt;/className&gt;" 
-                                          "  &lt;methodName&gt;main&lt;/methodName&gt;" 
-                                          "  &lt;parameters&gt;" 
-                                          "    &lt;array paramId=\"0\"&gt;" 
-                                          "      &lt;componentClassname&gt;java.lang.String&lt;/componentClassname&gt;" 
-                                          "      &lt;values&gt;" 
-                                          "        &lt;element paramId=\"0\"&gt;" 
-                                          "          &lt;className&gt;java.lang.String&lt;/className&gt;" 
-                                          "          &lt;value xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " 
-                                          "             xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"xs:string\"&gt;3&lt;/value&gt;" 
-                                          "        &lt;/element&gt;" 
-                                          "      &lt;/values&gt;" 
-                                          "    &lt;/array&gt;" 
-                                          "  &lt;/parameters&gt;\" <br/>}",
+                                    "\"allow\": true}}",
             "required": True,
             "paramType": "body",
             "type": "string"
@@ -473,12 +455,6 @@ class ServiceLifecycleOperations(Resource):
             return operations.start(data['agent'])
         elif data['operation'] == OPERATION_TERMINATE:
             return operations.terminate(data['agent'])
-        elif data['operation'] == OPERATION_START_JOB:
-            if 'parameters' not in data:
-                LOG.error('Lifecycle-Management: REST API: put: Parameter not found: parameters')
-                return Response(json.dumps({'error': True, 'message': 'parameter not found: parameters'}),
-                                status=406, content_type='application/json')
-            return operations.start_job(data)
         else:
             LOG.error('Lifecycle-Management: REST API: put: operation not defined / implemented')
             return Response(json.dumps({'error': True, 'message': 'operation not defined / implemented'}),
