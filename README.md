@@ -119,6 +119,7 @@ sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:4600
     - **HOST_IP** Machine's IP address (needed to see if lifecycle is in local host or if it is in another agent/machine)
     - **CIMI_USER** CIMI user
     - **CIMI_PASSWORD** CIMI password
+    - **WORKING_DIR_VOLUME** _docker-compose.yml_ folder
     - **URL_PM_SLA_MANAGER** URL of the Plantform Manager - SLA Manager; e.g. https://192.168.192.192:46030
     - **URL_AC_QoS_PROVIDING** URL of the Agent Controller - QoS Providing; e.g. https://192.168.192.192:46200/api/service-management
     - **URL_AC_USER_MANAGEMENT** URL of the Agent Controller - User Management; e.g. https://192.168.192.192:46300/api/v1/user-management
@@ -127,7 +128,7 @@ sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:4600
     - List of services (json): _https://localhost:46000/api/v1/lifecycle_
     - List of services (swagger ui): _https://localhost:46000/api/v1/lifecycle.html_
 4. View the following examples:
-   - [example 1](LifecycleExample_01.md): (complete lifecycle of a service): `LifecycleExample.md`
+   - [COMPSs application](LifecycleExample_01.md): Complete lifecycle of a service based on COMPSs
    - [GitLab application](LifecycleExample_02.md): Deployment of a service based on a docker-compose file
 
 -----------------------

@@ -1,6 +1,6 @@
 # LifecycleManagement - GitLab application
 
-Deployment of a [GitLab](https://github.com/sameersbn/docker-gitlab) application (docker compose) in a mF2C Agent. This is a service based on a docker compose file.
+Deployment of a [GitLab](https://github.com/sameersbn/docker-gitlab) application (docker compose) in a mF2C Agent. This is a service based on a **docker compose** file.
 
 Service definition:
 
@@ -37,9 +37,17 @@ Application URL: https://192.168.111.111:46000/api/v1/lifecycle.html
 
 The lifecycle offers a Swagger UI that allows anyone to visualize and interact with the API’s resources without having any of the implementation logic in place.
 
+### Download docker images
+
+Download the following docker images (needed in this example) to save time:
+
+```bash
+sudo docker pull docker/compose:1.21.0
+```
+
 --------------------------------------------------------------------------
 
-## Example 1
+## Example
 
 This examples shows the deployment of a docker-compose application in mF2C. The docker compose yaml file is downloaded from the following URL:
 https://raw.githubusercontent.com/sameersbn/docker-gitlab/master/docker-compose.yml
@@ -58,7 +66,7 @@ POST /api/v1/lifecycle
 
 REQUEST BODY:
 
-The body of this request requires a `service` object, the `user` (user_id) that launches this service, and the list of `agents` (agents_list) where this service will be deployed.
+The body of this request requires a `service` object, the `user` (user_id) that launches this service, and the list of `agents` (agents_list) where this service will be deployed. For docker-compose applications the service definition has to include the following properties:
 
   - `exec` URL of the _docker-compose.yml_ file  
   - `exec_type`_docker-compose_
@@ -153,7 +161,9 @@ If deployment was successful, the response includes the id of the new **service 
 }
 ```
 
-Check the values of the agents: the `status` of the containers should be 'started', and the content of `container_id``should be something like '8259ec5ce1c97c0ce0e12e671f532b6fe44c015ee422ec10320df180a0e6da38'.
+Check the values of the agents: the `status` of the containers should be 'started', and the content of `container_id` should be something like '8259ec5ce1c97c0ce0e12e671f532b6fe44c015ee422ec10320df180a0e6da38'.
+
+--------------------------------------------------------------------------
 
 ### 2. Start the service -GitLab-
 
