@@ -23,6 +23,18 @@ DOCKER_SOCKET = "unix://var/run/docker.sock"
 client = None
 
 
+# create_ports_dict:
+def create_ports_dict(ports):
+    try:
+        dict_ports = {}
+        for p in ports:
+            dict_ports.update({p:p})
+        return dict_ports
+    except:
+        LOG.error("Lifecycle-Management: Docker client: create_ports_dict: Error during the ports dict creation: " + str(ports))
+        return {ports[0]:ports[0]}
+
+
 # get_client_agent_docker: Get docker api client
 # connect to docker api: Examples: base_url='tcp://192.168.252.42:2375'; base_url='unix://var/run/docker.sock'
 def get_client_agent_docker():
@@ -47,10 +59,10 @@ def get_client_agent_docker():
 
 
 # create_docker_compose_container
-def create_docker_container(service_image, service_name, service_command, port):
+def create_docker_container(service_image, service_name, service_command, prts):
     LOG.debug("Lifecycle-Management: Docker client: create_docker_container: [service_name=" + service_name + "], "
               "[service_command=" + service_command + "], [service_image=" + service_image + "], "
-              "[port=" + str(port) + "]")
+              "[ports=" + str(prts) + "]")
     # connect to docker api
     lclient = get_client_agent_docker()
     try:
@@ -68,8 +80,8 @@ def create_docker_container(service_image, service_name, service_command, port):
             container = lclient.create_container(service_image,  # command=service_command,
                                                  name=service_name,
                                                  tty=True,
-                                                 ports=[port],
-                                                 host_config=lclient.create_host_config(port_bindings={port: port}))
+                                                 ports=prts, #[port],
+                                                 host_config=lclient.create_host_config(port_bindings=create_ports_dict(prts))) #{port: port}))
             return container
         else:
             LOG.error("Lifecycle-Management: Docker adapter: create_docker_container: Could not connect to DOCKER API")
@@ -80,9 +92,9 @@ def create_docker_container(service_image, service_name, service_command, port):
 
 
 # create_docker_compss_container
-def create_docker_compss_container(service_image, ip, port, master=None):
+def create_docker_compss_container(service_image, ip, prts, master=None):
     LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: [service_image=" + service_image + "], "
-              "[port=" + str(port) + "], [ip=" + ip + "], [master=" + str(master) + "]")
+              "[ports=" + str(prts) + "], [ip=" + ip + "], [master=" + str(master) + "]")
     # connect to docker api
     lclient = get_client_agent_docker()
     try:
@@ -103,8 +115,8 @@ def create_docker_compss_container(service_image, ip, port, master=None):
                                                      name="master",
                                                      environment={"MF2C_HOST": ip, "DEBUG": "debug"},
                                                      tty=True,
-                                                     ports=[port],
-                                                     host_config=lclient.create_host_config(port_bindings={port: port},
+                                                     ports=prts, #[port],
+                                                     host_config=lclient.create_host_config(port_bindings=create_ports_dict(prts), #{port: port},
                                                                                             auto_remove=False))
             else:
                 LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: Creating WORKER container ...")
@@ -114,8 +126,8 @@ def create_docker_compss_container(service_image, ip, port, master=None):
                                                      name="worker",
                                                      environment={"MF2C_HOST": ip, "DEBUG": "debug"},
                                                      tty=True,
-                                                     ports=[port],
-                                                     host_config=lclient.create_host_config(port_bindings={port: port},
+                                                     ports=prts, #[port],
+                                                     host_config=lclient.create_host_config(port_bindings=create_ports_dict(prts), #{port: port},
                                                                                             auto_remove=False))
             return container
         else:
@@ -199,3 +211,8 @@ def remove_container(id):
     except:
         LOG.error("Lifecycle-Management: Docker client: remove_container [" + id + "]: Exception")
         return False
+
+'''
+if __name__ == "__main__":
+    LOG.info(str(create_ports_dict([123, 234, 345, 456, 99])))
+'''

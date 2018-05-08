@@ -207,7 +207,7 @@ class ServiceLifecycle(Resource):
                                  "\"description\": \"Hello World Service\",<br/>"
                                  "\"resourceURI\": \"/hello-world\",<br/>"
                                  "\"exec\": \"mf2c/compss-mf2c:1.0\",<br/>"
-                                 "\"exec_type\": \"docker\",<br/>"
+                                 "\"exec_type\": \"compss\",<br/>"
                                  "\"category\": {<br/>"
                                      "\"cpu\": \"low\",<br/>"
                                      "\"memory\": \"low\",<br/>"
@@ -220,8 +220,8 @@ class ServiceLifecycle(Resource):
                             "\"service_id\": \"120f1ae12ca\",<br/>"
                             "\"user_id\": \"rsucasas\",<br/>"
                             "\"agreement_id\": \"sla_agreement/12932af0ef123\",<br/>"
-                            "\"agents_list\": [{\"agent_ip\": \"192.168.252.41\", \"num_cpus\": 4},<br/>"
-                                              "{\"agent_ip\": \"192.168.252.42\", \"num_cpus\": 2}] }",
+                            "\"agents_list\": [{\"agent_ip\": \"192.168.252.41\", \"num_cpus\": 4, \"master_compss\": false},<br/>"
+                                              "{\"agent_ip\": \"192.168.252.42\", \"num_cpus\": 2, \"master_compss\": true}] }",
             "required": True,
             "paramType": "body",
             "type": "string"
@@ -369,7 +369,7 @@ class ServiceLifecycleOperations(Resource):
                                  "\"description\": \"app-compss Service\","
                                  "\"resourceURI\": \"/app-compss\","
                                  "\"exec\": \"mf2c/compss-mf2c:1.0\","
-                                 "\"exec_type\": \"docker\","
+                                 "\"exec_type\": \"compss\","
                                  "\"category\": {"
                                      "\"cpu\": \"low\","
                                      "\"memory\": \"low\","
@@ -382,11 +382,12 @@ class ServiceLifecycleOperations(Resource):
                             "\"agent\": {"
                                 "\"agent\": {\"href\": \"agent/asdasd\"},"
                                 "\"url\": \"192.168.252.41\","
-                                "\"port\": 8080," 
+                                "\"ports\": [8080]," 
                                 "\"container_id\": \"-\","
                                 "\"status\": \"waiting\"," 
                                 "\"num_cpus\": 1," 
-                                "\"allow\": true}"
+                                "\"allow\": true,"
+                                "\"master_compss\": false}"
                             "}",
             "required": True,
             "paramType": "body",
@@ -423,11 +424,12 @@ class ServiceLifecycleOperations(Resource):
                                "<font color='blue'>\"agent\":</font> {"
                                     "\"agent\": {\"href\": \"agent/asdasd\"},"
                                     "\"url\": \"192.168.252.41\","
-                                    "\"port\": 8080," 
+                                    "\"ports\": [8080]," 
                                     "\"container_id\": \"-\","
                                     "\"status\": \"waiting\"," 
                                     "\"num_cpus\": 1," 
-                                    "\"allow\": true}}",
+                                    "\"allow\": true,"
+                                    "\"master_compss\": false}}",
             "required": True,
             "paramType": "body",
             "type": "string"

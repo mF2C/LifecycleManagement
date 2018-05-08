@@ -57,15 +57,15 @@ from lifecycle.utils.common import OPERATION_START, OPERATION_STOP, OPERATION_RE
        "agreement_id": "",
        "status": "waiting",
        "agents": [
-           {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", "status": "waiting",
-               "num_cpus": 3, "allow": true},
-           {"agent": resource-link, "url": "192.168.1.34", "port": 8081, "container_id": "99asd673f", "status": "waiting",
-               "num_cpus": 2, "allow": true}
+           {"agent": resource-link, "url": "192.168.1.31", "ports": [8081], "container_id": "10asd673f", "status": "waiting",
+               "num_cpus": 3, "allow": true, "master_compss": false},
+           {"agent": resource-link, "url": "192.168.1.34", "ports": [8081], "container_id": "99asd673f", "status": "waiting",
+               "num_cpus": 2, "allow": true, "master_compss": false}
       ]
    }
    
-    Agent example: {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", 
-                    "status": "waiting", "num_cpus": 3, "allow": true}
+    Agent example: {"agent": resource-link, "url": "192.168.1.31", "ports": {8081}, "container_id": "10asd673f", 
+                    "status": "waiting", "num_cpus": 3, "allow": true, "master_compss": false}
 '''
 
 
@@ -83,9 +83,9 @@ def deploy_docker_image(service, agent):
         # command. Docker examples: "/bin/sh -c 'python index.py'"
         service_command = ""
         # port(s)
-        port = agent['port']  # TODO check/improve ports
+        ports = agent['ports']
 
-        container1 = docker_client.create_docker_container(service_image, service_name, service_command, port)
+        container1 = docker_client.create_docker_container(service_image, service_name, service_command, ports)
         if container1 is not None:
             SERVICE_INSTANCES_LIST.append({
                 "type": "docker",
@@ -115,7 +115,7 @@ def deploy_docker_compss(service, agent):
         # service image / location. Examples: "mf2c/compss-agent:latest", "mf2c/compss-mf2c:1.0"
         service_image = service['exec']
         # port(s); COMPSs exposes port 8080
-        port = agent['port']
+        ports = agent['ports']
         # ip
         ip = agent['url']
         # TODO master / agent
@@ -126,7 +126,7 @@ def deploy_docker_compss(service, agent):
         except:
             LOG.error("Lifecycle-Management: Docker adapter: deploy_docker_compss: field 'master_compss' not found in agent")
 
-        container1 = docker_client.create_docker_compss_container(service_image, ip, port, master)
+        container1 = docker_client.create_docker_compss_container(service_image, ip, ports, master)
         if container1 is not None:
             SERVICE_INSTANCES_LIST.append({
                 "type": "compss",
@@ -157,19 +157,19 @@ def deploy_docker_compose(service, agent):
     LOG.debug("Lifecycle-Management: Docker adapter: (1) deploy_docker_compose: " + str(service) + ", " + str(agent))
     try:
         # 1. Download docker-compose.yml file
-        location = service['exec'] # location = 'https://raw.githubusercontent.com/mF2C/mF2C/master/docker-compose/docker-compose.yml'
+        location = service['exec']
         LOG.debug("  > Getting docker-compose.yml from " + location + " ...")
-
+        # remove previous files
         try:
             os.remove(config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
         except:
-            LOG.error("Error when removing file: " + config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
-
+            LOG.warning("Error when removing file: " + config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
+        # download docker-compose.yml
         try:
             res = wget.download(location, config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
             LOG.debug("  > wget download result: " + str(res))
         except:
-            LOG.error("Error when downloading file: " + config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
+            LOG.error("Error when downloading file to: " + config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
             return common.gen_response(500, "Exception: deploy_docker_compose(): Error when downloading file to WORKING_DIR_VOLUME",
                                        "agent", str(agent),
                                        "WORKING_DIR_VOLUME", config.dic['WORKING_DIR_VOLUME'])

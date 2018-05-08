@@ -46,9 +46,9 @@ from lifecycle import config
        "agreement": "",
        "status": "waiting",
        "agents": [
-           {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", "status": "waiting",
+           {"agent": resource-link, "url": "192.168.1.31", "ports": [8081], "container_id": "10asd673f", "status": "waiting",
                "num_cpus": 3, "allow": true, "master_compss": true},
-           {"agent": resource-link, "url": "192.168.1.34", "port": 8081, "container_id": "99asd673f", "status": "waiting",
+           {"agent": resource-link, "url": "192.168.1.34", "ports": [8081], "container_id": "99asd673f", "status": "waiting",
                "num_cpus": 2, "allow": true, "master_compss": false}
       ]
    }
@@ -88,25 +88,30 @@ def create_service_instance(service, agents_list, user_id, agreement_id):
     # create list of agents
     list_of_agents = []
 
-    # ports: TODO now, it takes only the first item
-    port_1 = 9876
+    # ports:
+    ports_l = []
     try:
-        port_1 = service['exec_ports'][0]
+        ports_l = service['exec_ports'] #[0]
     except:
-        LOG.warning("Lifecycle-Management: Data: No port value found in service definition")
+        LOG.warning("Lifecycle-Management: Data: No ports values found in service definition")
 
-    # AGENT:
-    # {"agent": resource-link, "url": "192.168.1.34", "port": 8081, "container_id": "99asd673f", "status": "waiting",
-    #  "num_cpus": 2, "allow": true}
+    # AGENTs:
     for agent in agents_list:
-        # TODO add 'master_compss'
+        if 'master_compss' not in agent:
+            master_compss = False
+        else:
+            master_compss = agent['master_compss']
+        # Add new AGENT to list
         list_of_agents.append({"agent":         {"href": "agent/default-value"},
-                               "port":          port_1,
+                               "ports":         ports_l,
                                "url":           agent['agent_ip'],
                                "status":        "not-defined",
                                "num_cpus":      agent['num_cpus'],
                                "allow":         True,
-                               "container_id":  "-"})
+                               "container_id":  "-",
+                               "master_compss": master_compss,
+                               "agent_param":   "not-defined"})
+
     # SERVICE_INSTANCE:
     new_service_instance = {"service":          service['id'],
                             "agreement":        agreement_id,

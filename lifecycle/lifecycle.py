@@ -59,20 +59,20 @@ from lifecycle.utils.common import OPERATION_START, OPERATION_STOP, OPERATION_RE
        "agreement": "",
        "status": "waiting",
        "agents": [
-           {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", "status": "waiting",
+           {"agent": resource-link, "url": "192.168.1.31", "ports": [8081], "container_id": "10asd673f", "status": "waiting",
                "num_cpus": 3, "allow": true, "master_compss": true},
-           {"agent": resource-link, "url": "192.168.1.34", "port": 8081, "container_id": "99asd673f", "status": "waiting",
+           {"agent": resource-link, "url": "192.168.1.34", "ports": [8081], "container_id": "99asd673f", "status": "waiting",
                "num_cpus": 2, "allow": true, "master_compss": false}
       ]
    }
    
-    Agent example: {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", 
-                    "status": "waiting", "num_cpus": 3, "allow": true}
+    Agent example: {"agent": resource-link, "url": "192.168.1.31", "ports": [8081], "container_id": "10asd673f", 
+                    "status": "waiting", "num_cpus": 3, "allow": true, "master_compss": false}
 -----------------------------------------------------------------------------------------------
  AGENTS_LIST:
-    agents_list: [{"agent_ip": "192.168.252.41", "compss_role": "master", "num_cpus": 4}, 
-                  {"agent_ip": "192.168.252.42", "compss_role": "worker", "num_cpus": 2},
-                  {"agent_ip": "192.168.252.43", "compss_role": "worker", "num_cpus": 2}]
+    agents_list: [{"agent_ip": "192.168.252.41", "master_compss": true, "num_cpus": 4}, 
+                  {"agent_ip": "192.168.252.42", "master_compss": false, "num_cpus": 2},
+                  {"agent_ip": "192.168.252.43", "master_compss": false, "num_cpus": 2}]
    
 '''
 
@@ -119,10 +119,7 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
             # LOCAL
             if agent['url'] == common.get_local_ip():
                 LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service locally")
-
-                # TODO
-                agent.update({"master_compss": True})
-
+                # agent.update({"master_compss": True})
                 resp_deploy = allocation_adapter.allocate_service_agent(service, agent)
                 LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service locally: "
                           "[resp_deploy=" + str(resp_deploy) + "]")
@@ -133,9 +130,7 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
                 else:
                     LOG.error("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service locally: NOT DEPLOYED")
                     agent['status'] = "not-deployed"
-
-                # TODO
-                agent.pop("master_compss", None)
+                # agent.pop("master_compss", None)
 
             # 'REMOTE' AGENT: calls to lifecycle from remote agent
             elif common.check_ip(agent['url']):
