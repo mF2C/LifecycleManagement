@@ -62,8 +62,7 @@ def create_docker_container(service_image, service_name, service_command, port):
                 LOG.debug("Lifecycle-Management: Docker client: create_docker_container: call to 'import_image' [" + service_image + "] ...")
                 lclient.import_image(image=service_image)  # (tag="latest", image="ubuntu") # (tag="latest", image="ubuntu")
 
-            LOG.debug("Lifecycle-Management: Docker client: create_docker_container: [service_image=" + service_image
-                      + "], [service_name=" + service_name + "],  [port=" + str(port) + "]...")
+            LOG.debug("Lifecycle-Management: Docker client: create_docker_container: Creating container ...")
 
             # create a new container: 'docker run'
             container = lclient.create_container(service_image,  # command=service_command,
@@ -77,6 +76,53 @@ def create_docker_container(service_image, service_name, service_command, port):
             return None
     except:
         LOG.error("Lifecycle-Management: Docker client: create_docker_container: Exception")
+        return None
+
+
+# create_docker_compss_container
+def create_docker_compss_container(service_image, ip, port, master=None):
+    LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: [service_image=" + service_image + "], "
+              "[port=" + str(port) + "], [ip=" + ip + "], [master=" + str(master) + "]")
+    # connect to docker api
+    lclient = get_client_agent_docker()
+    try:
+        if lclient:
+            # check if image already exists in agent
+            l_images = lclient.images(name=service_image)
+            # if not, download image
+            if not l_images or len(l_images) == 0:
+                LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: call to 'import_image' [" + service_image + "] ...")
+                lclient.import_image(image=service_image)  # (tag="latest", image="ubuntu") # (tag="latest", image="ubuntu")
+
+            # create a new container: 'docker run'
+            if master is not None:
+                LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: Creating MASTER container ...")
+                # MASTER: docker run --rm -it --env MF2C_HOST=172.17.0.3 -p46100:46100 --env DEBUG=debug --name master mf2c/compss-agent:latest
+                #         docker run --rm -it --env MF2C_HOST=172.17.0.3 -p46100:46100 --env DEBUG=debug --name master mf2c/compss-test:latest
+                container = lclient.create_container(service_image,
+                                                     name="master",
+                                                     environment={"MF2C_HOST": ip, "DEBUG": "debug"},
+                                                     tty=True,
+                                                     ports=[port],
+                                                     host_config=lclient.create_host_config(port_bindings={port: port},
+                                                                                            auto_remove=False))
+            else:
+                LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: Creating WORKER container ...")
+                # WORKER: docker run --rm -it --env MF2C_HOST=172.17.0.2 --env DEBUG=debug --name worker mf2c/compss-agent:latest
+                #         docker run --rm -it --env MF2C_HOST=172.17.0.2 --env DEBUG=debug --name worker mf2c/compss-test:latest
+                container = lclient.create_container(service_image,
+                                                     name="worker",
+                                                     environment={"MF2C_HOST": ip, "DEBUG": "debug"},
+                                                     tty=True,
+                                                     ports=[port],
+                                                     host_config=lclient.create_host_config(port_bindings={port: port},
+                                                                                            auto_remove=False))
+            return container
+        else:
+            LOG.error("Lifecycle-Management: Docker adapter: create_docker_compss_container: Could not connect to DOCKER API")
+            return None
+    except:
+        LOG.error("Lifecycle-Management: Docker client: create_docker_compss_container: Exception")
         return None
 
 
@@ -94,6 +140,8 @@ def create_docker_compose_container(service_name, service_command):
                 LOG.debug("Lifecycle-Management: Docker client: create_docker_compose_container: call to 'import_image' [" +
                           config.dic['DOCKER_COMPOSE_IMAGE'] + "] ...")
                 lclient.import_image(tag=config.dic['DOCKER_COMPOSE_IMAGE_TAG'], image=config.dic['DOCKER_COMPOSE_IMAGE'])
+
+            LOG.debug("Lifecycle-Management: Docker client: create_docker_compose_container: Creating container ...")
 
             # create a new container: 'docker run'
             container = lclient.create_container(config.dic['DOCKER_COMPOSE_IMAGE'],
@@ -129,7 +177,7 @@ def stop_container(id):
         lclient = get_client_agent_docker()
         lclient.stop(id)
     except:
-        LOG.error("Lifecycle-Management: Docker client: stop_container: Exception")
+        LOG.error("Lifecycle-Management: Docker client: stop_container [" + id + "]: Exception")
         return False
 
 
@@ -139,7 +187,7 @@ def start_container(id):
         lclient = get_client_agent_docker()
         lclient.start(id)
     except:
-        LOG.error("Lifecycle-Management: Docker client: stop_container: Exception")
+        LOG.error("Lifecycle-Management: Docker client: start_container [" + id + "]: Exception")
         return False
 
 
@@ -149,5 +197,5 @@ def remove_container(id):
         lclient = get_client_agent_docker()
         lclient.remove_container(id, force=True)
     except:
-        LOG.error("Lifecycle-Management: Docker client: stop_container: Exception")
+        LOG.error("Lifecycle-Management: Docker client: remove_container [" + id + "]: Exception")
         return False

@@ -77,17 +77,11 @@ def del_service_instance(service_instance_id, obj_response_cimi=None):
 
 # create_service_instance: Creates a new service instance
 #   IN: 1. service
-#       2. [{"agent_ip": "192.168.252.41", "num_cpus": 4}, {"agent_ip": "192.168.252.42", "num_cpus": 2},
-#           {"agent_ip": "192.168.252.43", "num_cpus": 2}] TODO IPs list until landscaper is ready
+#       2. [{"agent_ip": "192.168.252.41", "num_cpus": 4, "master_compss": false},
+#           {"agent_ip": "192.168.252.43", "num_cpus": 2, "master_compss": true}] TODO: IPs list until landscaper is ready
 #       3. user_id
 #       4. agreement_id
-#
 #   OUT: service_instance dict
-#
-# TODO new fields needed!!!
-#   - service_instance: [exec_compss=boolean], [agents/compss_master=boolean]
-#   - service: [exec_compss=boolean]
-#
 def create_service_instance(service, agents_list, user_id, agreement_id):
     LOG.debug("Lifecycle-Management: Data: create_service_instance: " + str(service) + ", " + str(agents_list))
 
@@ -105,6 +99,7 @@ def create_service_instance(service, agents_list, user_id, agreement_id):
     # {"agent": resource-link, "url": "192.168.1.34", "port": 8081, "container_id": "99asd673f", "status": "waiting",
     #  "num_cpus": 2, "allow": true}
     for agent in agents_list:
+        # TODO add 'master_compss'
         list_of_agents.append({"agent":         {"href": "agent/default-value"},
                                "port":          port_1,
                                "url":           agent['agent_ip'],

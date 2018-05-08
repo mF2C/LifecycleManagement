@@ -18,28 +18,8 @@ from lifecycle.utils.logs import LOG
 
 
 # Deploy service in an agent
-# IN:
-#   Service example:
-#       {
-#           "name": "hello-world",
-#           "description": "Hello World Service",
-#           "resourceURI": "/hello-world",
-#           "exec": "hello-world",
-#           "exec_type": "docker",
-#           "exec_ports": ["8080", "8081"],
-#           "category": {
-#               "cpu": "low",
-#               "memory": "low",
-#               "storage": "low",
-#               "inclinometer": false,
-#               "temperature": false,
-#               "jammer": false,
-#               "location": false
-#           }
-#       }
-#   Agent example:
-#    {"agent": resource-link, "url": "192.168.1.31", "port": 8081, "container_id": "10asd673f", "status": "waiting",
-#     "num_cpus": 3, "allow": true}
+# IN: - Service
+#    - Agent
 def deploy(service, agent):
     LOG.debug("Lifecycle-Management: Operations: deploy: " + str(service) + ", agent: " + str(agent))
     return allocation_adapter.allocate_service_agent(service, agent)
@@ -76,19 +56,3 @@ def terminate(agent):
     except:
         LOG.error('Lifecycle-Management: Operations: terminate: Exception')
         return common.gen_response(500, 'Exception', 'agent', str(agent))
-
-
-# TODO start compss job!! master & workers!!!!
-def start_job(agent):
-    LOG.warning("Lifecycle-Management: Operations: start_job: not implemented: " + str(agent))
-'''
-# Service Operation: start job
-def start_job(agent):
-    LOG.info("Lifecycle-Management: Operations: start_job: " + str(agent))
-    try:
-        status = lf_adapter.start_job(service_instance, parameters) #.restart_service_agent(None, agent)
-        return common.gen_response_ok('Restart service', 'agent', str(agent), 'status', status)
-    except:
-        LOG.error('Lifecycle-Management: Operations: start_job: Exception')
-        return common.gen_response(500, 'Exception', 'agent', str(agent))
-'''

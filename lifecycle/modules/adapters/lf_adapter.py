@@ -38,8 +38,8 @@ def terminate_service_agent(service, agent):
 
 
 # start_job_compss: Starts job in one agent
-def start_job_compss(agent, parameters):
-    return compss_adpt.start_job(agent, parameters)
+def start_job_compss(service_instance_id, agent, parameters):
+    return compss_adpt.start_job(service_instance_id, agent, parameters)
 
 
 # start_job_compss_multiple_agents: Starts job in multiple agents

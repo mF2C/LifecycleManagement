@@ -19,7 +19,6 @@ from lifecycle.utils.logs import LOG
 '''
 Lifecycle & COMPSs:
 
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <startApplication>
     <ceiClass>es.bsc.compss.test.TestItf</ceiClass>
     <className>es.bsc.compss.test.Test</className>
@@ -40,7 +39,7 @@ Lifecycle & COMPSs:
         </params>
     </parameters>
     <resources>
-        <resource name="COMPSsWorker01:8080">
+        <resource name="172.17.0.3:46100">
             <description>
                 <memorySize>4.0</memorySize>
                 <memoryType>[unassigned]</memoryType>
@@ -65,7 +64,7 @@ Lifecycle & COMPSs:
                 <wallClockLimit>-1</wallClockLimit>
             </description>
         </resource>
-        <resource name="COMPSsWorker02:1200">
+        <resource name="172.17.0.2:46100">
             <description>
                 <memorySize>4.0</memorySize>
                 <memoryType>[unassigned]</memoryType>
@@ -91,11 +90,9 @@ Lifecycle & COMPSs:
             </description>
         </resource>
     </resources>
+    <serviceInstanceId>e47b5928-98c5-417e-9dd5-1593fc6dca5b</serviceInstanceId>
 </startApplication>
-'''
 
-
-# start_job: Start app in COMPSs container
 # parameters:
 #   "  <ceiClass>es.bsc.compss.test.TestItf</ceiClass>" \
 #   "  <className>es.bsc.compss.test.Test</className>" \
@@ -112,37 +109,68 @@ Lifecycle & COMPSs:
 #   "      </values>" \
 #   "    </array>" \
 #   "  </parameters>" \
-def start_job(agent, parameters):
-    LOG.debug("Lifecycle-Management: COMPSs adapter: start_job: [agent=" + str(agent) + "], [parameters=" + parameters + "]")
+'''
+
+
+# find_master:
+def find_master(service_instance):
     try:
+        for agent in service_instance['agents']:
+            if 'master_compss' not in agent:
+                LOG.warning("Lifecycle-Management: common: find_master: 'master_compss' not found in agent")
+            elif agent['master_compss']:
+                return agent
+    except:
+        LOG.error('Lifecycle-Management: common: find_master: Exception')
+    return service_instance['agents'][0]
+
+
+# gen_resource:
+def gen_resource(url, port):
+    try:
+        xml = "<resource name=\"" + url + ":" + str(port) + "\">" \
+              "  <description>" \
+              "    <memorySize>4.0</memorySize>" \
+              "    <memoryType>[unassigned]</memoryType>" \
+              "    <operatingSystemDistribution>[unassigned]</operatingSystemDistribution>" \
+              "    <operatingSystemType>[unassigned]</operatingSystemType>" \
+              "    <operatingSystemVersion>[unassigned]</operatingSystemVersion>" \
+              "    <pricePerUnit>-1.0</pricePerUnit>" \
+              "    <priceTimeUnit>-1</priceTimeUnit>" \
+              "    <processors>" \
+              "      <architecture>[unassigned]</architecture>" \
+              "      <computingUnits>1</computingUnits>" \
+              "      <internalMemory>-1.0</internalMemory>" \
+              "      <name>[unassigned]</name>" \
+              "      <propName>[unassigned]</propName>" \
+              "      <propValue>[unassigned]</propValue>" \
+              "      <speed>-1.0</speed>" \
+              "      <type>CPU</type>" \
+              "    </processors>" \
+              "    <storageSize>-1.0</storageSize>" \
+              "    <storageType>[unassigned]</storageType>" \
+              "    <value>0.0</value>" \
+              "    <wallClockLimit>-1</wallClockLimit>" \
+              "  </description>" \
+              "</resource>"
+        return xml
+    except:
+        LOG.error('Lifecycle-Management: COMPSs adapter: gen_resource: Exception')
+        return False
+
+
+# start_job: Start app in COMPSs container
+def start_job(service_instance_id, agent, parameters):
+    LOG.debug("Lifecycle-Management: COMPSs adapter: start_job: [agent=" + str(agent) + "], [parameters=" + str(parameters) + "]")
+    try:
+        # create (1) resource xml
+        xml_resource = gen_resource(agent['url'], agent['port'])
+
+        # create xml
         xml = "<?xml version='1.0' encoding='utf-8'?>" \
-              "<startApplication>" + parameters + "<resources>" \
-              "   <resource name=\"localhost:8080\">" \
-              "      <description>" \
-              "        <memorySize>4.0</memorySize>" \
-              "        <memoryType>[unassigned]</memoryType>" \
-              "        <operatingSystemDistribution>[unassigned]</operatingSystemDistribution>" \
-              "        <operatingSystemType>[unassigned]</operatingSystemType>" \
-              "        <operatingSystemVersion>[unassigned]</operatingSystemVersion>" \
-              "        <pricePerUnit>-1.0</pricePerUnit>" \
-              "        <priceTimeUnit>-1</priceTimeUnit>" \
-              "        <processors>" \
-              "          <architecture>[unassigned]</architecture>" \
-              "          <computingUnits>2</computingUnits>" \
-              "          <internalMemory>-1.0</internalMemory>" \
-              "          <name>[unassigned]</name>" \
-              "          <propName>[unassigned]</propName>" \
-              "          <propValue>[unassigned]</propValue>" \
-              "          <speed>-1.0</speed>" \
-              "          <type>CPU</type>" \
-              "        </processors>" \
-              "        <storageSize>-1.0</storageSize>" \
-              "        <storageType>[unassigned]</storageType>" \
-              "        <value>0.0</value>" \
-              "        <wallClockLimit>-1</wallClockLimit>" \
-              "      </description>" \
-              "    </resource>" \
-              "  </resources>" \
+              "<startApplication>" + parameters + \
+              "  <resources>" + xml_resource + "  </resources>" \
+              "  <serviceInstanceId>" + service_instance_id + "</serviceInstanceId>" \
               "</startApplication>"
         LOG.debug("Lifecycle-Management: COMPSs adapter: start_job: [xml=" + xml + "]")
 
@@ -150,7 +178,6 @@ def start_job(agent, parameters):
                            data=xml,
                            headers={'Content-Type': 'application/xml'})
         LOG.debug("Lifecycle-Management: COMPSs adapter: start_job: [res=" + str(res) + "]")
-
         return True
     except:
         traceback.print_exc(file=sys.stdout)
@@ -158,89 +185,28 @@ def start_job(agent, parameters):
         return False
 
 
-# start_job_in_agents: Start app in COMPSs container (more than one agent involved in the execution of this job)
-# parameters:
-#   "  <ceiClass>es.bsc.compss.test.TestItf</ceiClass>" \
-#   "  <className>es.bsc.compss.test.Test</className>" \
-#   "  <methodName>main</methodName>" \
-#   "  <parameters>" \
-#   "    <array paramId=\"0\">" \
-#   "      <componentClassname>java.lang.String</componentClassname>" \
-#   "      <values>" \
-#   "        <element paramId=\"0\">" \
-#   "          <className>java.lang.String</className>" \
-#   "          <value xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " \
-#   "             xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"xs:string\">3</value>" \
-#   "        </element>" \
-#   "      </values>" \
-#   "    </array>" \
-#   "  </parameters>" \
+# start_job_in_agents: Start app in multiple COMPSs containers
 def start_job_in_agents(service_instance, parameters):
     LOG.debug("Lifecycle-Management: COMPSs adapter: start_job_in_agents: [service_instance=" + str(service_instance) + "], "
-              "[parameters=" + parameters + "]")
+              "[parameters=" + str(parameters) + "]")
     try:
+        # create resource xml
+        xml_resources_content = ""
+        for agent in service_instance['agents']:
+            xml_resources_content += gen_resource(agent['url'], agent['port'])
+
         xml = "<?xml version='1.0' encoding='utf-8'?>" \
-              "<startApplication>" + parameters + "<resources>" \
-              "   <resource name=\"" + service_instance['agents'][0]['url'] + ":8080\">" \
-              "      <description>" \
-              "        <memorySize>4.0</memorySize>" \
-              "        <memoryType>[unassigned]</memoryType>" \
-              "        <operatingSystemDistribution>[unassigned]</operatingSystemDistribution>" \
-              "        <operatingSystemType>[unassigned]</operatingSystemType>" \
-              "        <operatingSystemVersion>[unassigned]</operatingSystemVersion>" \
-              "        <pricePerUnit>-1.0</pricePerUnit>" \
-              "        <priceTimeUnit>-1</priceTimeUnit>" \
-              "        <processors>" \
-              "          <architecture>[unassigned]</architecture>" \
-              "          <computingUnits>1</computingUnits>" \
-              "          <internalMemory>-1.0</internalMemory>" \
-              "          <name>[unassigned]</name>" \
-              "          <propName>[unassigned]</propName>" \
-              "          <propValue>[unassigned]</propValue>" \
-              "          <speed>-1.0</speed>" \
-              "          <type>CPU</type>" \
-              "        </processors>" \
-              "        <storageSize>-1.0</storageSize>" \
-              "        <storageType>[unassigned]</storageType>" \
-              "        <value>0.0</value>" \
-              "        <wallClockLimit>-1</wallClockLimit>" \
-              "      </description>" \
-              "    </resource>" \
-              "   <resource name=\"" + service_instance['agents'][1]['url'] + ":8080\">" \
-              "      <description>" \
-              "        <memorySize>4.0</memorySize>" \
-              "        <memoryType>[unassigned]</memoryType>" \
-              "        <operatingSystemDistribution>[unassigned]</operatingSystemDistribution>" \
-              "        <operatingSystemType>[unassigned]</operatingSystemType>" \
-              "        <operatingSystemVersion>[unassigned]</operatingSystemVersion>" \
-              "        <pricePerUnit>-1.0</pricePerUnit>" \
-              "        <priceTimeUnit>-1</priceTimeUnit>" \
-              "        <processors>" \
-              "          <architecture>[unassigned]</architecture>" \
-              "          <computingUnits>1</computingUnits>" \
-              "          <internalMemory>-1.0</internalMemory>" \
-              "          <name>[unassigned]</name>" \
-              "          <propName>[unassigned]</propName>" \
-              "          <propValue>[unassigned]</propValue>" \
-              "          <speed>-1.0</speed>" \
-              "          <type>CPU</type>" \
-              "        </processors>" \
-              "        <storageSize>-1.0</storageSize>" \
-              "        <storageType>[unassigned]</storageType>" \
-              "        <value>0.0</value>" \
-              "        <wallClockLimit>-1</wallClockLimit>" \
-              "      </description>" \
-              "    </resource>" \
-              "  </resources>" \
+              "<startApplication>" + parameters + \
+              "  <resources>" + xml_resources_content + "</resources>" \
+              "  <serviceInstanceId>" + service_instance['id'].replace('service-instance/', '') + "</serviceInstanceId>" \
               "</startApplication>"
         LOG.debug("Lifecycle-Management: COMPSs adapter: start_job_in_agents: [xml=" + xml + "]")
 
-        res = requests.put("http://" + service_instance['agents'][0]['url'] + ":" +
-                                       str(service_instance['agents'][0]['port']) + "/COMPSs/startApplication",
+        master_agent = find_master(service_instance)
+        res = requests.put("http://" + master_agent['url'] + ":" + str(master_agent['port']) + "/COMPSs/startApplication",
                            data=xml,
                            headers={'Content-Type': 'application/xml'})
         LOG.debug("Lifecycle-Management: COMPSs adapter: start_job_in_agents: [res=" + str(res) + "]")
-
         return True
     except:
         traceback.print_exc(file=sys.stdout)

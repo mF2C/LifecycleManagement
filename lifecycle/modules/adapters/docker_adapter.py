@@ -45,6 +45,7 @@ from lifecycle.utils.common import OPERATION_START, OPERATION_STOP, OPERATION_RE
        }
        
        "exec_type": "docker" ........... "exec" = docker image (docker hub)
+                    "compss" ........... "exec" = docker image based on COMPSs (docker hub)
                     "docker-compose" ... "exec" = docker-compose.yml location
 -----------------------------------------------------------------------------------------------
  SERVICE INSTANCE:
@@ -75,9 +76,9 @@ from lifecycle.utils.common import OPERATION_START, OPERATION_STOP, OPERATION_RE
 def deploy_docker_image(service, agent):
     LOG.debug("Lifecycle-Management: Docker adapter: (1) deploy_docker_image: " + str(service) + ", " + str(agent))
     try:
-        # service image / location. Examples: "mf2c/compss-mf2c:1.0", "yeasy/simple-web"
+        # service image / location. Examples: "yeasy/simple-web"
         service_image = service['exec']
-        # service_name examples: "app-compss", "simple-web-test"
+        # service_name examples: "simple-web-test"
         service_name = service['name'] + "-" + str(uuid.uuid4())
         # command. Docker examples: "/bin/sh -c 'python index.py'"
         service_command = ""
@@ -105,6 +106,47 @@ def deploy_docker_image(service, agent):
         traceback.print_exc(file=sys.stdout)
         LOG.error('Lifecycle-Management: Docker adapter: deploy_docker_image: Exception')
         return common.gen_response(500, 'Exception: deploy_docker_image()', 'agent', str(agent), 'service', str(service))
+
+
+# deploy_docker_compss:
+def deploy_docker_compss(service, agent):
+    LOG.debug("Lifecycle-Management: Docker adapter: (1) deploy_docker_compss: " + str(service) + ", " + str(agent))
+    try:
+        # service image / location. Examples: "mf2c/compss-agent:latest", "mf2c/compss-mf2c:1.0"
+        service_image = service['exec']
+        # port(s); COMPSs exposes port 8080
+        port = agent['port']
+        # ip
+        ip = agent['url']
+        # TODO master / agent
+        master = None
+        try:
+            if agent['master_compss']:
+                master = True
+        except:
+            LOG.error("Lifecycle-Management: Docker adapter: deploy_docker_compss: field 'master_compss' not found in agent")
+
+        container1 = docker_client.create_docker_compss_container(service_image, ip, port, master)
+        if container1 is not None:
+            SERVICE_INSTANCES_LIST.append({
+                "type": "compss",
+                "container_main": container1['Id'],
+                "container_2": "-"
+            })
+            LOG.debug("  > container: " + str(container1))
+
+            # update agent properties
+            agent['container_id'] = container1['Id']
+            agent['status'] = STATUS_WAITING
+            return common.gen_response_ok('Deploy service in agent', 'agent', str(agent), 'service', str(service))
+        else:
+            LOG.error("Lifecycle-Management: Docker adapter: deploy_docker_compss: Could not connect to DOCKER API")
+            agent['status'] = STATUS_ERROR
+            return common.gen_response(500, 'Error when connecting to DOCKER API', 'agent', str(agent), 'service', str(service))
+    except:
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('Lifecycle-Management: Docker adapter: deploy_docker_compss: Exception')
+        return common.gen_response(500, 'Exception: deploy_docker_compss()', 'agent', str(agent), 'service', str(service))
 
 
 # deploy_docker_compose:
@@ -185,6 +227,9 @@ def deploy_service_agent(service, agent):
         # docker
         elif service['exec_type'] == 'docker':
             return deploy_docker_image(service, agent)
+        # compss (docker)
+        elif service['exec_type'] == 'compss':
+            return deploy_docker_compss(service, agent)
         # not defined
         else:
             LOG.warning("Lifecycle-Management: Docker adapter: deploy_service_agent: [" + service['exec_type'] + "] not defined")
@@ -218,7 +263,7 @@ def operation_service_agent(agent, operation):
                     LOG.debug("  >> Docker-compose down [" + l_elem['container_2'] + "] ...")
                     docker_client.start_container(l_elem['container_2'])
                     LOG.debug("  >> Docker-compose down: waiting 90 seconds...")
-                    time.sleep(90)  # TODO !!
+                    time.sleep(60)
                     LOG.debug("  >> Stop container 1 [" + agent['container_id'] + "] ...")
                     docker_client.stop_container(agent['container_id'])
                     LOG.debug("  >> Stop container 2 [" + l_elem['container_2'] + "] ...")

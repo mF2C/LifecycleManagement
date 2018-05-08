@@ -47,6 +47,7 @@ from lifecycle.utils.common import OPERATION_START, OPERATION_STOP, OPERATION_RE
        }
        
        "exec_type": "docker" ........... "exec" = docker image (docker hub)
+                    "compss" ........... "exec" = docker image based on COMPSs (docker hub)
                     "docker-compose" ... "exec" = docker-compose.yml location
 -----------------------------------------------------------------------------------------------
  SERVICE INSTANCE:
@@ -69,8 +70,9 @@ from lifecycle.utils.common import OPERATION_START, OPERATION_STOP, OPERATION_RE
                     "status": "waiting", "num_cpus": 3, "allow": true}
 -----------------------------------------------------------------------------------------------
  AGENTS_LIST:
-    agents_list: [{"agent_ip": "192.168.252.41", "num_cpus": 4}, {"agent_ip": "192.168.252.42", "num_cpus": 2},
-                  {"agent_ip": "192.168.252.43", "num_cpus": 2}]
+    agents_list: [{"agent_ip": "192.168.252.41", "compss_role": "master", "num_cpus": 4}, 
+                  {"agent_ip": "192.168.252.42", "compss_role": "worker", "num_cpus": 2},
+                  {"agent_ip": "192.168.252.43", "compss_role": "worker", "num_cpus": 2}]
    
 '''
 
@@ -117,6 +119,10 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
             # LOCAL
             if agent['url'] == common.get_local_ip():
                 LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service locally")
+
+                # TODO
+                agent.update({"master_compss": True})
+
                 resp_deploy = allocation_adapter.allocate_service_agent(service, agent)
                 LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service locally: "
                           "[resp_deploy=" + str(resp_deploy) + "]")
@@ -127,6 +133,9 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
                 else:
                     LOG.error("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service locally: NOT DEPLOYED")
                     agent['status'] = "not-deployed"
+
+                # TODO
+                agent.pop("master_compss", None)
 
             # 'REMOTE' AGENT: calls to lifecycle from remote agent
             elif common.check_ip(agent['url']):
@@ -177,9 +186,7 @@ def submit(service, user_id, agreement_id):
             return common.gen_response(500, 'field(s) category/exec/exec_type not found', 'service', str(service))
 
         # 2. get list of available agents / resources / VMs. Example: TODO!!!
-        #   [{"agent_ip": "192.168.252.41", "num_cpus": 4},
-        #    {"agent_ip": "192.168.252.42", "num_cpus": 2},
-        #    {"agent_ip": "192.168.252.43", "num_cpus": 2}]
+        #   [{"agent_ip": "192.168.252.41", "num_cpus": 4, "master_compss": false}, {...}]
         available_agents_list = agent_decision.get_available_agents_list(service)   # TODO call to landscaper/reommender
         if not available_agents_list:
             # error
@@ -319,26 +326,23 @@ def terminate(service_instance_id):
 
 
 # Service Instance Operation: starts a job / app
-# TODO get agent with compss master
 def start_job(body):
     LOG.debug("Lifecycle-Management: Lifecycle: start_job: " + str(body))
+    LOG.debug("Lifecycle-Management: Lifecycle: start_job: [body['service_instance_id']=" + body['service_instance_id'] + "]")
     try:
-        LOG.debug("Lifecycle-Management: Lifecycle: start_job: [body['service_instance_id']=" + body['service_instance_id'] + "]")
+        # service instance
         service_instance = data.get_service_instance(body['service_instance_id'])
         LOG.debug("Lifecycle-Management: Lifecycle: start_job: service_instance: " + str(service_instance))
 
-        agent = service_instance['agents'][0]
-        LOG.debug("Lifecycle-Management: Lifecycle: start_job: Starting job in agent [" + str(agent) + "] ...")
-
         # start job in agent(s)
         if len(service_instance['agents']) == 1:
-            res = lf_adapter.start_job_compss(agent, body['parameters'])
-        elif len(service_instance['agents']) == 2:
+            res = lf_adapter.start_job_compss(body['service_instance_id'], service_instance['agents'][0], body['parameters'])
+        elif len(service_instance['agents']) >= 2:
             res = lf_adapter.start_job_compss_multiple_agents(service_instance, body['parameters'])
         else:
-            LOG.warning("Lifecycle-Management: Lifecycle: start_job: Execution supported in only 1-2 agents! agents size="
+            LOG.warning("Lifecycle-Management: Lifecycle: start_job: Execution supported in only 1 or more agents! agents size="
                         + str(len(service_instance['agents'])))
-            res = lf_adapter.start_job_compss_multiple_agents(service_instance, body['parameters'])
+            res = None
 
         if res:
             return common.gen_response_ok('Start job', 'service_id', body['service_instance_id'], 'res', res)
@@ -348,38 +352,6 @@ def start_job(body):
         LOG.error('Lifecycle-Management: Lifecycle: start_job: Exception')
         return common.gen_response(500, 'Exception', 'data', str(body))
 
-
-# Terminate service, Deallocate service's resources
-# TODO check errors / exceptions
-'''
-def terminate(service_instance_id):
-    LOG.debug("Lifecycle-Management: Lifecycle: terminate: " + service_instance_id)
-    try:
-        # 1. get service_instance object
-        service_instance = data.get_service_instance(service_instance_id)
-        if not service_instance:
-            return common.gen_response(500, 'Error getting service instance object', 'service_instance_id', service_instance_id)
-
-        # 2. service instance status = Stopped
-        if service_instance['status'] != "Stopped":
-            stop(service_instance_id)
-
-        # 3. deletes service_instance from cimi
-        obj_response_cimi = common.ResponseCIMI()
-        resp = data.del_service_instance(service_instance_id, obj_response_cimi)
-        if not resp is None and resp != -1:
-            LOG.debug('Service instance deleted from CIMI')
-        else:
-            LOG.error("Error: Service instance NOT deleted from CIMI")
-
-        # 4. terminate SLA
-        sla_adapter.terminate_sla_agreement(service_instance, service_instance['agreement'])
-
-        return common.gen_response_ok('Terminate service', 'service_instance_id', service_instance_id)
-    except:
-        LOG.error('Lifecycle-Management: Lifecycle: terminate: Exception')
-        return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
-'''
 
 # Get service instance
 def get(service_instance_id):
