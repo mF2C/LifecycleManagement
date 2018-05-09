@@ -14,6 +14,7 @@ Created on 09 feb. 2018
 import requests
 import sys, traceback
 from lifecycle.utils.logs import LOG
+from lifecycle import config
 
 
 '''
@@ -126,9 +127,9 @@ def find_master(service_instance):
 
 
 # gen_resource:
-def gen_resource(url, port):
+def gen_resource(url):
     try:
-        xml = "<resource name=\"" + url + ":" + str(port) + "\">" \
+        xml = "<resource name=\"" + url + ":" + str(config.dic['PORT_COMPSs']) + "\">" \
               "  <description>" \
               "    <memorySize>4.0</memorySize>" \
               "    <memoryType>[unassigned]</memoryType>" \
@@ -164,7 +165,7 @@ def start_job(service_instance_id, agent, parameters):
     LOG.debug("Lifecycle-Management: COMPSs adapter: start_job: [agent=" + str(agent) + "], [parameters=" + str(parameters) + "]")
     try:
         # create (1) resource xml
-        xml_resource = gen_resource(agent['url'], agent['port'])
+        xml_resource = gen_resource(agent['url'])
 
         # create xml
         xml = "<?xml version='1.0' encoding='utf-8'?>" \
@@ -174,7 +175,7 @@ def start_job(service_instance_id, agent, parameters):
               "</startApplication>"
         LOG.debug("Lifecycle-Management: COMPSs adapter: start_job: [xml=" + xml + "]")
 
-        res = requests.put("http://" + agent['url'] + ":" + str(agent['port']) + "/COMPSs/startApplication",
+        res = requests.put("http://" + agent['url'] + ":" + str(config.dic['PORT_COMPSs']) + "/COMPSs/startApplication",
                            data=xml,
                            headers={'Content-Type': 'application/xml'})
         LOG.debug("Lifecycle-Management: COMPSs adapter: start_job: [res=" + str(res) + "]")
@@ -193,7 +194,7 @@ def start_job_in_agents(service_instance, parameters):
         # create resource xml
         xml_resources_content = ""
         for agent in service_instance['agents']:
-            xml_resources_content += gen_resource(agent['url'], agent['port'])
+            xml_resources_content += gen_resource(agent['url'])
 
         xml = "<?xml version='1.0' encoding='utf-8'?>" \
               "<startApplication>" + parameters + \
@@ -203,7 +204,7 @@ def start_job_in_agents(service_instance, parameters):
         LOG.debug("Lifecycle-Management: COMPSs adapter: start_job_in_agents: [xml=" + xml + "]")
 
         master_agent = find_master(service_instance)
-        res = requests.put("http://" + master_agent['url'] + ":" + str(master_agent['port']) + "/COMPSs/startApplication",
+        res = requests.put("http://" + master_agent['url'] + ":" + str(config.dic['PORT_COMPSs']) + "/COMPSs/startApplication",
                            data=xml,
                            headers={'Content-Type': 'application/xml'})
         LOG.debug("Lifecycle-Management: COMPSs adapter: start_job_in_agents: [res=" + str(res) + "]")
