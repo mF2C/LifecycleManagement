@@ -33,7 +33,7 @@ dic = { "SERVER_PORT":                  46000,
 
         # CIMI:  https://dashboard.mf2c-project.eu/api/cloud-entry-point
         "CIMI_URL":                     "",    # https://proxy
-        "CIMI_COOKIES_PATH":            "",
+        "CIMI_COOKIES_PATH":            "~./cookies",
         "CIMI_USER":                    "",
         "CIMI_PASSWORD":                "",
 
@@ -46,14 +46,15 @@ dic = { "SERVER_PORT":                  46000,
         # docker socket volume
         "DOCKER_SOCKET_VOLUME":         "/var/run/docker.sock",
 
-        # URLs from other mF2C components:
+        # URLs / ports from other mF2C components:
         # PM-SLA MANAGER
         "URL_PM_SLA_MANAGER":           "https://127.0.0.1:46030",
-
         # AC-QoS PROVIDING
         "URL_AC_QoS_PROVIDING":         "https://127.0.0.1:46200/api/service-management",
         # AC-USER MANAGEMENT
         "URL_AC_USER_MANAGEMENT":       "https://127.0.0.1:46300/api/v1/user-management",
+        # PORT_COMPSs
+        "PORT_COMPSs":                  46100,
 
         # TODO!! PM-RECOMMENDER get recipe: api/v1/recommender/recipe/...
         "URL_PM_RECOMMENDER":           "https://localhost:46020/api/",
