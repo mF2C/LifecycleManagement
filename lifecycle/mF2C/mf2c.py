@@ -21,8 +21,10 @@ from lifecycle.utils.logs import LOG
 # LIFECYCLE interactions
 # lifecycle_deploy: call to lifceycle from other agent in order to deploy a service
 def lifecycle_deploy(service, agent):
-    LOG.info("Lifecycle-Management: MF2C: lifecycle_deploy: " + str(service) + ", " + str(agent))
+    LOG.debug("Lifecycle-Management: MF2C: lifecycle_deploy: " + str(service) + ", " + str(agent))
     try:
+        LOG.info("Lifecycle-Management: MF2C: lifecycle_deploy: HTTP POST: " +
+                 "https://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v1/lifecycle/service-instance-operations")
         r = requests.post("https://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v1/lifecycle/service-instance-operations",
                           json={"service": service,
                                 "agent": agent},
@@ -45,8 +47,10 @@ def lifecycle_deploy(service, agent):
 
 # lifecycle_operation: call to lifceycle from other agent in order to start/stop... a service
 def lifecycle_operation(agent, operation):
-    LOG.info("Lifecycle-Management: MF2C: lifecycle_operation: " + str(agent) + ", " + operation)
+    LOG.debug("Lifecycle-Management: MF2C: lifecycle_operation: " + str(agent) + ", " + operation)
     try:
+        LOG.info("Lifecycle-Management: MF2C: lifecycle_operation: HTTP PUT: " +
+                 "https://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v1/lifecycle/service-instance-operations")
         r = requests.put("https://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v1/lifecycle/service-instance-operations",
                          json={"operation": operation,
                                "agent": agent},
@@ -80,14 +84,16 @@ def get_resources():
 # start_sla_agreement: start SLA agreement
 # PUT /agreements/<id>/start   (stop)
 def start_sla_agreement(agreement_id):
-    LOG.info("Lifecycle-Management: MF2C: start_sla_agreement: agreement_id: " + agreement_id)
+    LOG.debug("Lifecycle-Management: MF2C: start_sla_agreement: agreement_id: " + agreement_id)
+    LOG.info("Lifecycle-Management: MF2C: start_sla_agreement: HTTP PUT: " +
+             str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/start")
     try:
         r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/start",
                          verify=config.dic['VERIFY_SSL'])
 
         LOG.debug("Lifecycle-Management: MF2C: start_sla_agreement:" + str(r))
 
-        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202:
+        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202 or r.status_code == 204:
             LOG.debug('Lifecycle-Management: MF2C: start_sla_agreement: status_code=' +  str(r.status_code))
             return True
 
@@ -100,9 +106,11 @@ def start_sla_agreement(agreement_id):
 
 # PUT /agreements/<id>/stop
 def stop_sla_agreement(agreement_id):
-    LOG.info("Lifecycle-Management: MF2C: stop_sla_agreement: agreement_id: " + agreement_id)
+    LOG.debug("Lifecycle-Management: MF2C: stop_sla_agreement: agreement_id: " + agreement_id)
+    LOG.info("Lifecycle-Management: MF2C: start_sla_agreement: HTTP PUT: " +
+             str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/start")
     try:
-        r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/stop",
+        r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/start",
                          verify=config.dic['VERIFY_SSL'])
 
         LOG.debug("Lifecycle-Management: MF2C: stop_sla_agreement:" + str(r))
@@ -126,7 +134,9 @@ def stop_sla_agreement(agreement_id):
 def service_management_qos(service_instance):
     try:
         id = service_instance['id']
-        LOG.info("Lifecycle-Management: MF2C: service_management_qos: service_instance_id: " + id)
+        LOG.debug("Lifecycle-Management: MF2C: service_management_qos: service_instance_id: " + id)
+        LOG.info("Lifecycle-Management: MF2C: service_management_qos: HTTP GET: " +
+                 str(config.dic['URL_AC_QoS_PROVIDING']) + "/qos/" + id)
 
         r = requests.get(str(config.dic['URL_AC_QoS_PROVIDING']) + "/qos/" + id,
                          verify=config.dic['VERIFY_SSL'])
@@ -147,18 +157,22 @@ def service_management_qos(service_instance):
 # CALL TO User Management (Profiling)
 def user_management_profiling(user_id, remote=None):
     try:
-        LOG.info("Lifecycle-Management: MF2C: user_management_profiling: user_id: " + user_id)
+        LOG.debug("Lifecycle-Management: MF2C: user_management_profiling: user_id: " + user_id)
 
         if remote is None:
+            LOG.info("Lifecycle-Management: MF2C: user_management_profiling: HTTP GET: " +
+                     str(config.dic['URL_AC_USER_MANAGEMENT']) + "/profiling/" + user_id)
             r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/profiling/" + user_id,
                              verify=config.dic['VERIFY_SSL'])
         else:
+            LOG.info("Lifecycle-Management: MF2C: user_management_profiling: HTTP GET: " +
+                     "https://" + remote + ":46300/api/v1/user-management/profiling/" + user_id)
             r = requests.get("https://" + remote + ":46300/api/v1/user-management/profiling/" + user_id,
                              verify=config.dic['VERIFY_SSL'])
         json_data = json.loads(r.text)
 
         LOG.debug("Lifecycle-Management: MF2C: user_management_profiling:" + str(r) + ", json_data: " + str(json_data))
-        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202:
+        if r.status_code == 200:
             LOG.debug('Lifecycle-Management: MF2C: user_management_profiling: status_code=' + str(r.status_code))
             return json_data
 
@@ -172,18 +186,22 @@ def user_management_profiling(user_id, remote=None):
 # CALL TO User Management (Sharing Model)
 def user_management_sharing_model(user_id, remote=None):
     try:
-        LOG.info("Lifecycle-Management: MF2C: user_management_sharing_model: user_id: " + user_id)
+        LOG.debug("Lifecycle-Management: MF2C: user_management_sharing_model: user_id: " + user_id)
 
         if remote is None:
+            LOG.info("Lifecycle-Management: MF2C: user_management_sharing_model: HTTP GET: " +
+                     str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharingmodel/" + user_id)
             r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharingmodel/" + user_id,
                              verify=config.dic['VERIFY_SSL'])
         else:
+            LOG.info("Lifecycle-Management: MF2C: user_management_sharing_model: HTTP GET: " +
+                     "https://" + remote + ":46300/api/v1/user-management/sharingmodel/" + user_id)
             r = requests.get("https://" + remote + ":46300/api/v1/user-management/sharingmodel/" + user_id,
                              verify=config.dic['VERIFY_SSL'])
         json_data = json.loads(r.text)
 
         LOG.debug("Lifecycle-Management: MF2C: user_management_sharing_model:" + str(r) + ", json_data: " + str(json_data))
-        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202:
+        if r.status_code == 200:
             LOG.debug('Lifecycle-Management: MF2C: user_management_sharing_model: status_code=' + str(r.status_code))
             return json_data
 

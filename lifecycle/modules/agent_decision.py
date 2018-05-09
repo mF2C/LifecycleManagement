@@ -30,7 +30,7 @@ def get_available_agents_list(service):
         LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list ################")
         LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list: " + str(service))
 
-        if config.dic['STANDALONE_MODE'] or config.dic['STANDALONE_MODE'] == 'True':
+        if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
             LOG.warning("Lifecycle-Management: agent_decision: get_available_agents_list: STANDALONE_MODE enabled")
             return config.dic['AVAILABLE_AGENTS']
 
@@ -69,7 +69,7 @@ def select_agents(service_instance):
         LOG.debug("Lifecycle-Management: agent_decision: select_agents ############################")
         LOG.debug("Lifecycle-Management: agent_decision: select_agents: " + str(service_instance))
 
-        if config.dic['STANDALONE_MODE'] or config.dic['STANDALONE_MODE'] == 'True':
+        if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
             LOG.warning("Lifecycle-Management: agent_decision: select_agents: STANDALONE_MODE enabled")
             return service_instance
 

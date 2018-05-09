@@ -97,7 +97,9 @@ def create_service_instance(service, agents_list, user_id, agreement_id):
 
     # AGENTs:
     for agent in agents_list:
-        if 'master_compss' not in agent:
+        if len(agents_list) == 1:
+            master_compss = True
+        elif 'master_compss' not in agent:
             master_compss = False
         else:
             master_compss = agent['master_compss']

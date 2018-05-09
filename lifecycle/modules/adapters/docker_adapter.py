@@ -262,7 +262,7 @@ def operation_service_agent(agent, operation):
                 if l_elem is not None and l_elem['type'] == "docker-compose":
                     LOG.debug("  >> Docker-compose down [" + l_elem['container_2'] + "] ...")
                     docker_client.start_container(l_elem['container_2'])
-                    LOG.debug("  >> Docker-compose down: waiting 90 seconds...")
+                    LOG.debug("  >> Docker-compose down: waiting 60 seconds...")
                     time.sleep(60)
                     LOG.debug("  >> Stop container 1 [" + agent['container_id'] + "] ...")
                     docker_client.stop_container(agent['container_id'])

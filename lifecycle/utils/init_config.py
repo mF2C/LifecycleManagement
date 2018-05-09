@@ -83,7 +83,7 @@ def init():
         LOG.info('[URL_AC_QoS_PROVIDING=' + config.dic['URL_AC_QoS_PROVIDING'] + ']')
         LOG.info('[URL_AC_USER_MANAGEMENT=' + config.dic['URL_AC_USER_MANAGEMENT'] + ']')
 
-        if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE']:
+        if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
             LOG.warning("STANDALONE_MODE enabled")
         else:
             LOG.info("STANDALONE_MODE not enabled")

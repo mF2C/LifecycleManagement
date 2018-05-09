@@ -25,8 +25,8 @@ def initializes_sla(service_instance, agreement_id):
         LOG.debug("Lifecycle-Management: sla_adapter: initializes_sla #############################")
         LOG.debug("Lifecycle-Management: sla_adapter: initializes_sla: " + str(service_instance) + ", " + str(agreement_id))
 
-        if config.dic['STANDALONE_MODE'] or config.dic['STANDALONE_MODE'] == 'True':
-            LOG.warning("Lifecycle-Management: agent_decision: select_agents: STANDALONE_MODE enabled")
+        if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
+            LOG.warning("Lifecycle-Management: sla_adapter: initializes_sla: STANDALONE_MODE enabled")
             return None
 
         else:
@@ -43,9 +43,14 @@ def initializes_sla(service_instance, agreement_id):
 def stop_sla_agreement(service_instance, agreement_id):
     try:
         LOG.debug("Lifecycle-Management: sla_adapter: stops_sla_agreement #############################")
-        LOG.warning("Lifecycle-Management: sla_adapter: stops_sla_agreement not implemented: " + str(service_instance) + ", " + str(agreement_id))
+        LOG.debug("Lifecycle-Management: sla_adapter: stops_sla_agreement: " + str(service_instance) + ", " + str(agreement_id))
 
-        return None
+        if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
+            LOG.warning("Lifecycle-Management: sla_adapter: stop_sla_agreement: STANDALONE_MODE enabled")
+            return None
+
+        else:
+            return mf2c.stop_sla_agreement(agreement_id)
     except:
         LOG.error('Lifecycle-Management: sla_adapter: stops_sla_agreement: Exception')
         return None
@@ -58,9 +63,15 @@ def stop_sla_agreement(service_instance, agreement_id):
 def terminate_sla_agreement(service_instance, agreement_id):
     try:
         LOG.debug("Lifecycle-Management: sla_adapter: terminates_sla_agreement #############################")
-        LOG.warning("Lifecycle-Management: sla_adapter: terminates_sla_agreement not implemented: " + str(service_instance) + ", " + str(agreement_id))
+        LOG.debug("Lifecycle-Management: sla_adapter: terminates_sla_agreement: " + str(service_instance) + ", " + str(agreement_id))
 
-        return None
+        if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
+            LOG.warning("Lifecycle-Management: agent_decision: terminates_sla_agreement: STANDALONE_MODE enabled")
+            return None
+
+        else:
+            # TODO terminate function
+            return mf2c.stop_sla_agreement(agreement_id)
     except:
         LOG.error('Lifecycle-Management: sla_adapter: terminates_sla_agreement: Exception')
         return None
