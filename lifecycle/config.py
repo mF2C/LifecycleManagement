@@ -14,7 +14,7 @@ Created on 09 feb. 2018
 #!/usr/bin/python
 
 dic = { "SERVER_PORT":                  46000,
-        "HOST_IP":                      "192.168.252.40",                       # if possible, read from env values
+        "HOST_IP":                      "",                       # if possible, read from env values
         "API_DOC_URL":                  "/api/v1/lifecycle",
         "CERT_CRT":                     "cert/ia.crt",
         "CERT_KEY":                     "cert/ia.key",
@@ -32,10 +32,10 @@ dic = { "SERVER_PORT":                  46000,
         "CIMI_SERVICE_INSTANCE":        "service-instance",
 
         # CIMI:  https://dashboard.mf2c-project.eu/api/cloud-entry-point
-        "CIMI_URL":                     "https://dashboard.mf2c-project.eu/api",    # https://proxy
-        "CIMI_COOKIES_PATH":            "~./cookies",
-        "CIMI_USER":                    "rsucasas",
-        "CIMI_PASSWORD":                "password",
+        "CIMI_URL":                     "",    # https://proxy
+        "CIMI_COOKIES_PATH":            "",
+        "CIMI_USER":                    "",
+        "CIMI_PASSWORD":                "",
 
         # docker:
         # working dir for docker compose applications / services
@@ -48,11 +48,11 @@ dic = { "SERVER_PORT":                  46000,
 
         # URLs / ports from other mF2C components:
         # PM-SLA MANAGER
-        "URL_PM_SLA_MANAGER":           "https://127.0.0.1:46030",
+        "URL_PM_SLA_MANAGER":           "http://slalite:46030",
         # AC-QoS PROVIDING
-        "URL_AC_QoS_PROVIDING":         "https://127.0.0.1:46200/api/service-management",
+        "URL_AC_QoS_PROVIDING":         "http://service-manager:46200/api/service-management",
         # AC-USER MANAGEMENT
-        "URL_AC_USER_MANAGEMENT":       "https://127.0.0.1:46300/api/v1/user-management",
+        "URL_AC_USER_MANAGEMENT":       "https://user-management:46300/api/v1/user-management",
         # PORT_COMPSs
         "PORT_COMPSs":                  46100,
 
