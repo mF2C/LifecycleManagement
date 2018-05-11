@@ -111,12 +111,12 @@ Read next section to see how to properly start the component.
 2. Start the Lifecycle Management module with access to the docker socket ('-v /var/run/docker.sock:/var/run/docker.sock')
 
 ```bash
-sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:46000 lm-app
+sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:46000 mf2c/lifecycle
 ```
   - Available environment variables:
     - **STANDALONE_MODE** `False` if working in an agent with other mF2C components; `True` if working without external dependencies (except docker)
     - **CIMI_URL**
-    - **HOST_IP** Machine's IP address (needed to see if lifecycle is in local host or if it is in another agent/machine)
+    - **HOST_IP** Machine's IP address: needed by the lifecycle when deploying services in a set of agents (to see if an agent is in local host or if it is in another machine)
     - **CIMI_USER** CIMI user
     - **CIMI_PASSWORD** CIMI password
     - **WORKING_DIR_VOLUME** _docker-compose.yml_ folder
@@ -135,16 +135,17 @@ sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:4600
 
 ### Relation to other mF2C components
 
-The Lifecycle Management module is connected with the following mF2C components:
+The **Lifecycle** Management module is connected with the following mF2C components:
 
 - Is called by the following modules / components:
-    - User Management: it receives warnings from the User Management when the mF2C applications use more resources than allowed by the users
-
+    - _User Management_: Lifecycle receives warnings from the User Management when the mF2C applications use more resources than allowed by the users
+    - _SLA Manager_: -
 - Makes calls to the following modules / components:
-    - User Management:
-    - QoS:
-    - Landscaper:
-    - Recommender:
-    - Distributed Execution Runtime:
-    - SLA Manager:
-    - Service Management:
+    - _Recommender_: -
+    - _Landscaper_: The Lifecycle gets from this component the list of all available agents and resources where a service can be deployed
+    - _Service Management_: The Lifecycle calls the Service Management module to know which of the agents from a list can be used to deploy a service
+    - _User Management_: Lifecycle interacts with the User Management module to get the profile and sharing resources defined by the user in a device
+    - _Distributed Execution Runtime / COMPSs_:
+    - _SLA Manager_: Lifecycle calls the SLA Manager to start, stop and terminate the SLA agreement monitoring process
+
+Finally, the Lifecycle provides a `docker-compose.yml` file to launch this component together with other mF2C components: [docker-compose.yml](docker-compose.yml)

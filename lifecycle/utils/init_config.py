@@ -55,7 +55,6 @@ def init():
         # HOST IP from environment values:
         common.set_value_env('HOST_IP')
         # CIMI environment values:
-        common.set_value_env('CIMI_URL')
         common.set_value_env('CIMI_COOKIES_PATH')
         common.set_value_env('CIMI_USER')
         common.set_value_env('CIMI_PASSWORD')
@@ -63,6 +62,18 @@ def init():
         common.set_value_env('URL_PM_SLA_MANAGER')
         common.set_value_env('URL_AC_QoS_PROVIDING')
         common.set_value_env('URL_AC_USER_MANAGEMENT')
+        # CIMI URL
+        common.set_value_env('CIMI_URL')
+        LOG.debug('[CIMI_URL=' + config.dic['CIMI_URL'] + ']')
+        if "/api" not in config.dic['CIMI_URL'] and not config.dic['CIMI_URL'].endswith("/api"):
+            LOG.debug("Adding '/api' to CIMI_URL ...")
+            if config.dic['CIMI_URL'].endswith("/"):
+                config.dic['CIMI_URL'] = config.dic['CIMI_URL'] + "api"
+            else:
+                config.dic['CIMI_URL'] = config.dic['CIMI_URL'] + "/api"
+            LOG.debug('[CIMI_URL=' + config.dic['CIMI_URL'] + ']')
+        else:
+            LOG.debug("CIMI_URL ... " + config.dic['CIMI_URL'])
 
         LOG.info('Checking configuration...')
         LOG.info('[SERVER_PORT=' + str(config.dic['SERVER_PORT']) + ']')

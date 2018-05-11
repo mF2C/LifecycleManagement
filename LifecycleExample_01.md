@@ -6,23 +6,35 @@ Service definition:
 
 ```json
 {
-	"id": "app_compss_test_01",
-	"name": "app-compss-0001",
-	"description": "app-compss Service",
-	"resourceURI": "/app-compss",
-	"exec": "mf2c/compss-test:latest",
-	"exec_type": "compss",
-	"exec_ports": [46100],
-	"category": {
-		"cpu": "low",
-		"memory": "low",
-		"storage": "low",
-		"inclinometer": false,
-		"temperature": false,
-		"jammer": false,
-		"location": false
+		"id": "service/9fbfd7cd-4154-450e-aeab-7a6b84153206",
+		"name": "app_compss_test",
+		"description": "app-compss Service",
+		"exec": "mf2c/compss-test:latest",
+		"resourceURI": "/app-compss",
+		"category": {
+			"cpu": "low",
+			"memory": "low",
+			"storage": "low",
+			"inclinometer": false,
+			"temperature": false,
+			"jammer": false,
+			"location": false,
+			"accelerometer": false,
+			"humidity": false,
+			"battery_level": false,
+			"door_sensor": false,
+			"pump_sensor": false,
+			"air_pressure": false,
+			"ir_motion": false
+		},
+		"exec_type": "compss",
+		"exec_ports": [
+			46100,
+			46101,
+			46102,
+			46103
+		]
 	}
-}
 ```
 
 --------------------------------------------------------------------------
@@ -92,6 +104,23 @@ The body of this request requires a `service` object, the `user` (user_id) that 
 
   - `exec` _mf2c/compss-agent:latest_ or any other docker COMPSs image from a public docker hub
   - `exec_type`_compss_
+
+```json
+{
+	"service_id": "service/c6aeb25c-ab2f-4207-8304-1eaf8ebcda6e",
+	"user_id": "rsucasas",
+	"agreement_id": "ea0d7739-4d65-4d38-b42b-aa2704ccd598",
+	"operation": "not-defined",
+	"agents_list": [{
+			"agent_ip": "192.168.252.41",
+			"num_cpus": 7,
+			"master_compss": true
+		}
+	]
+}
+```
+
+Or
 
 ```json
 {

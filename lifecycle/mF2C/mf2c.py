@@ -142,15 +142,53 @@ def service_management_qos(service_instance):
                          verify=config.dic['VERIFY_SSL'])
 
         LOG.debug("Lifecycle-Management: MF2C: service_management_qos:" + str(r))
+        json_data = json.loads(r.text)
+        LOG.debug("Lifecycle-Management: MF2C: service_management_qos:" + str(json_data) + ", status: " + str(json_data['status']))
 
-        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202:
-            LOG.debug('Lifecycle-Management: MF2C: service_management_qos: status_code=' + str(r.status_code))
-            return r
+        if r.status_code == 200 and json_data['status'] == 404:
+            LOG.error("Lifecycle-Management: MF2C: service_management_qos: status_code=" + str(r.status_code) +
+                      ", status: " + str(json_data['status']))
+            return None
+        elif r.status_code == 200:
+            LOG.debug("Lifecycle-Management: MF2C: service_management_qos: status_code=" + str(r.status_code) +
+                      ", service: " + str(json_data["service"]))
+            return json_data["service"]
 
         LOG.error('Lifecycle-Management: MF2C: service_management_qos: Error: status_code=' + str(r.status_code))
         return None
     except:
         LOG.error('Lifecycle-Management: MF2C: service_management_qos: Exception')
+        return None
+
+
+# service_management_get_service:
+def service_management_get_service(service_id):
+    try:
+        LOG.debug("Lifecycle-Management: MF2C: service_management_get_service: " + service_id)
+        LOG.info("Lifecycle-Management: MF2C: service_management_get_service: HTTP GET: " +
+                 str(config.dic['URL_AC_QoS_PROVIDING']) + "/categorizer/" + service_id)
+
+        r = requests.get(str(config.dic['URL_AC_QoS_PROVIDING']) + "/categorizer/" + service_id,
+                         verify=config.dic['VERIFY_SSL'])
+
+        LOG.debug("Lifecycle-Management: MF2C: service_management_get_service:" + str(r))
+        json_data = json.loads(r.text)
+        LOG.debug("Lifecycle-Management: MF2C: service_management_get_service:" + str(json_data) +
+                  ", status: " + str(json_data['status']))
+
+        if r.status_code == 200 and json_data['status'] == 404:
+            LOG.error("Lifecycle-Management: MF2C: service_management_get_service: status_code=" + str(r.status_code) +
+                      ", status: " + str(json_data['status']))
+            return None
+        elif r.status_code == 200:
+            LOG.debug("Lifecycle-Management: MF2C: service_management_get_service: status_code=" + str(r.status_code) +
+                      ", service: " + str(json_data["service"]))
+            return json_data["service"]
+
+        LOG.error('Lifecycle-Management: MF2C: service_management_get_service: Error: status_code=' + str(r.status_code))
+        return None
+    except:
+        LOG.error('Lifecycle-Management: MF2C: service_management_get_service: Exception')
         return None
 
 
