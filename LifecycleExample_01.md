@@ -100,10 +100,7 @@ POST /api/v1/lifecycle
 
 REQUEST BODY:
 
-The body of this request requires a `service` object, the `user` (user_id) that launches this service, and the list of `agents` (agents_list) where this service will be deployed. For COMPSs applications the service definition has to include the following properties:
-
-  - `exec` _mf2c/compss-agent:latest_ or any other docker COMPSs image from a public docker hub
-  - `exec_type`_compss_
+When working with other components of the mF2C platform, the request body should look like that:
 
 ```json
 {
@@ -119,6 +116,11 @@ The body of this request requires a `service` object, the `user` (user_id) that 
 	]
 }
 ```
+
+If the service id is not included in the request body, then this body requires a `service` object. Apart from that the `user` (user_id) that launches this service, and the list of `agents` (agents_list) where this service will be deployed, are also needed. For COMPSs applications the service definition has to include the following properties:
+
+  - `exec` _mf2c/compss-agent:latest_ or any other docker COMPSs image from a public docker hub
+  - `exec_type`_compss_
 
 Or
 
