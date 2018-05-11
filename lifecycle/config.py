@@ -33,7 +33,7 @@ dic = { "SERVER_PORT":                  46000,
 
         # CIMI:  https://dashboard.mf2c-project.eu/api/cloud-entry-point
         "CIMI_URL":                     "",    # https://proxy
-        "CIMI_COOKIES_PATH":            "",
+        "CIMI_COOKIES_PATH":            "~./cookies",
         "CIMI_USER":                    "",
         "CIMI_PASSWORD":                "",
 
@@ -50,7 +50,7 @@ dic = { "SERVER_PORT":                  46000,
         # PM-SLA MANAGER
         "URL_PM_SLA_MANAGER":           "http://slalite:46030",
         # AC-QoS PROVIDING
-        "URL_AC_QoS_PROVIDING":         "http://service-manager:46200/api/service-management",
+        "URL_AC_SERVICE_MNGMT":         "http://service-manager:46200/api/service-management",
         # AC-USER MANAGEMENT
         "URL_AC_USER_MANAGEMENT":       "https://user-management:46300/api/v1/user-management",
         # PORT_COMPSs

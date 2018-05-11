@@ -15,7 +15,7 @@ services:
       - HOST_IP=192.168.252.41
       - WORKING_DIR_VOLUME=/tmp/compose_files
       - URL_PM_SLA_MANAGER=http://slalite:46030
-      - URL_AC_QoS_PROVIDING=http://service-manager:46200/api/service-management
+      - URL_AC_SERVICE_MNGMT=http://service-manager:46200/api/service-management
     volumes:
       - /tmp/compose_files:/tmp/compose_files
       - /var/run/docker.sock:/var/run/docker.sock

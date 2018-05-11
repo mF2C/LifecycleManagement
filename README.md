@@ -121,7 +121,7 @@ sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:4600
     - **CIMI_PASSWORD** CIMI password
     - **WORKING_DIR_VOLUME** _docker-compose.yml_ folder
     - **URL_PM_SLA_MANAGER** URL of the Plantform Manager - SLA Manager; e.g. https://192.168.192.192:46030
-    - **URL_AC_QoS_PROVIDING** URL of the Agent Controller - QoS Providing; e.g. https://192.168.192.192:46200/api/service-management
+    - **URL_AC_SERVICE_MNGMT** URL of the Agent Controller - QoS Providing; e.g. https://192.168.192.192:46200/api/service-management
     - **URL_AC_USER_MANAGEMENT** URL of the Agent Controller - User Management; e.g. https://192.168.192.192:46300/api/v1/user-management
 
 3. After launching the Lifecycle Management module, the REST API services can be accessed at port 46000:

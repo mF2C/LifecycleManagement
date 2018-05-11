@@ -136,9 +136,9 @@ def service_management_qos(service_instance):
         id = service_instance['id']
         LOG.debug("Lifecycle-Management: MF2C: service_management_qos: service_instance_id: " + id)
         LOG.info("Lifecycle-Management: MF2C: service_management_qos: HTTP GET: " +
-                 str(config.dic['URL_AC_QoS_PROVIDING']) + "/qos/" + id)
+                 str(config.dic['URL_AC_SERVICE_MNGMT']) + "/qos/" + id)
 
-        r = requests.get(str(config.dic['URL_AC_QoS_PROVIDING']) + "/qos/" + id,
+        r = requests.get(str(config.dic['URL_AC_SERVICE_MNGMT']) + "/qos/" + id,
                          verify=config.dic['VERIFY_SSL'])
 
         LOG.debug("Lifecycle-Management: MF2C: service_management_qos:" + str(r))
@@ -166,9 +166,9 @@ def service_management_get_service(service_id):
     try:
         LOG.debug("Lifecycle-Management: MF2C: service_management_get_service: " + service_id)
         LOG.info("Lifecycle-Management: MF2C: service_management_get_service: HTTP GET: " +
-                 str(config.dic['URL_AC_QoS_PROVIDING']) + "/categorizer/" + service_id)
+                 str(config.dic['URL_AC_SERVICE_MNGMT']) + "/categorizer/" + service_id)
 
-        r = requests.get(str(config.dic['URL_AC_QoS_PROVIDING']) + "/categorizer/" + service_id,
+        r = requests.get(str(config.dic['URL_AC_SERVICE_MNGMT']) + "/categorizer/" + service_id,
                          verify=config.dic['VERIFY_SSL'])
 
         LOG.debug("Lifecycle-Management: MF2C: service_management_get_service:" + str(r))

@@ -33,7 +33,7 @@ ENV VARIABLES (lifecycle):
     CIMI_COOKIES_PATH
     
     URL_PM_SLA_MANAGER
-    URL_AC_QoS_PROVIDING
+    URL_AC_SERVICE_MNGMT
     URL_AC_USER_MANAGEMENT
     
     WORKING_DIR_VOLUME = "/home/atos/mF2C/compose_examples"
@@ -60,7 +60,7 @@ def init():
         common.set_value_env('CIMI_PASSWORD')
         # mF2C components: env variables
         common.set_value_env('URL_PM_SLA_MANAGER')
-        common.set_value_env('URL_AC_QoS_PROVIDING')
+        common.set_value_env('URL_AC_SERVICE_MNGMT')
         common.set_value_env('URL_AC_USER_MANAGEMENT')
         # CIMI URL
         common.set_value_env('CIMI_URL')
@@ -91,7 +91,7 @@ def init():
         LOG.info('[CIMI_USER=' + config.dic['CIMI_USER'] + ']')
         LOG.info('[CIMI_PASSWORD=' + config.dic['CIMI_PASSWORD'] + ']')
         LOG.info('[URL_PM_SLA_MANAGER=' + config.dic['URL_PM_SLA_MANAGER'] + ']')
-        LOG.info('[URL_AC_QoS_PROVIDING=' + config.dic['URL_AC_QoS_PROVIDING'] + ']')
+        LOG.info('[URL_AC_SERVICE_MNGMT=' + config.dic['URL_AC_SERVICE_MNGMT'] + ']')
         LOG.info('[URL_AC_USER_MANAGEMENT=' + config.dic['URL_AC_USER_MANAGEMENT'] + ']')
 
         if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
