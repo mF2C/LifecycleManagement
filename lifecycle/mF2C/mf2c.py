@@ -73,17 +73,40 @@ def lifecycle_operation(agent, operation):
 
 ###############################################################################
 # Interactions with other mF2C components
-# TODO CALL TO LANDSCAPER
-# get_resources: get available resources for a recipe
-def get_resources():
-    LOG.warn("Lifecycle-Management: MF2C: get_resources not implemented ")
-    return config.dic['AVAILABLE_AGENTS']
+# CALL TO LANDSCAPER & RECOMMENDER: get service's recipe / get available resources for a recipe
+#   =>  POST http://192.168.252.41:46020/mf2c/optimal
+# 	    BODY: service json
+def get_optimal_resources(service):
+    LOG.debug("Lifecycle-Management: MF2C: get_available_resources: service: " + str(service))
+    LOG.info("Lifecycle-Management: MF2C: get_available_resources: HTTP POST: " +
+             str(config.dic['URL_PM_RECOM_LANDSCAPER']) + "/optimal")
+    try:
+        r = requests.post(str(config.dic['URL_PM_RECOM_LANDSCAPER']) + "/optimal",
+                          json=service,
+                          headers={"Accept": "text/json",
+                                   "Content-Type": "application/json"},
+                          verify=config.dic['VERIFY_SSL'])
+
+        LOG.debug("Lifecycle-Management: MF2C: get_available_resources: r:" + str(r))
+        json_data = json.loads(r.text)
+        LOG.debug("Lifecycle-Management: MF2C: get_available_resources: json_data:" + str(json_data))
+
+        if r.status_code == 200:
+            LOG.debug('Lifecycle-Management: MF2C: get_available_resources: status_code=' +  str(r.status_code))
+            return json_data
+
+        LOG.error('Lifecycle-Management: MF2C: get_available_resources: Error: status_code=' +  str(r.status_code))
+        return None
+    except:
+        LOG.error('Lifecycle-Management: MF2C: get_available_resources: Exception')
+        return None
 
 
 # CALL TO SLA MANAGEMENT
 # start_sla_agreement: start SLA agreement
 # PUT /agreements/<id>/start   (stop)
 def start_sla_agreement(agreement_id):
+    agreement_id = agreement_id.replace('agreement/', '')
     LOG.debug("Lifecycle-Management: MF2C: start_sla_agreement: agreement_id: " + agreement_id)
     LOG.info("Lifecycle-Management: MF2C: start_sla_agreement: HTTP PUT: " +
              str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/start")
@@ -106,11 +129,36 @@ def start_sla_agreement(agreement_id):
 
 # PUT /agreements/<id>/stop
 def stop_sla_agreement(agreement_id):
+    agreement_id = agreement_id.replace('agreement/', '')
     LOG.debug("Lifecycle-Management: MF2C: stop_sla_agreement: agreement_id: " + agreement_id)
     LOG.info("Lifecycle-Management: MF2C: start_sla_agreement: HTTP PUT: " +
-             str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/start")
+             str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/stop")
     try:
-        r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/start",
+        r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/stop",
+                         verify=config.dic['VERIFY_SSL'])
+
+        LOG.debug("Lifecycle-Management: MF2C: stop_sla_agreement:" + str(r))
+
+        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202:
+            LOG.debug('Lifecycle-Management: MF2C: stop_sla_agreement: status_code=' +  str(r.status_code))
+            return True
+
+        LOG.error('Lifecycle-Management: MF2C: stop_sla_agreement: Error: status_code=' +  str(r.status_code))
+        return False
+    except:
+        LOG.error('Lifecycle-Management: MF2C: stop_sla_agreement: Exception')
+        return False
+
+
+# PUT /agreements/<id>/stop
+# TODO
+def terminate_sla_agreement(agreement_id):
+    agreement_id = agreement_id.replace('agreement/', '')
+    LOG.debug("Lifecycle-Management: MF2C: stop_sla_agreement: agreement_id: " + agreement_id)
+    LOG.info("Lifecycle-Management: MF2C: start_sla_agreement: HTTP PUT: " +
+             str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/stop")
+    try:
+        r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/stop",
                          verify=config.dic['VERIFY_SSL'])
 
         LOG.debug("Lifecycle-Management: MF2C: stop_sla_agreement:" + str(r))
@@ -248,9 +296,3 @@ def user_management_sharing_model(user_id, remote=None):
     except:
         LOG.error('Lifecycle-Management: MF2C: user_management_sharing_model: Exception')
         return None
-
-
-
-# TODO CALL TO RECOMMENDER: get service's recipe
-# TODO CALL TO DISTRIBUTED EXECUTION RUNTIME / COMPSS: allocate
-# TODO CALL TO DISTRIBUTED EXECUTION RUNTIME / COMPSS: execute

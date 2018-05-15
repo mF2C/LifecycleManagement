@@ -170,7 +170,7 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
         return common.gen_response(500, 'Exception', 'service', str(service))
 
 
-# submit: Submits a service (no access to external docker APIs; calls to other agent's lifecycle components)
+# submit: Submits a service (gets list of agents from mF2C components - recommender, landscaper - or from config)
 # IN: service, user_id, agreement_id
 # OUT: service_instance
 def submit(service, user_id, agreement_id):
@@ -180,9 +180,10 @@ def submit(service, user_id, agreement_id):
         if not check_service_content(service):
             return common.gen_response(500, 'field(s) category/exec/exec_type not found', 'service', str(service))
 
-        # 2. get list of available agents / resources / VMs. Example: TODO!!!
+        # 2. get list of available agents / resources / VMs. Example:
         #   [{"agent_ip": "192.168.252.41", "num_cpus": 4, "master_compss": false}, {...}]
-        available_agents_list = agent_decision.get_available_agents_list(service)   # TODO call to landscaper/reommender
+        # Call to landscaper/reommender
+        available_agents_list = agent_decision.get_available_agents_resources(service)
         if not available_agents_list:
             # error
             LOG.error("Lifecycle-Management: Lifecycle: submit_v2: available_agents_list is None")

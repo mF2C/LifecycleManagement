@@ -35,6 +35,7 @@ ENV VARIABLES (lifecycle):
     URL_PM_SLA_MANAGER
     URL_AC_SERVICE_MNGMT
     URL_AC_USER_MANAGEMENT
+    URL_PM_RECOM_LANDSCAPER
     
     WORKING_DIR_VOLUME = "/home/atos/mF2C/compose_examples"
     DOCKER_COMPOSE_IMAGE = "docker/compose:1.21.0"
@@ -62,6 +63,7 @@ def init():
         common.set_value_env('URL_PM_SLA_MANAGER')
         common.set_value_env('URL_AC_SERVICE_MNGMT')
         common.set_value_env('URL_AC_USER_MANAGEMENT')
+        common.set_value_env('URL_PM_RECOM_LANDSCAPER')
         # CIMI URL
         common.set_value_env('CIMI_URL')
         LOG.debug('[CIMI_URL=' + config.dic['CIMI_URL'] + ']')
@@ -93,6 +95,7 @@ def init():
         LOG.info('[URL_PM_SLA_MANAGER=' + config.dic['URL_PM_SLA_MANAGER'] + ']')
         LOG.info('[URL_AC_SERVICE_MNGMT=' + config.dic['URL_AC_SERVICE_MNGMT'] + ']')
         LOG.info('[URL_AC_USER_MANAGEMENT=' + config.dic['URL_AC_USER_MANAGEMENT'] + ']')
+        LOG.info('[URL_PM_RECOM_LANDSCAPER=' + config.dic['URL_PM_RECOM_LANDSCAPER'] + ']')
 
         if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
             LOG.warning("STANDALONE_MODE enabled")

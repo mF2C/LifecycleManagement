@@ -17,6 +17,63 @@ from lifecycle.utils.logs import LOG
 from lifecycle import config
 
 
+'''
+OUTPUT FROM LANDSCAPER/RECOMMENDER:
+"list of hosts ordered by ‘max optimization’ descending (at the moment optimizing by cpu usage)"
+    {
+        "node_name": {
+            "0": "machine-A",
+            "1": "machine-B"
+        },
+        "type": {
+            "0": "machine",
+            "1": "machine"
+        },
+        "compute utilization": {
+            "0": 0.0,
+            "1": 0.0
+        },
+        "compute saturation": {
+            "0": 0.0,
+            "1": 0.0
+        },
+        "memory utilization": {
+            "0": 0.0,
+            "1": 0.0
+        },
+        "memory saturation": {
+            "0": 0.0,
+            "1": 0.0
+        },
+        "network utilization": {
+            "0": 0.0,
+            "1": 0.0
+        },
+        "network saturation": {
+            "0": 0.0,
+            "1": 0.0
+        },
+        "disk utilization": {
+            "0": 0.0,
+            "1": 0.0
+        },
+        "disk saturation": {
+            "0": 0.0,
+            "1": 0.0
+        }
+    }
+    
+    ==>
+    
+    "agents_list": [{
+			"agent_ip": "192.168.252.41",
+			"num_cpus": 7,
+			"master_compss": true
+		}
+	]
+'''
+
+
 # get_available_agents_list: Gets a list of available agents
 # IN: service
 # OUT: resources TODO!!
@@ -25,33 +82,37 @@ from lifecycle import config
 #           "list_of_agents": ["192.168.252.7", "192.168.252.8", "192.168.252.9" ...],   // list urls / docker apis
 #           ...
 #       }
-def get_available_agents_list(service):
+def get_available_agents_resources(service):
     try:
         LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list ################")
         LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list: " + str(service))
 
         if common.is_standalone_mode():
             LOG.warning("Lifecycle-Management: agent_decision: get_available_agents_list: STANDALONE_MODE enabled")
+            LOG.warning("Lifecycle-Management: agent_decision: get_available_agents_list: agents from config: " + str(config.dic['AVAILABLE_AGENTS']))
             return config.dic['AVAILABLE_AGENTS']
         else:
-            # 1. RECOMMENDER -> RECIPE = GET_RECIPE(SERVICE)
+            # Call to ANALYTICS ENGINE (RECOMMENDER & LANDSCAPER)
             # The Lifecycle Management module calls the Recommender in order to get the optimal deployment configuration
-            # to run the service
-            #recipe = mf2c.get_recipe(service) # TODO
-
-            # 2. LANDSCAPER -> RESOURCES = GET_RESOURCES(RECIPE)
+            #   to run the service.
             # Based on this optimal configuration returned by the Recommender, the Lifecycle module asks the Landscaper
-            # for a list of resources that match this recommendation.
-            resources = mf2c.get_resources() # TODO resources = config.dic['AVAILABLE_AGENTS']
+            #   for a list of resources that match this recommendation.
+            resources = mf2c.get_optimal_resources(service)
 
             # If no resources were found, then the Lifecycle Management forwards the request (submit a service) upwards
             if not resources or len(resources) == 0:
                 # forwards the request upwards
-                LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list: forwards the request upwards" + service)
-                return []
+                # TODO: not implemented
+                LOG.warning("Lifecycle-Management: agent_decision: get_available_agents_list: forwards the request upwards: not implemented")
+                return None
 
-            # If there are available resources ...
-            return resources
+            else:
+                # process response: resources
+                LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list: processing resources: " + str(resources) + " ...")
+                total_res = len(resources['node_name'])
+                LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list: total=" + str(total_res))
+
+                return config.dic['AVAILABLE_AGENTS']
     except:
         LOG.error('Lifecycle-Management: agent_decision: get_available_agents_list: Exception')
         return None
@@ -75,6 +136,22 @@ def select_agents(service_instance):
             # 1. QoS PROVIDING
             service_instance_1 = mf2c.service_management_qos(service_instance)
             LOG.debug("Lifecycle-Management: agent_decision: select_agents: service_instance_1: " + str(service_instance_1))
+            if service_instance_1 is not None:
+                try:
+                    LOG.debug("Lifecycle-Management: agent_decision: select_agents: processing response...")
+                    for agent1 in service_instance_1["agents"]:
+                        LOG.debug("Lifecycle-Management: agent_decision: select_agents: [agent1=" + str(agent1) + "]")
+                        if not agent1['allow']:
+                            LOG.debug("Lifecycle-Management: agent_decision: select_agents: [agent1.allow=FALSE]")
+                            for agent0 in service_instance["agents"]:
+                                if agent0['url'] == agent1['url']:
+                                    agent0['allow'] = False
+                                    LOG.debug("Lifecycle-Management: agent_decision: select_agents: [agent0=" + str(agent0) + "]")
+                        else:
+                            LOG.debug("Lifecycle-Management: agent_decision: select_agents: [agent1.allow=TRUE]")
+
+                except:
+                    LOG.error('Lifecycle-Management: agent_decision: select_agents: Exception while processing response')
 
             # 2. USER MANAGEMENT -> profiling and sharing model
             # TODO information from User Management module not used
@@ -108,5 +185,5 @@ def select_agents(service_instance):
                 return service_instance
             return service_instance_1
     except:
-        LOG.error('Lifecycle-Management: agent_decision: select_agents_list: Exception')
+        LOG.error('Lifecycle-Management: agent_decision: select_agents: Exception')
         return None

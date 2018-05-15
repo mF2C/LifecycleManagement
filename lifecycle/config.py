@@ -14,7 +14,7 @@ Created on 09 feb. 2018
 #!/usr/bin/python
 
 dic = { "SERVER_PORT":                  46000,
-        "HOST_IP":                      "",                       # if possible, read from env values
+        "HOST_IP":                      "192.168.252.40",                       # if possible, read from env values
         "API_DOC_URL":                  "/api/v1/lifecycle",
         "CERT_CRT":                     "cert/ia.crt",
         "CERT_KEY":                     "cert/ia.key",
@@ -55,11 +55,10 @@ dic = { "SERVER_PORT":                  46000,
         "URL_AC_USER_MANAGEMENT":       "https://user-management:46300/api/v1/user-management",
         # PORT_COMPSs
         "PORT_COMPSs":                  46100,
-
-        # TODO!! PM-RECOMMENDER get recipe: api/v1/recommender/recipe/...
-        "URL_PM_RECOMMENDER":           "https://localhost:46020/api/",
-        # TODO!! PM-LANDSCAPER get resources (recipe): api/v1/landscape/...
-        "URL_PM_LANDSCAPER":            "https://localhost:46010/api/",
+        # URL_PM_RECOM_LANDSCAPER:
+        #       PM-RECOMMENDER get recipe: api/v1/recommender/recipe/...
+        #       PM-LANDSCAPER get resources (recipe): api/v1/landscape/...
+        "URL_PM_RECOM_LANDSCAPER":      "http://192.168.252.41:46020/mf2c",
 
         # TESTS
         #"AVAILABLE_AGENTS": ["192.168.252.41", "192.168.252.42", "192.168.252.43"]
