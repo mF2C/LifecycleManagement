@@ -112,6 +112,8 @@ def get_available_agents_resources(service):
                 total_res = len(resources['node_name'])
                 LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list: total=" + str(total_res))
 
+                # TODO hostname <-> IP mapping
+
                 return config.dic['AVAILABLE_AGENTS']
     except:
         LOG.error('Lifecycle-Management: agent_decision: get_available_agents_list: Exception')
