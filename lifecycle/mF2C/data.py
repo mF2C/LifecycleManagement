@@ -116,7 +116,7 @@ def create_service_instance(service, agents_list, user_id, agreement_id):
                                "num_cpus":      1,
                                "allow":         True,
                                "container_id":  "-",
-                               "master_compss": master_compss,
+                               "master_compss": master_compss,  # TODO master_compss is not needed anymore
                                "agent_param":   "not-defined"})
         i += 1
 

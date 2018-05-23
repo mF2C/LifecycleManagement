@@ -15,9 +15,7 @@ import requests
 import sys, traceback
 from lifecycle.utils.logs import LOG
 from lifecycle import config
-from lifecycle.utils.common import OPERATION_START, OPERATION_STOP, OPERATION_RESTART, OPERATION_TERMINATE, \
-    OPERATION_START_JOB, STATUS_ERROR, STATUS_NOT_DEPLOYED, STATUS_WAITING, STATUS_STARTED, STATUS_STOPPED, \
-    STATUS_TERMINATED, STATUS_UNKNOWN
+from lifecycle.utils.common import STATUS_STARTED
 
 
 '''
@@ -122,10 +120,6 @@ def find_master(service_instance):
         for agent in service_instance['agents']:
             if agent['status'] == STATUS_STARTED:
                 return agent
-            #if 'master_compss' not in agent:
-            #    LOG.warning("Lifecycle-Management: common: find_master: 'master_compss' not found in agent")
-            #elif agent['master_compss']:
-            #    return agent
     except:
         LOG.error('Lifecycle-Management: common: find_master: Exception')
     return service_instance['agents'][0]
@@ -201,6 +195,10 @@ def start_job_in_agents(service_instance, parameters):
         for agent in service_instance['agents']:
             if agent['status'] == STATUS_STARTED:
                 xml_resources_content += gen_resource(agent['url'])
+
+        if not xml_resources_content:
+            LOG.error('Lifecycle-Management: COMPSs adapter: start_job_in_agents: xml_resources_content is empty: agents status != STATUS_STARTED')
+            return False
 
         xml = "<?xml version='1.0' encoding='utf-8'?>" \
               "<startApplication>" + parameters + \

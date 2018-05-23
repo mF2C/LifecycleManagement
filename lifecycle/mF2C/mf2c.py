@@ -81,6 +81,15 @@ def get_optimal_resources(service):
     LOG.info("Lifecycle-Management: MF2C: get_available_resources: HTTP POST: " +
              str(config.dic['URL_PM_RECOM_LANDSCAPER']) + "/optimal")
     try:
+        # url = 'http://localhost:46020/mf2c/optimal'
+        # res = requests.post(url, json=json_recipe, headers=headers)
+        # if res.ok:
+        #     print
+        #     'Optimal Done'
+        #     json_data = json.loads(res.text)
+        #     print
+        #     json_data
+
         r = requests.post(str(config.dic['URL_PM_RECOM_LANDSCAPER']) + "/optimal",
                           json=service,
                           headers={"Accept": "text/json",
@@ -91,9 +100,34 @@ def get_optimal_resources(service):
         json_data = json.loads(r.text)
         LOG.debug("Lifecycle-Management: MF2C: get_available_resources: json_data:" + str(json_data))
 
-        if r.status_code == 200:
-            LOG.debug('Lifecycle-Management: MF2C: get_available_resources: status_code=' +  str(r.status_code))
-            return json_data
+        # EXAMPLE
+        # json_data:
+        # [
+        #  {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
+        #   'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'machine-A',
+        #   'compute utilization': 0.0, 'disk utilization': 0.0},
+        #  {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
+        #   'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'machine-B',
+        #   'compute utilization': 0.0, 'disk utilization': 0.0},
+        #  {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
+        #   'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': '192.168.252.41',
+        #   'compute utilization': 0.0, 'disk utilization': 0.0},
+        #  {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
+        #   'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'tango-docker',
+        #   'compute utilization': 0.0, 'disk utilization': 0.0}
+        # ]
+        # ==> [{"agent_ip": "192.168.252.41"}, {"agent_ip": "192.168.252.42"}]
+
+        if r.ok: #status_code == 200:
+            LOG.debug('Lifecycle-Management: MF2C: get_available_resources: status_code=' +  str(r.ok)) #r.status_code))
+
+            # create list of agents
+            list_of_agents = []
+            for elem in json_data:
+                list_of_agents.append({"agent_ip": elem['node_name']})
+
+            LOG.debug("Lifecycle-Management: MF2C: get_available_resources: list_of_agents:" + str(list_of_agents))
+            return list_of_agents
 
         LOG.error('Lifecycle-Management: MF2C: get_available_resources: Error: status_code=' +  str(r.status_code))
         return None

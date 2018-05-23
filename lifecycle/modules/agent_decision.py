@@ -20,57 +20,22 @@ from lifecycle import config
 '''
 OUTPUT FROM LANDSCAPER/RECOMMENDER:
 "list of hosts ordered by ‘max optimization’ descending (at the moment optimizing by cpu usage)"
-    {
-        "node_name": {
-            "0": "machine-A",
-            "1": "machine-B"
-        },
-        "type": {
-            "0": "machine",
-            "1": "machine"
-        },
-        "compute utilization": {
-            "0": 0.0,
-            "1": 0.0
-        },
-        "compute saturation": {
-            "0": 0.0,
-            "1": 0.0
-        },
-        "memory utilization": {
-            "0": 0.0,
-            "1": 0.0
-        },
-        "memory saturation": {
-            "0": 0.0,
-            "1": 0.0
-        },
-        "network utilization": {
-            "0": 0.0,
-            "1": 0.0
-        },
-        "network saturation": {
-            "0": 0.0,
-            "1": 0.0
-        },
-        "disk utilization": {
-            "0": 0.0,
-            "1": 0.0
-        },
-        "disk saturation": {
-            "0": 0.0,
-            "1": 0.0
-        }
-    }
+ [
+  {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
+   'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'machine-A',
+   'compute utilization': 0.0, 'disk utilization': 0.0},
+  {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
+   'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'machine-B',
+   'compute utilization': 0.0, 'disk utilization': 0.0},
+  {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
+   'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': '192.168.252.41',
+   'compute utilization': 0.0, 'disk utilization': 0.0},
+  {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
+   'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'tango-docker',
+   'compute utilization': 0.0, 'disk utilization': 0.0}
+ ]
     
-    ==>
-    
-    "agents_list": [{
-			"agent_ip": "192.168.252.41",
-			"num_cpus": 7,
-			"master_compss": true
-		}
-	]
+ ==> [{"agent_ip": "192.168.252.41"}, {"agent_ip": "192.168.252.42"}]
 '''
 
 
@@ -103,18 +68,12 @@ def get_available_agents_resources(service):
             if not resources or len(resources) == 0:
                 # forwards the request upwards
                 # TODO: not implemented
-                LOG.warning("Lifecycle-Management: agent_decision: get_available_agents_list: forwards the request upwards: not implemented")
+                LOG.error("Lifecycle-Management: agent_decision: get_available_agents_list: forwards the request upwards: not implemented")
                 return None
 
             else:
-                # process response: resources
-                LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list: processing resources: " + str(resources) + " ...")
-                total_res = len(resources['node_name'])
-                LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list: total=" + str(total_res))
-
-                # TODO hostname <-> IP mapping
-
-                return config.dic['AVAILABLE_AGENTS']
+                LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list: total=" + str(len(resources)))
+                return resources
     except:
         LOG.error('Lifecycle-Management: agent_decision: get_available_agents_list: Exception')
         return None

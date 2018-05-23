@@ -254,6 +254,9 @@ def operation_service_agent(agent, operation):
                 docker_client.start_container(agent['container_id'])
                 agent['status'] = STATUS_STARTED
 
+                if config.dic['NETWORK_COMPSs'] != "not-defined":
+                    docker_client.add_container_to_network(agent['container_id'])
+
             elif operation == OPERATION_STOP:
                 l_elem = db.get_elem_from_list(agent['container_id'])
                 LOG.debug("  > docker-compose? [l_elem=" + str(l_elem) + "]")

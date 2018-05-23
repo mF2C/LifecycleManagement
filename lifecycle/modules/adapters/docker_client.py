@@ -107,9 +107,20 @@ def create_docker_compss_container(service_image, ip, prts, master=None):
                 lclient.import_image(image=service_image)  # (tag="latest", image="ubuntu") # (tag="latest", image="ubuntu")
 
             # create a new container: 'docker run'
-            # if master is not None:
-            LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: Creating MASTER container ...")
-            #         docker run --rm -it --env MF2C_HOST=172.17.0.3 -p46100:46100 --env DEBUG=debug --name compss3123 mf2c/compss-test:latest
+            LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: Creating COMPSs container ...")
+            #     docker run --rm -it --env MF2C_HOST=172.17.0.3 -p46100:46100 --env DEBUG=debug --name compss3123 mf2c/compss-test:latest
+            #if config.dic['NETWORK_COMPSs'] == "not-defined":
+            #    container = lclient.create_container(service_image,
+            #                                         name="compss-" + str(uuid.uuid4()),
+            #                                         environment={"MF2C_HOST": ip, "DEBUG": "debug",
+            #                                                     "REPORT_ADDRESS": config.dic['CIMI_URL']},
+            #                                         tty=True,
+            #                                         ports=prts,
+            #                                         host_config=lclient.create_host_config(port_bindings=create_ports_dict(prts),
+            #                                                                                auto_remove=False),
+            #                                         networking_config = lclient.create_networking_config({
+            #                                                config.dic['NETWORK_COMPSs']: lclient.create_endpoint_config()}))
+            #else:
             container = lclient.create_container(service_image,
                                                  name="compss-" + str(uuid.uuid4()),
                                                  environment={"MF2C_HOST": ip, "DEBUG": "debug",
@@ -118,6 +129,9 @@ def create_docker_compss_container(service_image, ip, prts, master=None):
                                                  ports=prts,
                                                  host_config=lclient.create_host_config(port_bindings=create_ports_dict(prts),
                                                                                         auto_remove=False))
+
+
+
             return container
         else:
             LOG.error("Lifecycle-Management: Docker adapter: create_docker_compss_container: Could not connect to DOCKER API")
@@ -201,7 +215,15 @@ def remove_container(id):
         LOG.error("Lifecycle-Management: Docker client: remove_container [" + id + "]: Exception")
         return False
 
-'''
-if __name__ == "__main__":
-    LOG.info(str(create_ports_dict([123, 234, 345, 456, 99])))
-'''
+
+# start_container
+def add_container_to_network(id):
+    try:
+        LOG.debug("Lifecycle-Management: Docker client: add_container_to_network: "
+                  "[NETWORK_COMPSs=" + config.dic['NETWORK_COMPSs'] + "], [id=" + id + "]")
+        lclient = get_client_agent_docker()
+        LOG.debug("Lifecycle-Management: Docker client: add_container_to_network: resp: " +
+                  str(lclient.connect_container_to_network(id, config.dic['NETWORK_COMPSs'])))
+    except:
+        LOG.error("Lifecycle-Management: Docker client: add_container_to_network [" + id + "]: Exception")
+        return False
