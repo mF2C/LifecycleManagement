@@ -55,6 +55,8 @@ dic = { "SERVER_PORT":                  46000,
         "URL_AC_USER_MANAGEMENT":       "https://user-management:46300/api/v1/user-management",
         # PORT_COMPSs
         "PORT_COMPSs":                  46100,
+        # NETWORK_COMPSs
+        "NETWORK_COMPSs":               "not-defined",
         # URL_PM_RECOM_LANDSCAPER:
         #       PM-RECOMMENDER get recipe: api/v1/recommender/recipe/...
         #       PM-LANDSCAPER get resources (recipe): api/v1/landscape/...
