@@ -182,10 +182,11 @@ def select_agents(service_instance):
             # 3. TODO PROCESS INFORMATION AND SELECT BEST CANDIDATES
             LOG.debug("Lifecycle-Management: agent_decision: select_agents: not implemented")
 
-            if not service_instance_1:
-                LOG.error("Lifecycle-Management: agent_decision: select_agents: Error calling QoS Providing component")
-                return service_instance
-            return service_instance_1
+            return service_instance
+            #if not service_instance_1:
+            #    LOG.error("Lifecycle-Management: agent_decision: select_agents: Error calling QoS Providing component")
+            #    return service_instance
+            #return service_instance_1
     except:
         LOG.error('Lifecycle-Management: agent_decision: select_agents: Exception')
         return None

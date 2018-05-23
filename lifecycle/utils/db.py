@@ -11,6 +11,9 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
+from lifecycle.utils.logs import LOG
+from pydblite.pydblite import Base
+
 
 '''
 
@@ -22,9 +25,22 @@ SERVICE_INSTANCES_LIST = {
     }
 }
 
+
+
 '''
 
-SERVICE_INSTANCES_LIST = []
+
+try:
+    # SERVICE_INSTANCES_LIST
+    SERVICE_INSTANCES_LIST = []
+
+    # SERVICE_INSTANCES DB
+    # DB_SERVICE_INSTANCES = Base('SERVICE_INSTANCES', save_to_file=False)
+    # create new base with field names
+    # DB_SERVICE_INSTANCES.create('type', 'container_main', 'container_2')
+
+except ValueError:
+    LOG.error('Lifecycle-Management: db: Exception: Error while initializing db')
 
 
 # get_elem_from_list:
@@ -35,10 +51,18 @@ def get_elem_from_list(container_main_id):
     return None
 
 
+'''
+# save_to_DB_SERVICE_INSTANCES
+def save_to_DB_SERVICE_INSTANCES(type, container_main, container_2):
+    DB_SERVICE_INSTANCES.insert(type=type, container_main=container_main, container_2=container_2)
+
+
+
+
 # pydblite:
 def pydblite():
     from pydblite.pydblite import Base
-    db = Base('dummy', save_to_file=False)
+    db = Base('dummy', path="C://TMP/db_data") #save_to_file=False
     # create new base with field names
     db.create('name', 'age', 'size')
     # insert new record
@@ -86,21 +110,12 @@ def pydblite():
     db.drop_field('name')
     # save changes on disk
     db.commit()
+'''
 
 
 '''
 def main():
-    SERVICE_INSTANCES_LIST.append({
-        "type": "docker-compose",
-        "container_main": "11111asdasdasdasdasd",
-        "container_2": "1111asdasdasd"
-    })
-    get_elem_from_list("11111asdasdasdasdasd")
-    SERVICE_INSTANCES_LIST.append({
-        "type": "docker-compose",
-        "container_main": "22222asdasdasdasdasd",
-        "container_2": "2222asdasdasd"
-    })
+    pydblite()
 
 
 if __name__ == "__main__":

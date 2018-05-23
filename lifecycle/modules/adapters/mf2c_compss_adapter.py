@@ -15,6 +15,9 @@ import requests
 import sys, traceback
 from lifecycle.utils.logs import LOG
 from lifecycle import config
+from lifecycle.utils.common import OPERATION_START, OPERATION_STOP, OPERATION_RESTART, OPERATION_TERMINATE, \
+    OPERATION_START_JOB, STATUS_ERROR, STATUS_NOT_DEPLOYED, STATUS_WAITING, STATUS_STARTED, STATUS_STOPPED, \
+    STATUS_TERMINATED, STATUS_UNKNOWN
 
 
 '''
@@ -117,10 +120,12 @@ Lifecycle & COMPSs:
 def find_master(service_instance):
     try:
         for agent in service_instance['agents']:
-            if 'master_compss' not in agent:
-                LOG.warning("Lifecycle-Management: common: find_master: 'master_compss' not found in agent")
-            elif agent['master_compss']:
+            if agent['status'] == STATUS_STARTED:
                 return agent
+            #if 'master_compss' not in agent:
+            #    LOG.warning("Lifecycle-Management: common: find_master: 'master_compss' not found in agent")
+            #elif agent['master_compss']:
+            #    return agent
     except:
         LOG.error('Lifecycle-Management: common: find_master: Exception')
     return service_instance['agents'][0]
@@ -140,7 +145,7 @@ def gen_resource(url):
               "    <priceTimeUnit>-1</priceTimeUnit>" \
               "    <processors>" \
               "      <architecture>[unassigned]</architecture>" \
-              "      <computingUnits>1</computingUnits>" \
+              "      <computingUnits>2</computingUnits>" \
               "      <internalMemory>-1.0</internalMemory>" \
               "      <name>[unassigned]</name>" \
               "      <propName>[unassigned]</propName>" \
@@ -194,7 +199,8 @@ def start_job_in_agents(service_instance, parameters):
         # create resource xml
         xml_resources_content = ""
         for agent in service_instance['agents']:
-            xml_resources_content += gen_resource(agent['url'])
+            if agent['status'] == STATUS_STARTED:
+                xml_resources_content += gen_resource(agent['url'])
 
         xml = "<?xml version='1.0' encoding='utf-8'?>" \
               "<startApplication>" + parameters + \

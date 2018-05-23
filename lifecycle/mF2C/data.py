@@ -59,20 +59,26 @@ from lifecycle import config
 # SERVICE INSTANCE
 # get_service_instance: Get service instance
 def get_service_instance(service_instance_id, obj_response_cimi=None):
-    LOG.info("Lifecycle-Management: Data: get_service_instance: " + service_instance_id)
+    LOG.debug("Lifecycle-Management: Data: get_service_instance: " + service_instance_id)
     return cimi.get_service_instance_by_id(service_instance_id, obj_response_cimi)
 
 
 # get_all_service_instances: Get all service instances
 def get_all_service_instances(obj_response_cimi=None):
-    LOG.info("Lifecycle-Management: Data: get_all_service_instances: ")
+    LOG.debug("Lifecycle-Management: Data: get_all_service_instances")
     return cimi.get_all_service_instances(obj_response_cimi)
 
 
 # del_service_instance: Delete service instance
 def del_service_instance(service_instance_id, obj_response_cimi=None):
-    LOG.info("Lifecycle-Management: Data: del_service_instance: " + service_instance_id)
+    LOG.debug("Lifecycle-Management: Data: del_service_instance: " + service_instance_id)
     return cimi.del_service_instance_by_id(service_instance_id, obj_response_cimi)
+
+
+# del_all_service_instances: Delete all service instances
+def del_all_service_instances(obj_response_cimi=None):
+    LOG.debug("Lifecycle-Management: Data: del_all_service_instances")
+    return cimi.del_all_service_instances(obj_response_cimi)
 
 
 # create_service_instance: Creates a new service instance
@@ -91,28 +97,28 @@ def create_service_instance(service, agents_list, user_id, agreement_id):
     # ports:
     ports_l = []
     try:
-        ports_l = service['exec_ports'] #[0]
+        ports_l = service['exec_ports']
     except:
         LOG.warning("Lifecycle-Management: Data: No ports values found in service definition")
 
     # AGENTs:
+    i = 0
     for agent in agents_list:
-        if len(agents_list) == 1:
+        if len(agents_list) == 1 or i == 0:
             master_compss = True
-        elif 'master_compss' not in agent:
-            master_compss = False
         else:
-            master_compss = agent['master_compss']
+            master_compss = False
         # Add new AGENT to list
         list_of_agents.append({"agent":         {"href": "agent/default-value"},
                                "ports":         ports_l,
                                "url":           agent['agent_ip'],
                                "status":        "not-defined",
-                               "num_cpus":      agent['num_cpus'],
+                               "num_cpus":      1,
                                "allow":         True,
                                "container_id":  "-",
                                "master_compss": master_compss,
                                "agent_param":   "not-defined"})
+        i += 1
 
     # SERVICE_INSTANCE:
     new_service_instance = {"service":          service['id'],

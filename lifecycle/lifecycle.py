@@ -157,7 +157,10 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
                 LOG.error("Lifecycle-Management: Lifecycle: submit_service_in_agents: agent [" + agent['url'] + "] cannot be reached")
 
         # 4. initializes SLA
-        sla_adapter.initializes_sla(service_instance, agreement_id)
+        if sla_adapter.initializes_sla(service_instance, agreement_id):
+            LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: sla agreement started")
+        else:
+            LOG.error("Lifecycle-Management: Lifecycle: submit_service_in_agents: sla agreement NOT started")
 
         # 5. save / update service_instance
         LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: UPDATING service_instance: " + str(service_instance))
@@ -319,6 +322,14 @@ def terminate(service_instance_id):
     except:
         LOG.error('Lifecycle-Management: Lifecycle: terminate: Exception')
         return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
+
+
+# terminate_all
+def terminate_all():
+    if data.del_all_service_instances():
+        return common.gen_response_ok('Terminate all services', 'result', 'True')
+    else:
+        return common.gen_response(500, 'Exception', 'result', 'False')
 
 
 # Service Instance Operation: starts a job / app

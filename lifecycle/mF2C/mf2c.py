@@ -116,7 +116,7 @@ def start_sla_agreement(agreement_id):
 
         LOG.debug("Lifecycle-Management: MF2C: start_sla_agreement:" + str(r))
 
-        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202 or r.status_code == 204:
+        if r.status_code >= 200 and r.status_code <= 204:
             LOG.debug('Lifecycle-Management: MF2C: start_sla_agreement: status_code=' +  str(r.status_code))
             return True
 
@@ -139,7 +139,7 @@ def stop_sla_agreement(agreement_id):
 
         LOG.debug("Lifecycle-Management: MF2C: stop_sla_agreement:" + str(r))
 
-        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202:
+        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202 or r.status_code == 204:
             LOG.debug('Lifecycle-Management: MF2C: stop_sla_agreement: status_code=' +  str(r.status_code))
             return True
 
@@ -163,7 +163,7 @@ def terminate_sla_agreement(agreement_id):
 
         LOG.debug("Lifecycle-Management: MF2C: stop_sla_agreement:" + str(r))
 
-        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202:
+        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202 or r.status_code == 204:
             LOG.debug('Lifecycle-Management: MF2C: stop_sla_agreement: status_code=' +  str(r.status_code))
             return True
 
@@ -193,16 +193,12 @@ def service_management_qos(service_instance):
         json_data = json.loads(r.text)
         LOG.debug("Lifecycle-Management: MF2C: service_management_qos:" + str(json_data) + ", status: " + str(json_data['status']))
 
-        if r.status_code == 200 and json_data['status'] == 404:
-            LOG.error("Lifecycle-Management: MF2C: service_management_qos: status_code=" + str(r.status_code) +
-                      ", status: " + str(json_data['status']))
-            return None
-        elif r.status_code == 200:
-            LOG.debug("Lifecycle-Management: MF2C: service_management_qos: status_code=" + str(r.status_code) +
-                      ", service: " + str(json_data["service"]))
-            return json_data["service"]
+        if json_data['status'] == 200:
+            LOG.debug("Lifecycle-Management: MF2C: service_management_qos: status=" + str(json_data['status']) +
+                      ", service: " + str(json_data["service-instance"]))
+            return json_data["service-instance"]
 
-        LOG.error('Lifecycle-Management: MF2C: service_management_qos: Error: status_code=' + str(r.status_code))
+        LOG.error("Lifecycle-Management: MF2C: service_management_qos: Error: status: " + str(json_data['status']))
         return None
     except:
         LOG.error('Lifecycle-Management: MF2C: service_management_qos: Exception')

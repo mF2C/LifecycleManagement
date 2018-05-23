@@ -101,7 +101,7 @@ sudo docker build -t lm-app .
 sudo docker run -p 46000:46000 lm-app
 ```
 
-Read next section to see how to properly start the component.
+<p style="color:red; font-weight: bold">NOTE: Read next section to see how to properly start the component.</p>
 
 -----------------------
 
@@ -120,9 +120,10 @@ sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:4600
     - **CIMI_USER** CIMI user
     - **CIMI_PASSWORD** CIMI password
     - **WORKING_DIR_VOLUME** _docker-compose.yml_ folder
-    - **URL_PM_SLA_MANAGER** URL of the Plantform Manager - SLA Manager; e.g. https://192.168.192.192:46030
+    - **URL_PM_SLA_MANAGER** URL of the Platform Manager - SLA Manager; e.g. https://192.168.192.192:46030
     - **URL_AC_SERVICE_MNGMT** URL of the Agent Controller - QoS Providing; e.g. https://192.168.192.192:46200/api/service-management
     - **URL_AC_USER_MANAGEMENT** URL of the Agent Controller - User Management; e.g. https://192.168.192.192:46300/api/v1/user-management
+    - **URL_PM_RECOM_LANDSCAPER** URL of the Platform Manager - Landscaper/Recommender; e.g. http://192.168.252.41:46020/mf2c
 
 3. After launching the Lifecycle Management module, the REST API services can be accessed at port 46000:
     - List of services (json): _https://localhost:46000/api/v1/lifecycle_
@@ -141,8 +142,7 @@ The **Lifecycle** Management module is connected with the following mF2C compone
     - _User Management_: Lifecycle receives warnings from the User Management when the mF2C applications use more resources than allowed by the users
     - _SLA Manager_: -
 - Makes calls to the following modules / components:
-    - _Recommender_: -
-    - _Landscaper_: The Lifecycle gets from this component the list of all available agents and resources where a service can be deployed
+    - _Recommender_ & _Landscaper_: The Lifecycle gets from this component the list of all available agents and resources where a service can be deployed
     - _Service Management_: The Lifecycle calls the Service Management module to know which of the agents from a list can be used to deploy a service
     - _User Management_: Lifecycle interacts with the User Management module to get the profile and sharing resources defined by the user in a device
     - _Distributed Execution Runtime / COMPSs_:

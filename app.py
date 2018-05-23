@@ -360,7 +360,11 @@ class ServiceLifecycle(Resource):
             LOG.error('Lifecycle-Management: REST API: delete: Parameter not found: service_instance_id')
             return Response(json.dumps({'error': True, 'message': 'parameter not found: service_instance_id'}),
                             status=406, content_type='application/json')
-        return lifecycle.terminate(data['service_instance_id'])
+
+        if data['service_instance_id'] == "all":
+            return lifecycle.terminate_all()
+        else:
+            return lifecycle.terminate(data['service_instance_id'])
 
 
 api.add_resource(ServiceLifecycle, '/api/v1/lifecycle')

@@ -12,7 +12,7 @@ Created on 09 feb. 2018
 """
 
 
-import docker
+import docker, uuid
 from lifecycle.utils.logs import LOG
 from lifecycle import config
 
@@ -107,28 +107,17 @@ def create_docker_compss_container(service_image, ip, prts, master=None):
                 lclient.import_image(image=service_image)  # (tag="latest", image="ubuntu") # (tag="latest", image="ubuntu")
 
             # create a new container: 'docker run'
-            if master is not None:
-                LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: Creating MASTER container ...")
-                # MASTER: docker run --rm -it --env MF2C_HOST=172.17.0.3 -p46100:46100 --env DEBUG=debug --name master mf2c/compss-agent:latest
-                #         docker run --rm -it --env MF2C_HOST=172.17.0.3 -p46100:46100 --env DEBUG=debug --name master mf2c/compss-test:latest
-                container = lclient.create_container(service_image,
-                                                     name="master",
-                                                     environment={"MF2C_HOST": ip, "DEBUG": "debug"},
-                                                     tty=True,
-                                                     ports=prts, #[port],
-                                                     host_config=lclient.create_host_config(port_bindings=create_ports_dict(prts), #{port: port},
-                                                                                            auto_remove=False))
-            else:
-                LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: Creating WORKER container ...")
-                # WORKER: docker run --rm -it --env MF2C_HOST=172.17.0.2 --env DEBUG=debug --name worker mf2c/compss-agent:latest
-                #         docker run --rm -it --env MF2C_HOST=172.17.0.2 --env DEBUG=debug --name worker mf2c/compss-test:latest
-                container = lclient.create_container(service_image,
-                                                     name="worker",
-                                                     environment={"MF2C_HOST": ip, "DEBUG": "debug"},
-                                                     tty=True,
-                                                     ports=prts, #[port],
-                                                     host_config=lclient.create_host_config(port_bindings=create_ports_dict(prts), #{port: port},
-                                                                                            auto_remove=False))
+            # if master is not None:
+            LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: Creating MASTER container ...")
+            #         docker run --rm -it --env MF2C_HOST=172.17.0.3 -p46100:46100 --env DEBUG=debug --name compss3123 mf2c/compss-test:latest
+            container = lclient.create_container(service_image,
+                                                 name="compss-" + str(uuid.uuid4()),
+                                                 environment={"MF2C_HOST": ip, "DEBUG": "debug",
+                                                              "REPORT_ADDRESS": config.dic['CIMI_URL']},
+                                                 tty=True,
+                                                 ports=prts,
+                                                 host_config=lclient.create_host_config(port_bindings=create_ports_dict(prts),
+                                                                                        auto_remove=False))
             return container
         else:
             LOG.error("Lifecycle-Management: Docker adapter: create_docker_compss_container: Could not connect to DOCKER API")
