@@ -18,18 +18,13 @@ dic = { "SERVER_PORT":                  46000,
         "API_DOC_URL":                  "/api/v1/lifecycle",
         "CERT_CRT":                     "cert/ia.crt",
         "CERT_KEY":                     "cert/ia.key",
-        "DEBUG":                        False,
         "STANDALONE_MODE":              False,
 
         # VERIFY_SSL controls whether we verify the server's TLS certificate or not
         "VERIFY_SSL":                   False,
 
         # CIMI RESOURCES managed by this component
-        "CIMI_USERS":                   "users",
-        "CIMI_SERVICES":                "services",
-        "CIMI_SERVICE":                 "service",
         "CIMI_SERVICE_INSTANCES":       "serviceInstances",
-        "CIMI_SERVICE_INSTANCE":        "service-instance",
 
         # CIMI:  https://dashboard.mf2c-project.eu/api/cloud-entry-point
         "CIMI_URL":                     "",    # https://proxy
@@ -45,6 +40,8 @@ dic = { "SERVER_PORT":                  46000,
         "DOCKER_COMPOSE_IMAGE_TAG":     "1.21.0",
         # docker socket volume
         "DOCKER_SOCKET_VOLUME":         "/var/run/docker.sock",
+        # ports db
+        "DB_DOCKER_PORTS":              "./docker_ports_db",
 
         # URLs / ports from other mF2C components:
         # PM-SLA MANAGER
@@ -57,14 +54,8 @@ dic = { "SERVER_PORT":                  46000,
         "PORT_COMPSs":                  46100,
         # NETWORK_COMPSs
         "NETWORK_COMPSs":               "not-defined",
+        # COMPSs - dataclay
+        "DATACLAY_EP":                  "dataclay",
         # URL_PM_RECOM_LANDSCAPER:
-        #       PM-RECOMMENDER get recipe: api/v1/recommender/recipe/...
-        #       PM-LANDSCAPER get resources (recipe): api/v1/landscape/...
         "URL_PM_RECOM_LANDSCAPER":      "http://192.168.252.41:46020/mf2c",
-
-        # TESTS
-        #"AVAILABLE_AGENTS": ["192.168.252.41", "192.168.252.42", "192.168.252.43"]
-        "AVAILABLE_AGENTS": [{"agent_ip": "192.168.252.41", "num_cpus": 4},
-                             {"agent_ip": "192.168.252.42", "num_cpus": 2},
-                             {"agent_ip": "192.168.252.43", "num_cpus": 2}]
 }
