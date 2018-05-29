@@ -98,23 +98,6 @@ def get_api():
 ###############################################################################
 
 
-# get_user_by_id: get user by id
-# TODO not used
-# curl -XGET cimi/api/sharing-model?$filter=acl/owner/principal="user"
-def get_user_by_id(user_id):
-    try:
-        resp = get_api().cimi_search(config.dic['CIMI_USERS'], filter="id='" + user_id + "'")
-        if resp.count == 1:
-            return resp.json[config.dic['CIMI_USERS']][0] # dict
-        else:
-            LOG.warning("User not found [user_id=" + user_id + "]")
-            return None
-    except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('Exception')
-        return None
-
-
 # get_service_instance_by_id: get service instance by id
 def get_service_instance_by_id(id, obj_response_cimi=None):
     try:

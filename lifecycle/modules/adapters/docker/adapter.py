@@ -11,16 +11,16 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-import lifecycle.modules.adapters.docker_client as docker_client
+import lifecycle.modules.adapters.docker.client as docker_client
 import lifecycle.utils.common as common
 import lifecycle.utils.db as db
 import sys, traceback, wget, uuid, os, time
 from lifecycle.utils.db import SERVICE_INSTANCES_LIST
 from lifecycle.utils.logs import LOG
 from lifecycle import config
-from lifecycle.utils.common import OPERATION_START, OPERATION_STOP, OPERATION_RESTART, OPERATION_TERMINATE, \
-    OPERATION_START_JOB, STATUS_ERROR, STATUS_NOT_DEPLOYED, STATUS_WAITING, STATUS_STARTED, STATUS_STOPPED, \
-    STATUS_TERMINATED, STATUS_UNKNOWN
+from lifecycle.utils.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, \
+    STATUS_ERROR, STATUS_WAITING, STATUS_STARTED, STATUS_STOPPED, \
+    STATUS_TERMINATED, STATUS_UNKNOWN, SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS
 
 
 '''
@@ -222,13 +222,13 @@ def deploy_service_agent(service, agent):
     LOG.debug("Lifecycle-Management: Docker adapter: (1) deploy_service_agent: " + str(service) + ", " + str(agent))
     try:
         # docker-compose
-        if service['exec_type'] == 'docker-compose':
+        if service['exec_type'] == SERVICE_DOCKER_COMPOSE:
             return deploy_docker_compose(service, agent)
         # docker
-        elif service['exec_type'] == 'docker':
+        elif service['exec_type'] == SERVICE_DOCKER:
             return deploy_docker_image(service, agent)
         # compss (docker)
-        elif service['exec_type'] == 'compss':
+        elif service['exec_type'] == SERVICE_COMPSS:
             return deploy_docker_compss(service, agent)
         # not defined
         else:
@@ -284,13 +284,13 @@ def operation_service_agent(agent, operation):
                 # docker-compose
                 if l_elem is not None and l_elem['type'] == "docker-compose":
                     LOG.debug("  >> Remove container 1 [" + agent['container_id'] + "] ...")
-                    docker_client.remove_container(agent['container_id'])
+                    docker_client.remove_container(agent)
                     LOG.debug("  >> Remove container 2 [" + l_elem['container_2'] + "] ...")
-                    docker_client.remove_container(l_elem['container_2'])
+                    docker_client.remove_container_by_id(l_elem['container_2'])
                 # 'normal' container
                 else:
                     LOG.debug("  >> Remove container: " + agent['container_id'])
-                    docker_client.remove_container(agent['container_id'])
+                    docker_client.remove_container(agent)
                 agent['status'] = STATUS_TERMINATED
 
         # if error when connecting to agent...

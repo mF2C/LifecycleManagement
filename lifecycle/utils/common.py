@@ -21,6 +21,11 @@ from lifecycle.utils.logs import LOG
 ###############################################################################
 # GLOBAL VARS:
 
+# Service Type
+SERVICE_DOCKER = "docker"
+SERVICE_DOCKER_COMPOSE = "docker-compose"
+SERVICE_COMPSS = "compss"
+
 # Operations:
 OPERATION_START = "start"
 OPERATION_STOP = "stop"

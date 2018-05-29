@@ -107,7 +107,7 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
             return common.gen_response(500, 'error creating service_instance', 'service', str(service))
 
         # 3. select from agents list
-        r = agent_decision.select_agents(service_instance)
+        r = agent_decision.select_agents(service['exec_type'], service_instance)
         if not r is None:
             service_instance = r
 

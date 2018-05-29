@@ -13,10 +13,10 @@ Created on 09 feb. 2018
 
 from lifecycle.utils.logs import LOG
 from pydblite.pydblite import Base
+from lifecycle import config
 
 
 '''
-
 SERVICE_INSTANCES_LIST = {
     {
         "type": "docker-compose", 
@@ -24,23 +24,27 @@ SERVICE_INSTANCES_LIST = {
         "container_2": ""
     }
 }
-
-
-
 '''
 
 
 try:
     # SERVICE_INSTANCES_LIST
+    # "MEMORY DB"
+    LOG.info('Lifecycle-Management: db: Initializing SERVICE_INSTANCES_LIST ...')
     SERVICE_INSTANCES_LIST = []
 
-    # SERVICE_INSTANCES DB
-    # DB_SERVICE_INSTANCES = Base('SERVICE_INSTANCES', save_to_file=False)
+    # DB_DOCKER_PORTS: PORTS DATABASE for each of the Lifecycles / agents
+    # "PHYSICAL DB"
+    LOG.info('Lifecycle-Management: db: Initializing DB_DOCKER_PORTS ...')
+    DB_DOCKER_PORTS = Base(config.dic['DB_DOCKER_PORTS'])
     # create new base with field names
-    # DB_SERVICE_INSTANCES.create('type', 'container_main', 'container_2')
-
-except ValueError:
-    LOG.error('Lifecycle-Management: db: Exception: Error while initializing db')
+    if not DB_DOCKER_PORTS.exists():
+        DB_DOCKER_PORTS.create('port', 'mapped_to')
+    else:
+        DB_DOCKER_PORTS.open()
+        records = DB_DOCKER_PORTS()
+except:
+    LOG.error('Lifecycle-Management: db: Exception: Error while initializing db components')
 
 
 # get_elem_from_list:
@@ -51,18 +55,85 @@ def get_elem_from_list(container_main_id):
     return None
 
 
+# print_records
+def print_records(db):
+    LOG.debug('Lifecycle-Management: db: print_records: Retrieving records from db...')
+    records = db()
+    for r in records:
+        LOG.debug("> " + str(r))
+
+
+# save_to_DB_DOCKER_PORTS
+def save_to_DB_DOCKER_PORTS(port, mapped_to):
+    LOG.debug('Lifecycle-Management: db: save_to_DB_DOCKER_PORTS: Saving record ...')
+    try:
+        record = get_from_DB_DOCKER_PORTS(port)
+        if record is None:
+            DB_DOCKER_PORTS.insert(port=port, mapped_to=mapped_to)
+            # save changes on disk
+            DB_DOCKER_PORTS.commit()
+
+            # debug DB
+            print_records(DB_DOCKER_PORTS)
+            return True
+        else:
+            LOG.warning('Lifecycle-Management: db: save_to_DB_DOCKER_PORTS: Port already added to DB')
+            return False
+    except:
+        LOG.error('Lifecycle-Management: db: save_to_DB_DOCKER_PORTS: Exception')
+        return False
+
+
+# get_from_DB_DOCKER_PORTS
+def get_from_DB_DOCKER_PORTS(port):
+    LOG.debug('Lifecycle-Management: db: get_from_DB_DOCKER_PORTS: Getting record ...')
+    try:
+        # debug DB
+        print_records(DB_DOCKER_PORTS)
+
+        records = [r for r in DB_DOCKER_PORTS if r['port'] == port]
+        LOG.debug("Lifecycle-Management: db: get_from_DB_DOCKER_PORTS: records: " + str(records))
+
+        #records = DB_DOCKER_PORTS(port=port)
+        if len(records) >= 1:
+            return records[0]
+        else:
+            LOG.warning('Lifecycle-Management: db: get_from_DB_DOCKER_PORTS: No records found')
+    except:
+        LOG.error('Lifecycle-Management: db: get_from_DB_DOCKER_PORTS: Exception')
+    return None
+
+
+# del_from_DB_DOCKER_PORTS
+def del_from_DB_DOCKER_PORTS(port):
+    LOG.debug('Lifecycle-Management: db: get_from_DB_DOCKER_PORTS: Deleting record ...')
+    try:
+        record = get_from_DB_DOCKER_PORTS(port)
+        if record is not None:
+            LOG.debug("Lifecycle-Management: db: del_from_DB_DOCKER_PORTS: deleted records: " + str(DB_DOCKER_PORTS.delete(record)))
+            # save changes on disk
+            DB_DOCKER_PORTS.commit()
+            return True
+        else:
+            LOG.warning('Lifecycle-Management: db: save_to_DB_DOCKER_PORTS: Port was not found in DB')
+            return False
+    except:
+        LOG.error('Lifecycle-Management: db: del_from_DB_DOCKER_PORTS: Exception')
+        return False
+
+
+
 '''
-# save_to_DB_SERVICE_INSTANCES
-def save_to_DB_SERVICE_INSTANCES(type, container_main, container_2):
-    DB_SERVICE_INSTANCES.insert(type=type, container_main=container_main, container_2=container_2)
-
-
-
 
 # pydblite:
 def pydblite():
-    from pydblite.pydblite import Base
-    db = Base('dummy', path="C://TMP/db_data") #save_to_file=False
+    
+    save_to_DB_SERVICE_INSTANCES("tttt2", "32143asdasd2", "asdasd2332142")
+    DB_SERVICE_INSTANCES.commit()
+    records = DB_SERVICE_INSTANCES(type="tttt")
+
+
+    db = Base("C://TMP/db_data2") #'dummy', path="C://TMP/db_data") #save_to_file=False
     # create new base with field names
     db.create('name', 'age', 'size')
     # insert new record
@@ -110,14 +181,15 @@ def pydblite():
     db.drop_field('name')
     # save changes on disk
     db.commit()
-'''
 
 
-'''
+
+
 def main():
     pydblite()
 
 
 if __name__ == "__main__":
     main()
+
 '''

@@ -496,7 +496,7 @@ api.add_resource(ServiceLifecycleOperations, '/api/v1/lifecycle/service-instance
 def main():
     # START SERVER
     context = (config.dic['CERT_CRT'], config.dic['CERT_KEY'])
-    app.run(host='0.0.0.0', port=config.dic['SERVER_PORT'], ssl_context=context, threaded=True, debug=config.dic['DEBUG'])
+    app.run(host='0.0.0.0', port=config.dic['SERVER_PORT'], ssl_context=context, threaded=True, debug=False)
 
 
 if __name__ == "__main__":

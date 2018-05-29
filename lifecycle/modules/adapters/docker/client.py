@@ -13,6 +13,7 @@ Created on 09 feb. 2018
 
 
 import docker, uuid
+import lifecycle.modules.adapters.docker.ports_mngr as pmngr
 from lifecycle.utils.logs import LOG
 from lifecycle import config
 
@@ -23,12 +24,29 @@ DOCKER_SOCKET = "unix://var/run/docker.sock"
 client = None
 
 
+# replace_in_list: replace element in list
+def replace_in_list(l, xvalue, newxvalue):
+    for n, i in enumerate(l):
+        if i == xvalue:
+            l[n] = newxvalue
+    return l
+
+
 # create_ports_dict:
 def create_ports_dict(ports):
     try:
         dict_ports = {}
         for p in ports:
-            dict_ports.update({p:p})
+            # new port (exposed to host) : original port
+            if pmngr.is_port_free(p):
+                dict_ports.update({p:p})
+                pmngr.take_port(p, p)
+            else:
+                np = pmngr.assign_new_port(p)
+                dict_ports.update({p: np})
+                pmngr.take_port(p, np)
+                replace_in_list(ports, p, np)
+
         return dict_ports
     except:
         LOG.error("Lifecycle-Management: Docker client: create_ports_dict: Error during the ports dict creation: " + str(ports))
@@ -76,12 +94,16 @@ def create_docker_container(service_image, service_name, service_command, prts):
 
             LOG.debug("Lifecycle-Management: Docker client: create_docker_container: Creating container ...")
 
+            ports_dict = create_ports_dict(prts)
+            LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: ports_dict: " + str(ports_dict))
+            LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: prts: " + str(prts))
+
             # create a new container: 'docker run'
             container = lclient.create_container(service_image,  # command=service_command,
                                                  name=service_name,
                                                  tty=True,
-                                                 ports=prts, #[port],
-                                                 host_config=lclient.create_host_config(port_bindings=create_ports_dict(prts))) #{port: port}))
+                                                 ports=prts,
+                                                 host_config=lclient.create_host_config(port_bindings=ports_dict))
             return container
         else:
             LOG.error("Lifecycle-Management: Docker adapter: create_docker_container: Could not connect to DOCKER API")
@@ -108,29 +130,22 @@ def create_docker_compss_container(service_image, ip, prts, master=None):
 
             # create a new container: 'docker run'
             LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: Creating COMPSs container ...")
-            #     docker run --rm -it --env MF2C_HOST=172.17.0.3 -p46100:46100 --env DEBUG=debug --name compss3123 mf2c/compss-test:latest
-            #if config.dic['NETWORK_COMPSs'] == "not-defined":
-            #    container = lclient.create_container(service_image,
-            #                                         name="compss-" + str(uuid.uuid4()),
-            #                                         environment={"MF2C_HOST": ip, "DEBUG": "debug",
-            #                                                     "REPORT_ADDRESS": config.dic['CIMI_URL']},
-            #                                         tty=True,
-            #                                         ports=prts,
-            #                                         host_config=lclient.create_host_config(port_bindings=create_ports_dict(prts),
-            #                                                                                auto_remove=False),
-            #                                         networking_config = lclient.create_networking_config({
-            #                                                config.dic['NETWORK_COMPSs']: lclient.create_endpoint_config()}))
-            #else:
+
+            ports_dict = create_ports_dict(prts)
+            LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: ports_dict: " + str(ports_dict))
+            LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: prts: " + str(prts))
+
+            # "docker run --rm -it --env MF2C_HOST=172.17.0.3 -p46100:46100 --env DEBUG=debug --name compss3123 mf2c/compss-test:latest"
             container = lclient.create_container(service_image,
                                                  name="compss-" + str(uuid.uuid4()),
-                                                 environment={"MF2C_HOST": ip, "DEBUG": "debug",
+                                                 environment={"MF2C_HOST": ip,
+                                                              "DEBUG": "debug",
+                                                              "DATACLAY_EP": config.dic['DATACLAY_EP'],
                                                               "REPORT_ADDRESS": config.dic['CIMI_URL']},
                                                  tty=True,
                                                  ports=prts,
-                                                 host_config=lclient.create_host_config(port_bindings=create_ports_dict(prts),
+                                                 host_config=lclient.create_host_config(port_bindings=ports_dict,
                                                                                         auto_remove=False))
-
-
 
             return container
         else:
@@ -206,13 +221,26 @@ def start_container(id):
         return False
 
 
-# remove_container
-def remove_container(id):
+# remove_container_by_id
+def remove_container_by_id(id):
     try:
         lclient = get_client_agent_docker()
         lclient.remove_container(id, force=True)
     except:
-        LOG.error("Lifecycle-Management: Docker client: remove_container [" + id + "]: Exception")
+        LOG.error("Lifecycle-Management: Docker client: remove_container_by_id [" + id + "]: Exception")
+        return False
+
+
+# remove_container
+def remove_container(agent):
+    try:
+        lclient = get_client_agent_docker()
+        lclient.remove_container(agent['container_id'], force=True)
+
+        for p in agent['ports']:
+            pmngr.release_port(p)
+    except:
+        LOG.error("Lifecycle-Management: Docker client: remove_container [" + str(agent) + "]: Exception")
         return False
 
 

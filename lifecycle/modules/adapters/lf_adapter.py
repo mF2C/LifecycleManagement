@@ -12,29 +12,28 @@ Created on 09 feb. 2018
 """
 
 
-import lifecycle.modules.adapters.docker_adapter as adpt
-import lifecycle.modules.adapters.mf2c_compss_adapter as compss_adpt
-import lifecycle.mF2C.data as data
+import lifecycle.modules.adapters.docker.adapter as docker_adpt
+import lifecycle.modules.adapters.compss.adapter as compss_adpt
 
 
 # Deploy / allocate service
 def deploy_service_agent(service, agent):
-    return adpt.deploy_service_agent(service, agent)
+    return docker_adpt.deploy_service_agent(service, agent)
 
 
 # Stop service in agent
 def stop_service_agent(service, agent):
-    return adpt.stop_service_agent(agent)
+    return docker_adpt.stop_service_agent(agent)
 
 
 # Start service in agent
 def start_service_agent(service, agent):
-    return adpt.start_service_agent(agent)
+    return docker_adpt.start_service_agent(agent)
 
 
 # terminate service in agent
 def terminate_service_agent(service, agent):
-    return adpt.terminate_service_agent(agent)
+    return docker_adpt.terminate_service_agent(agent)
 
 
 # start_job_compss: Starts job in one agent
