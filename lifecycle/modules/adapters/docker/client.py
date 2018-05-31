@@ -35,17 +35,21 @@ def replace_in_list(l, xvalue, newxvalue):
 # create_ports_dict:
 def create_ports_dict(ports):
     try:
+        LOG.debug("Lifecycle-Management: Docker client: create_ports_dict: Configuring ports [" + str(ports) + "]...")
         dict_ports = {}
         for p in ports:
-            # new port (exposed to host) : original port
+            LOG.debug("Lifecycle-Management: Docker client: create_ports_dict: port [" + str(p) + "]...")
             if pmngr.is_port_free(p):
                 dict_ports.update({p:p})
                 pmngr.take_port(p, p)
+                LOG.debug("Lifecycle-Management: Docker client: create_ports_dict: port free")
             else:
-                np = pmngr.assign_new_port(p)
+                np = pmngr.assign_new_port()
+                # original port : new port (exposed to host)
                 dict_ports.update({p: np})
-                pmngr.take_port(p, np)
+                pmngr.take_port(np, p)
                 replace_in_list(ports, p, np)
+                LOG.debug("Lifecycle-Management: Docker client: create_ports_dict: port not free: redirected to " + str(np))
 
         return dict_ports
     except:
@@ -94,15 +98,17 @@ def create_docker_container(service_image, service_name, service_command, prts):
 
             LOG.debug("Lifecycle-Management: Docker client: create_docker_container: Creating container ...")
 
+            prts_list = list(prts)
             ports_dict = create_ports_dict(prts)
             LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: ports_dict: " + str(ports_dict))
             LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: prts: " + str(prts))
+            LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: prts_list: " + str(prts_list))
 
             # create a new container: 'docker run'
             container = lclient.create_container(service_image,  # command=service_command,
                                                  name=service_name,
                                                  tty=True,
-                                                 ports=prts,
+                                                 ports=prts_list,
                                                  host_config=lclient.create_host_config(port_bindings=ports_dict))
             return container
         else:
@@ -131,9 +137,15 @@ def create_docker_compss_container(service_image, ip, prts, master=None):
             # create a new container: 'docker run'
             LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: Creating COMPSs container ...")
 
+            # check COMPSs container:
+            if config.dic['PORT_COMPSs'] not in prts:
+                prts.append(config.dic['PORT_COMPSs'])
+
+            prts_list = list(prts)
             ports_dict = create_ports_dict(prts)
             LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: ports_dict: " + str(ports_dict))
             LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: prts: " + str(prts))
+            LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: prts_list: " + str(prts_list))
 
             # "docker run --rm -it --env MF2C_HOST=172.17.0.3 -p46100:46100 --env DEBUG=debug --name compss3123 mf2c/compss-test:latest"
             container = lclient.create_container(service_image,
@@ -143,7 +155,7 @@ def create_docker_compss_container(service_image, ip, prts, master=None):
                                                               "DATACLAY_EP": config.dic['DATACLAY_EP'],
                                                               "REPORT_ADDRESS": config.dic['CIMI_URL']},
                                                  tty=True,
-                                                 ports=prts,
+                                                 ports=prts_list,
                                                  host_config=lclient.create_host_config(port_bindings=ports_dict,
                                                                                         auto_remove=False))
 

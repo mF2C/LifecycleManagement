@@ -104,6 +104,28 @@ def get_from_DB_DOCKER_PORTS(port):
     return None
 
 
+# get_from_DB_DOCKER_PORTS
+def get_COMPSs_port_DB_DOCKER_PORTS(lports):
+    LOG.debug('Lifecycle-Management: db: get_from_DB_DOCKER_PORTS: Getting record ...')
+    try:
+        # debug DB
+        print_records(DB_DOCKER_PORTS)
+
+        for p in lports:
+            records = [r for r in DB_DOCKER_PORTS if r['port'] == p]
+            LOG.debug("Lifecycle-Management: db: get_COMPSs_port_DB_DOCKER_PORTS: records: " + str(records))
+
+            if len(records) >= 1:
+                if records[0]['mapped_to'] == config.dic['PORT_COMPSs']:
+                    LOG.debug('Lifecycle-Management: db: get_COMPSs_port_DB_DOCKER_PORTS: PORT_COMPSs: ' + str(records[0]['port']))
+                    return records[0]['port']
+    except:
+        LOG.error('Lifecycle-Management: db: get_COMPSs_port_DB_DOCKER_PORTS: Exception')
+
+    LOG.error('Lifecycle-Management: db: get_COMPSs_port_DB_DOCKER_PORTS: No COMPSs ports found in DB!')
+    return config.dic['PORT_COMPSs']
+
+
 # del_from_DB_DOCKER_PORTS
 def del_from_DB_DOCKER_PORTS(port):
     LOG.debug('Lifecycle-Management: db: get_from_DB_DOCKER_PORTS: Deleting record ...')

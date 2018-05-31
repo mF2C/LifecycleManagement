@@ -16,10 +16,22 @@ import lifecycle.utils.db as DB
 from lifecycle.utils.logs import LOG
 
 
+PORT_MIN = 46009
+PORT_MAX = 46080
+PORT_INDEX = 46010
+
 # is_port_free
 def is_port_free(port):
     LOG.debug("Lifecycle-Management: Docker: ports_mngr: is_port_free? [" + str(port) + "] ...")
     try:
+        if DB.get_from_DB_DOCKER_PORTS(port) is None:
+            LOG.debug("Lifecycle-Management: Docker: ports_mngr: is_port_free: [" + str(port) + "] is free")
+            return True
+
+        LOG.warning("Lifecycle-Management: Docker: ports_mngr: is_port_free: Port [" + str(port) + "] is in use")
+        return False
+
+        '''
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         result = False
         try:
@@ -30,6 +42,7 @@ def is_port_free(port):
             LOG.warning("Lifecycle-Management: Docker: ports_mngr: is_port_free: Port [" + str(port) + "] is in use")
         sock.close()
         return result
+        '''
     except:
         LOG.error("Lifecycle-Management: Docker: ports_mngr: is_port_free [" + str(port) + "]: Exception")
         return False
@@ -46,8 +59,11 @@ def release_port(port):
 
 
 # take_port
-def assign_new_port(port):
-    for i in range(1, 50):
-        p = port + i
+def assign_new_port():
+    global PORT_INDEX
+    for i in range(PORT_MIN, PORT_MAX):
+        LOG.debug("Lifecycle-Management: Docker: ports_mngr: PORT_INDEX: [" + str(PORT_INDEX) + "]")
+        PORT_INDEX = PORT_INDEX + 1
+        p = PORT_INDEX
         if is_port_free(p):
             return p
