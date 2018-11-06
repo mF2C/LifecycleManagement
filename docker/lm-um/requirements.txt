@@ -1,0 +1,8 @@
+flask==0.10.1
+flask_restful
+requests
+flask_cors
+flask_restful_swagger
+docker==3.0.1
+pydblite
+slipstream-api
