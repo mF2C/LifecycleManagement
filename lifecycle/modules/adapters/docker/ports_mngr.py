@@ -13,12 +13,13 @@ Created on 09 feb. 2018
 
 import socket
 import lifecycle.utils.db as DB
-from lifecycle.utils.logs import LOG
+from common.logs import LOG
 
 
-PORT_MIN = 46009
-PORT_MAX = 46080
-PORT_INDEX = 46010
+PORT_MIN = 46500
+PORT_MAX = 46600
+PORT_INDEX = 46500
+
 
 # is_port_free
 def is_port_free(port):
@@ -64,6 +65,6 @@ def assign_new_port():
     for i in range(PORT_MIN, PORT_MAX):
         LOG.debug("Lifecycle-Management: Docker: ports_mngr: PORT_INDEX: [" + str(PORT_INDEX) + "]")
         PORT_INDEX = PORT_INDEX + 1
-        p = PORT_INDEX
-        if is_port_free(p):
-            return p
+        #p = PORT_INDEX
+        if is_port_free(PORT_INDEX):
+            return PORT_INDEX

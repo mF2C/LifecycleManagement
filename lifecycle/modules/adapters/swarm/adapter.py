@@ -6,7 +6,7 @@ Copyright: Atos Research and Innovation, 2017.
 
 This code is licensed under an Apache 2.0 license. Please, refer to the LICENSE.TXT file for more information
 
-Created on 09 feb. 2018
+Created on 18 oct. 2018
 
 @author: Roi Sucasas - ATOS
 """
@@ -31,7 +31,7 @@ from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, 
            "description": "Hello World Service",
            "resourceURI": "/hello-world",
            "exec": "hello-world",
-           "exec_type": "docker",
+           "exec_type": "kubernetes",
            "exec_ports": ["8080", "8081"],
            "category": {
                "cpu": "low",
@@ -47,6 +47,7 @@ from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, 
        "exec_type": "docker" ........... "exec" = docker image (docker hub)
                     "compss" ........... "exec" = docker image based on COMPSs (docker hub)
                     "docker-compose" ... "exec" = docker-compose.yml location
+                    "kubernetes" ....... "exec" = docker image (docker hub)
 -----------------------------------------------------------------------------------------------
  SERVICE INSTANCE:
    {

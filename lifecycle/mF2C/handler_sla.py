@@ -12,8 +12,8 @@ Created on 27 sept. 2017
 """
 
 
-from lifecycle.utils.logs import LOG
-import lifecycle.utils.common as common
+from common.logs import LOG
+import common.common as common
 import threading
 import time
 

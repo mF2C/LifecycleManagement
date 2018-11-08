@@ -12,8 +12,8 @@ Created on 09 feb. 2018
 """
 
 import lifecycle.mF2C.mf2c as mf2c
-from lifecycle.utils.logs import LOG
-from lifecycle import config
+from common.logs import LOG
+import config
 
 
 # initialize all the SLA processes

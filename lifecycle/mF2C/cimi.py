@@ -14,8 +14,8 @@ Created on 09 feb. 2018
 import requests
 import sys, traceback
 import datetime
-from lifecycle import config
-from lifecycle.utils.logs import LOG
+import config
+from common.logs import LOG
 
 
 # ACL

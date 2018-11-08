@@ -1,9 +1,44 @@
-flask==0.10.1
-flask_restful
+# flask (prev version 0.10.1)
+#
+#
+flask==1.0.2
+
+# flask_restful
+#
+#
+flask_restful==0.3.6
+
+# requests
+#
+#
 requests
-flask_cors
-flask_restful_swagger
+
+# flask_cors
+#
+#
+flask_cors==3.0.6
+
+# flask_restful_swagger
+#   https://github.com/rantav/flask-restful-swagger
+#   MIT License; https://github.com/rantav/flask-restful-swagger/blob/master/LICENSE
+flask_restful_swagger==0.20.1
+
+# docker
+#
+#
 docker==3.0.1
-pydblite
-slipstream-api
-wget
+
+# pydblite
+#   http://www.pydblite.net
+#   BSD licence; http://www.pydblite.net/en/licence.html
+pydblite==3.0.4
+
+# wget
+#   https://bitbucket.org/techtonik/python-wget/src
+#   UNLICENSE; https://bitbucket.org/techtonik/python-wget/src/3001fd1b30aca7e5fe162c9193ccbb951dabb4ea/UNLICENSE
+wget==3.2
+
+# kubernetes
+#
+#
+kubernetes==7.0

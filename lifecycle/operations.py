@@ -13,8 +13,8 @@ Created on 09 feb. 2018
 
 import lifecycle.modules.allocation_adapter as allocation_adapter
 import lifecycle.modules.adapters.lf_adapter as lf_adapter
-import lifecycle.utils.common as common
-from lifecycle.utils.logs import LOG
+import common.common as common
+from common.logs import LOG
 
 
 # Deploy service in an agent

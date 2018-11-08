@@ -11,9 +11,9 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-from lifecycle.utils.logs import LOG
+from common.logs import LOG
 from pydblite.pydblite import Base
-from lifecycle import config
+import config
 
 
 '''

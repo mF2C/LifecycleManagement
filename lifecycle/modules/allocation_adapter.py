@@ -12,7 +12,7 @@ Created on 09 feb. 2018
 """
 
 import lifecycle.modules.adapters.lf_adapter as lf_adapter
-from lifecycle.utils.logs import LOG
+from common.logs import LOG
 
 
 # allocate_service_agent: Deploy service in an agent

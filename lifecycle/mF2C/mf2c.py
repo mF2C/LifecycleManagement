@@ -13,8 +13,8 @@ Created on 09 feb. 2018
 
 import requests
 import json, ast
-from lifecycle import config
-from lifecycle.utils.logs import LOG
+import config
+from common.logs import LOG
 
 
 ###############################################################################
@@ -94,7 +94,8 @@ def get_optimal_resources(service):
                           json=service,
                           headers={"Accept": "text/json",
                                    "Content-Type": "application/json"},
-                          verify=config.dic['VERIFY_SSL'])
+                          verify=config.dic['VERIFY_SSL'],
+                          timeout=config.dic['TIMEOUT_ANALYTICSENGINE'])
 
         LOG.debug("Lifecycle-Management: MF2C: get_available_resources: r:" + str(r))
         json_data = json.loads(r.text)

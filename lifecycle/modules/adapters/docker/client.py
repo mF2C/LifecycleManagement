@@ -14,8 +14,8 @@ Created on 09 feb. 2018
 
 import docker, uuid
 import lifecycle.modules.adapters.docker.ports_mngr as pmngr
-from lifecycle.utils.logs import LOG
-from lifecycle import config
+from common.logs import LOG
+import config
 
 
 # docker socket connection
@@ -138,13 +138,18 @@ def create_docker_compss_container(service_image, ip, prts, master=None):
             LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: Creating COMPSs container ...")
 
             # check COMPSs container:
+            LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: prts (1): " + str(prts))
             if config.dic['PORT_COMPSs'] not in prts:
-                prts.append(config.dic['PORT_COMPSs'])
+                prts.insert(0, config.dic['PORT_COMPSs'])
+            else:
+                prts.remove(config.dic['PORT_COMPSs'])
+                prts.insert(0, config.dic['PORT_COMPSs'])
+            LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: prts (2): " + str(prts))
 
             prts_list = list(prts)
             ports_dict = create_ports_dict(prts)
             LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: ports_dict: " + str(ports_dict))
-            LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: prts: " + str(prts))
+            LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: prts (3): " + str(prts))
             LOG.debug("Lifecycle-Management: Docker client: create_docker_compss_container: prts_list: " + str(prts_list))
 
             # "docker run --rm -it --env MF2C_HOST=172.17.0.3 -p46100:46100 --env DEBUG=debug --name compss3123 mf2c/compss-test:latest"
@@ -184,7 +189,9 @@ def create_docker_compose_container(service_name, service_command):
                 lclient.import_image(tag=config.dic['DOCKER_COMPOSE_IMAGE_TAG'], image=config.dic['DOCKER_COMPOSE_IMAGE'])
 
             LOG.debug("Lifecycle-Management: Docker client: create_docker_compose_container: Creating container ...")
-
+            # TODO swarm!!!!
+            #lclient.create_swarm_spec()
+            #lclient.create_service()
             # create a new container: 'docker run'
             container = lclient.create_container(config.dic['DOCKER_COMPOSE_IMAGE'],
                                                  command=service_command,

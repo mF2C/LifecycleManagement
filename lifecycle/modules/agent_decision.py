@@ -12,9 +12,9 @@ Created on 09 feb. 2018
 """
 
 import lifecycle.mF2C.mf2c as mf2c
-import lifecycle.utils.common as common
-from lifecycle.utils.logs import LOG
-from lifecycle.utils.common import SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS
+import common.common as common
+from common.logs import LOG
+from common.common import SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS, SERVICE_KUBERNETES, SERVICE_DOCKER_SWARM
 
 
 '''
@@ -132,10 +132,10 @@ def user_management(service_instance):
             elif common.check_ip(agent['url']):
                 LOG.debug("Lifecycle-Management: agent_decision: user_management: remote user_profiling and user_sharing_model")
 
-                user_profiling = mf2c.user_management_profiling(service_instance['user'])
+                user_profiling = mf2c.user_management_profiling(service_instance['user'], agent['url'])
                 LOG.debug("Lifecycle-Management: agent_decision: user_management: user_profiling: " + str(user_profiling))
 
-                user_sharing_model = mf2c.user_management_sharing_model(service_instance['user'])
+                user_sharing_model = mf2c.user_management_sharing_model(service_instance['user'], agent['url'])
                 LOG.debug("Lifecycle-Management: agent_decision: user_management: user_sharing_model: " + str(user_sharing_model))
 
         # TODO PROCESS INFORMATION
@@ -176,11 +176,9 @@ def select_agents(service_type, service_instance):
                 list_of_agents.append(service_instance['agents'][0])
                 LOG.debug("Lifecycle-Management: agent_decision: select_agents: [" + service_type + "] first agent: " + str(list_of_agents))
 
-                # docker-compose
-                if service_type == SERVICE_DOCKER_COMPOSE:
-                    service_instance['agents'] = list_of_agents
-                # docker
-                elif service_type == SERVICE_DOCKER:
+                # docker-compose, docker, swarm, k8s
+                if service_type == SERVICE_DOCKER_COMPOSE or service_type == SERVICE_DOCKER \
+                        or service_type == SERVICE_DOCKER_SWARM or service_type == SERVICE_KUBERNETES:
                     service_instance['agents'] = list_of_agents
                 # not defined
                 else:

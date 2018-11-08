@@ -13,9 +13,9 @@ Created on 09 feb. 2018
 
 
 import socket, os
-from lifecycle import config
+import config
 from flask import Response, json
-from lifecycle.utils.logs import LOG
+from common.logs import LOG
 
 
 ###############################################################################
@@ -25,6 +25,8 @@ from lifecycle.utils.logs import LOG
 SERVICE_DOCKER = "docker"
 SERVICE_DOCKER_COMPOSE = "docker-compose"
 SERVICE_COMPSS = "compss"
+SERVICE_DOCKER_SWARM = "docker-swarm"
+SERVICE_KUBERNETES = "K8s"
 
 # Operations:
 OPERATION_START = "start"
@@ -41,6 +43,7 @@ STATUS_WAITING = "waiting"
 STATUS_STARTED = "started"
 STATUS_STOPPED = "stopped"
 STATUS_TERMINATED = "terminated"
+STATUS_CREATED_NOT_INITIALIZED = "created-not-initialized"
 
 
 ###############################################################################
@@ -80,6 +83,37 @@ def gen_response(status, message, key, value, key2=None, value2=None):
     LOG.debug('Generate response ' + str(status) + "; dict=" + str(dict))
     return Response(json.dumps(dict), status=status, content_type='application/json')
 
+
+'''
+# Generate response 200
+def gen_response_ok(message, key, value, key2=None, value2=None):
+    dict = {'error': False, 'message': message}
+    dict[key] = value
+    if not (key2 is None) and not (value2 is None):
+        dict[key2] = value2
+    LOG.debug("Generate response OK; dict=" + str(dict))
+    return dict
+'''
+
+# Generate response 200
+def gen_response_ko(message, key, value, key2=None, value2=None):
+    dict = {'error': True, 'message': message}
+    dict[key] = value
+    if not (key2 is None) and not (value2 is None):
+        dict[key2] = value2
+    LOG.debug("Generate response KO; dict=" + str(dict))
+    return dict
+
+'''
+# Generate response ERROR
+def gen_response(status, message, key, value, key2=None, value2=None):
+    dict = {'error': True, 'message': message}
+    dict[key] = value
+    if not (key2 is None) and not (value2 is None):
+        dict[key2] = value2
+    LOG.debug('Generate response ' + str(status) + "; dict=" + str(dict))
+    return Response(json.dumps(dict), status=status, content_type='application/json')
+'''
 
 ###############################################################################
 # IPs:

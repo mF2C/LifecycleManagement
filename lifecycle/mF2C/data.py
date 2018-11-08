@@ -12,8 +12,8 @@ Created on 09 feb. 2018
 """
 
 import lifecycle.mF2C.cimi as cimi
-from lifecycle.utils.logs import LOG
-from lifecycle import config
+from common.logs import LOG
+from common.common import STATUS_CREATED_NOT_INITIALIZED
 
 
 '''
@@ -112,7 +112,7 @@ def create_service_instance(service, agents_list, user_id, agreement_id):
         list_of_agents.append({"agent":         {"href": "agent/default-value"},
                                "ports":         ports_l,
                                "url":           agent['agent_ip'],
-                               "status":        "not-defined",
+                               "status":        STATUS_CREATED_NOT_INITIALIZED,
                                "num_cpus":      1,
                                "allow":         True,
                                "container_id":  "-",
@@ -125,7 +125,7 @@ def create_service_instance(service, agents_list, user_id, agreement_id):
                             "agreement":        agreement_id,
                             "user":             user_id,
                             "agents":           list_of_agents,
-                            "status":           "not-defined"}
+                            "status":           STATUS_CREATED_NOT_INITIALIZED}
 
     LOG.debug("Lifecycle-Management: Data: create_service_instance: adding service_intance to CIMI ...")
     LOG.debug("Lifecycle-Management: Data: create_service_instance: " + str(new_service_instance))

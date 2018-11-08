@@ -16,11 +16,11 @@ import lifecycle.modules.allocation_adapter as allocation_adapter
 import lifecycle.modules.execution_adapter as execution_adapter
 import lifecycle.modules.sla_adapter as sla_adapter
 import lifecycle.modules.adapters.lf_adapter as lf_adapter
-import lifecycle.utils.common as common
+import common.common as common
 import lifecycle.mF2C.data as data
 import lifecycle.mF2C.mf2c as mf2c
-from lifecycle.utils.logs import LOG
-from lifecycle.utils.common import OPERATION_START, OPERATION_STOP, OPERATION_RESTART, OPERATION_TERMINATE, \
+from common.logs import LOG
+from common.common import OPERATION_START, OPERATION_STOP, OPERATION_RESTART, OPERATION_TERMINATE, \
     OPERATION_START_JOB, STATUS_ERROR, STATUS_NOT_DEPLOYED, STATUS_WAITING, STATUS_STARTED, STATUS_STOPPED, \
     STATUS_TERMINATED, STATUS_UNKNOWN
 
@@ -139,6 +139,7 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
                 if resp_deploy is not None:
                     agent['status'] = resp_deploy['status']
                     agent['container_id'] = resp_deploy['container_id']
+                    agent['ports'] = resp_deploy['ports']
                     LOG.debug("Lifecycle-Management: Lifecycle: submit_service_in_agents: allocate service in remote agent: "
                               "[agent=" + str(agent) + "]")
                     # executes / starts service
@@ -188,10 +189,14 @@ def submit(service, user_id, agreement_id):
         # Call to landscaper/reommender
         available_agents_list = agent_decision.get_available_agents_resources(service)
         if not available_agents_list:
+            # TODO forward to parent
+
             # error
             LOG.error("Lifecycle-Management: Lifecycle: submit_v2: available_agents_list is None")
             return common.gen_response(500, 'available_agents_list is None', 'service', str(service))
         elif len(available_agents_list) == 0:
+            # TODO forward to parent
+
             # no resurces / agents found
             LOG.error("Lifecycle-Management: Lifecycle: submit_v2: available_agents_list is empty")
             return common.gen_response(500, 'available_agents_list is empty', 'service', str(service))
@@ -333,12 +338,12 @@ def terminate_all():
 
 
 # Service Instance Operation: starts a job / app
-def start_job(body):
+def start_job(body, service_instance_id):
     LOG.debug("Lifecycle-Management: Lifecycle: start_job: " + str(body))
-    LOG.debug("Lifecycle-Management: Lifecycle: start_job: [body['service_instance_id']=" + body['service_instance_id'] + "]")
+    LOG.debug("Lifecycle-Management: Lifecycle: start_job: [service_instance_id=" + service_instance_id + "]")
     try:
         # service instance
-        service_instance = data.get_service_instance(body['service_instance_id'])
+        service_instance = data.get_service_instance(service_instance_id)
         LOG.debug("Lifecycle-Management: Lifecycle: start_job: service_instance: " + str(service_instance))
 
         # start job in agent(s)

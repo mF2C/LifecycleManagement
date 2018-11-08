@@ -12,9 +12,9 @@ Created on 02 may 2018
 """
 
 
-import lifecycle.utils.common as common
-from lifecycle.utils.logs import LOG
-from lifecycle import config
+import config
+import common.common as common
+from common.logs import LOG
 
 
 '''
@@ -61,6 +61,7 @@ def init():
         common.set_value_env('CIMI_USER')
         common.set_value_env('CIMI_PASSWORD')
         # mF2C components: env variables
+        common.set_value_env('TIMEOUT_ANALYTICSENGINE')
         common.set_value_env('PORT_COMPSs')
         common.set_value_env('NETWORK_COMPSs')
         common.set_value_env('DATACLAY_EP')
@@ -103,6 +104,7 @@ def init():
         LOG.info('[URL_AC_SERVICE_MNGMT=' + config.dic['URL_AC_SERVICE_MNGMT'] + ']')
         LOG.info('[URL_AC_USER_MANAGEMENT=' + config.dic['URL_AC_USER_MANAGEMENT'] + ']')
         LOG.info('[URL_PM_RECOM_LANDSCAPER=' + config.dic['URL_PM_RECOM_LANDSCAPER'] + ']')
+        LOG.info('[TIMEOUT_ANALYTICSENGINE=' + str(config.dic['TIMEOUT_ANALYTICSENGINE']) + ']')
         LOG.info('[PORT_COMPSs=' + str(config.dic['PORT_COMPSs']) + ']')
         LOG.info('[NETWORK_COMPSs=' + config.dic['NETWORK_COMPSs'] + ']')
         LOG.info('[DATACLAY_EP=' + config.dic['DATACLAY_EP'] + ']')
