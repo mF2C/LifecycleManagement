@@ -19,6 +19,8 @@ The Lifecycle Management module is a component of the European Project mF2C.
 
 [Relation to other mF2C components](#relation-to-other-mf2c-components)
 
+[LICENSE](#license)
+
 -----------------------
 
 ### Description
@@ -149,3 +151,10 @@ The **Lifecycle** Management module is connected with the following mF2C compone
     - _SLA Manager_: Lifecycle calls the SLA Manager to start, stop and terminate the SLA agreement monitoring process
 
 Finally, the Lifecycle provides a `docker-compose.yml` file to launch this component together with other mF2C components: [docker-compose.yml](docker-compose.yml)
+
+
+-----------------------
+
+### LICENSE
+
+The Lifecycle application is licensed under [Apache License, version 2](LICENSE.TXT).
