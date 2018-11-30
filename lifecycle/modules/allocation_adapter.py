@@ -16,6 +16,7 @@ from common.logs import LOG
 
 
 # allocate_service_agent: Deploy service in an agent
+# All calls (from local and remote lifecycles) use this function to deploy the service (service instance)
 # IN: Service, Agent
 # OUT: status value
 def allocate_service_agent(service, agent):

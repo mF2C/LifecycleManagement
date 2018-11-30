@@ -11,7 +11,7 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-import lifecycle.mF2C.mf2c as mf2c
+import lifecycle.data.mF2C.mf2c as mf2c
 from common.logs import LOG
 import config
 
@@ -30,7 +30,7 @@ def initializes_sla(service_instance, agreement_id):
             return None
 
         else:
-            return mf2c.start_sla_agreement(agreement_id)
+            return mf2c.sla_start_agreement(agreement_id)
     except:
         LOG.error('Lifecycle-Management: sla_adapter: initializes_sla: Exception')
         return None
@@ -50,7 +50,7 @@ def stop_sla_agreement(service_instance, agreement_id):
             return None
 
         else:
-            return mf2c.stop_sla_agreement(agreement_id)
+            return mf2c.sla_stop_agreement(agreement_id)
     except:
         LOG.error('Lifecycle-Management: sla_adapter: stops_sla_agreement: Exception')
         return None
@@ -71,7 +71,7 @@ def terminate_sla_agreement(service_instance, agreement_id):
 
         else:
             # TODO terminate function is not ready (sla)
-            return mf2c.terminate_sla_agreement(agreement_id)
+            return mf2c.sla_terminate_agreement(agreement_id)
     except:
         LOG.error('Lifecycle-Management: sla_adapter: terminate_sla_agreement: Exception')
         return None

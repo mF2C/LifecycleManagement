@@ -15,8 +15,8 @@ import common.common as common
 import sys, traceback
 from common.logs import LOG
 from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, STATUS_ERROR, STATUS_STARTED, STATUS_TERMINATED
-from kubernetes import config as k8scfg
-from kubernetes import client as k8sclient
+#from kubernetes import config as k8scfg
+#from kubernetes import client as k8sclient
 
 # https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/
 
@@ -77,13 +77,13 @@ def deploy_service(service, agent):
     LOG.debug("Lifecycle-Management: K8s adapter: (1) deploy_service: " + str(service) + ", " + str(agent))
     try:
         # load config
-        k8scfg.load_kube_config()
+        #k8scfg.load_kube_config()
         # create deployment
-        k8sclient.AppsV1Api().create_namespaced_deployment(namespace="default",
-                                                           body={})
+        #k8sclient.AppsV1Api().create_namespaced_deployment(namespace="default",
+        #                                                   body={})
         # create service
-        k8sclient.CoreV1Api().create_namespaced_service(namespace="default",
-                                                        body={})
+        #k8sclient.CoreV1Api().create_namespaced_service(namespace="default",
+        #                                                body={})
 
         agent['status'] = STATUS_STARTED
 
@@ -133,7 +133,7 @@ def operation_service(agent, operation):
     LOG.debug("Lifecycle-Management: K8s adapter: operation_service [" + operation + "]: " + str(agent))
     try:
         # load config
-        k8scfg.load_kube_config()
+        #k8scfg.load_kube_config()
 
         if operation == OPERATION_START:
             '''
@@ -160,11 +160,11 @@ def operation_service(agent, operation):
 
         elif operation == OPERATION_TERMINATE:
             # delete deployment
-            k8sclient.AppsV1Api().delete_namespaced_deployment(name="",
-                                                               namespace="default")
+            #k8sclient.AppsV1Api().delete_namespaced_deployment(name="",
+            #                                                  namespace="default")
             # delete service
-            k8sclient.CoreV1Api().delete_namespaced_service(name="",
-                                                            namespace="default")
+            #k8sclient.CoreV1Api().delete_namespaced_service(name="",
+            #                                               namespace="default")
             agent['status'] = STATUS_TERMINATED
 
         # return status

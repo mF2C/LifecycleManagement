@@ -33,6 +33,10 @@ REST API
             /api/v2
                         GET:    get rest api service status
             Lifecycle:
+                /api/v2/lm/agent-config
+                        GET:    get agent's lifecycle configuration: docker, docker-swarm, kubernetes, ...         
+                /api/v2/lm/agent-info
+                        GET:    get agent's lifecycle information: service_instances, ...
                 /lm/service-instance/<string:service_instance_id>
                         GET:    get service instance / all service instances (from cimi)
                         POST:   SLA / UM notifications
@@ -78,10 +82,10 @@ except ValueError:
 @app.route('/api/v2/', methods=['GET'])
 def default_route():
     data = {
-        'app': 'Lifecycle Management REST API',
-        'status': 'Running',
-        'api_doc_json': 'https://localhost:' + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'],
-        'api_doc_html': 'https://localhost:' + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'] + '.html#!/spec'
+        'app': "Lifecycle Management REST API",
+        'status': "Running",
+        'api_doc_json': "http://" + config.dic['HOST_IP'] + ":" + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'],
+        'api_doc_html': "http://" + config.dic['HOST_IP'] + ":" + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'] + ".html#!/spec"
     }
     resp = Response(json.dumps(data), status=200, mimetype='application/json')
     return resp
@@ -93,7 +97,57 @@ def default_route():
 '''
  Service instance route: status, service events handler
 
-    '/api/v2/lm/service-instance/<string:service_instance_id>'
+    '/api/v2/lm/agent-config'
+
+        GET:    get agent's lifecycle configuration: docker, docker-swarm, kubernetes, ...
+'''
+class InstanceConfig(Resource):
+    # GET /api/v2/lm/agent-config
+    @swagger.operation(
+        summary="get agent's lifecycle configuration: docker, docker-swarm, kubernetes, ...",
+        notes="get agent's lifecycle configuration: docker, docker-swarm, kubernetes, ...",
+        produces=["application/json"],
+        authorizations=[],
+        parameters=[],
+        responseMessages=[{
+            "code": 500,
+            "message": "Exception processing request"
+        }])
+    def get(self):
+        return lm.getAgentConfig()
+
+api.add_resource(InstanceConfig, '/api/v2/lm/agent-config')
+
+
+'''
+ Service instance route: status, service events handler
+
+    '/api/v2/lm/agent-info'
+
+        GET:    get agent's lifecycle information: service_instances, ...
+'''
+class InstanceInfo(Resource):
+    # GET /api/v2/lm/agent-info
+    @swagger.operation(
+        summary="get agent's lifecycle information: service_instances, ...",
+        notes="get agent's lifecycle information: service_instances, ...",
+        produces=["application/json"],
+        authorizations=[],
+        parameters=[],
+        responseMessages=[{
+            "code": 500,
+            "message": "Exception processing request"
+        }])
+    def get(self):
+        return lm.getAgentInfo()
+
+api.add_resource(InstanceInfo, '/api/v2/lm/agent-info')
+
+
+'''
+ Service instance route: status, service events handler
+
+    '/api/v2/lm/service-instances/<string:service_instance_id>'
     
         GET:    get service instance / all service instances
         POST:   SLA / UM notifications
@@ -234,7 +288,7 @@ class ServiceInstance(Resource):
     def delete(self, service_instance_id):
         return lm.deleteServiceInstance(service_instance_id)
 
-api.add_resource(ServiceInstance, '/api/v2/lm/service-instance/<string:service_instance_id>')
+api.add_resource(ServiceInstance, '/api/v2/lm/service-instances/<string:service_instance_id>')
 
 
 
@@ -249,7 +303,7 @@ class Service(Resource):
     # POST: Submits a service
     # POST /api/v2/lm/service1
     @swagger.operation(
-        summary="Submits a <b>service</b> (deployment phase)",
+        summary="Submits a <b>service</b> (deployment phase) (deprecated)",
         notes="Submits a service and returns a json with the content of a service instance:<br/>"
               "<b>'exec_type'</b>='docker' ... deploy a docker image<br/>"
               "<b>'exec_type'</b>='docker-compose' ... deploy a docker compose service<br/>"
@@ -319,21 +373,21 @@ class ServiceV2(Resource):
             "name": "body",
             "description": "Parameters in JSON format.<br/>Service example: <br/>"
                            "{\"service\": {<br/>"
-                           "\"id\": \"120f1ae12ca\",<br/>"
-                           "\"name\": \"compss-mf2c\",<br/>"
-                           "\"description\": \"Hello World Service\",<br/>"
-                           "\"resourceURI\": \"/hello-world\",<br/>"
-                           "\"exec\": \"mf2c/compss-mf2c:1.0\",<br/>"
-                           "\"exec_type\": \"compss\",<br/>"
-                           "\"category\": {<br/>"
-                           "\"cpu\": \"low\",<br/>"
-                           "\"memory\": \"low\",<br/>"
-                           "\"storage\": \"low\",<br/>"
-                           "\"inclinometer\": false,<br/>"
-                           "\"temperature\": false,<br/>"
-                           "\"jammer\": false,<br/>"
-                           "\"location\": false<br/>"
-                           "}},<br/>"
+                               "\"id\": \"120f1ae12ca\",<br/>"
+                               "\"name\": \"compss-mf2c\",<br/>"
+                               "\"description\": \"Hello World Service\",<br/>"
+                               "\"resourceURI\": \"/hello-world\",<br/>"
+                               "\"exec\": \"mf2c/compss-mf2c:1.0\",<br/>"
+                               "\"exec_type\": \"compss\",<br/>"
+                               "\"category\": {<br/>"
+                                   "\"cpu\": \"low\",<br/>"
+                                   "\"memory\": \"low\",<br/>"
+                                   "\"storage\": \"low\",<br/>"
+                                   "\"inclinometer\": false,<br/>"
+                                   "\"temperature\": false,<br/>"
+                                   "\"jammer\": false,<br/>"
+                                   "\"location\": false<br/>"
+                               "}},<br/>"
                            "\"service_id\": \"120f1ae12ca\",<br/>"
                            "\"user_id\": \"rsucasas\",<br/>"
                            "\"agreement_id\": \"sla_agreement/12932af0ef123\",<br/>"
@@ -457,12 +511,18 @@ api.add_resource(ServiceInstanceInt, '/api/v2/lm/service-instance-int')
 ########################################################################################################################
 # MAIN
 def main():
-    LOG.info("Starting Lifecycle Management application [version=" + str(config.dic['VERSION']) + "] ...")
-    LOG.info("Swagger running on https://localhost:" + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'] + ".html")
-    LOG.info("REST API running on https://localhost:" + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'])
+    LOG.info("LIFECYCLE: Starting Lifecycle Management application [version=" + str(config.dic['VERSION']) + "] ...")
+    LOG.info("LIFECYCLE: Swagger running on http://" + config.dic['HOST_IP'] + ":" + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'] + ".html")
+    LOG.info("LIFECYCLE: REST API running on http://" + config.dic['HOST_IP'] + ":" + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'])
+    # START (SSL) SERVER
+    # context = (config.dic['CERT_CRT'], config.dic['CERT_KEY'])
+    # app.run(host='0.0.0.0', port=config.dic['SERVER_PORT'], ssl_context=context, threaded=True, debug=False)
+
+    #LOG.info("Checking User Management component ...")
+    #lm.checkUserManagementComponent()
+
     # START SERVER
-    context = (config.dic['CERT_CRT'], config.dic['CERT_KEY'])
-    app.run(host='0.0.0.0', port=config.dic['SERVER_PORT'], ssl_context=context, threaded=True, debug=False)
+    app.run(host='0.0.0.0', port=config.dic['SERVER_PORT'], threaded=True, debug=False)
 
 
 if __name__ == "__main__":

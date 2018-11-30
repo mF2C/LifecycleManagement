@@ -13,7 +13,6 @@ Created on 09 feb. 2018
 
 import requests
 import sys, traceback
-import lifecycle.utils.db as DB
 from common.logs import LOG
 import common
 from common.common import STATUS_STARTED
@@ -142,7 +141,7 @@ def gen_resource(url, ports):
     try:
         if url == common.get_local_ip():
             LOG.debug("Lifecycle-Management: COMPSs adapter: gen_resource: (local) get_COMPSs_port_DB_DOCKER_PORTS ...")
-            compss_port = DB.get_COMPSs_port_DB_DOCKER_PORTS(ports)
+            compss_port = db.get_COMPSs_port_DB_DOCKER_PORTS(ports)
         else:
             LOG.debug("Lifecycle-Management: COMPSs adapter: gen_resource: (remote agent) first element from list ...")
             compss_port = ports[0]
@@ -194,7 +193,7 @@ def start_job(service_instance_id, agent, parameters):
               "</startApplication>"
         LOG.debug("Lifecycle-Management: COMPSs adapter: start_job: [xml=" + xml + "]")
 
-        compss_port = DB.get_COMPSs_port_DB_DOCKER_PORTS(agent['ports'])
+        compss_port = db.get_COMPSs_port_DB_DOCKER_PORTS(agent['ports'])
         res = requests.put("http://" + agent['url'] + ":" + str(compss_port) + "/COMPSs/startApplication",
                            data=xml,
                            headers={'Content-Type': 'application/xml'})
@@ -229,7 +228,7 @@ def start_job_in_agents(service_instance, parameters):
         LOG.debug("Lifecycle-Management: COMPSs adapter: start_job_in_agents: [xml=" + xml + "]")
 
         master_agent = find_master(service_instance)
-        compss_port = DB.get_COMPSs_port_DB_DOCKER_PORTS(master_agent['ports'])
+        compss_port = db.get_COMPSs_port_DB_DOCKER_PORTS(master_agent['ports'])
 
         res = requests.put("http://" + master_agent['url'] + ":" + str(compss_port) + "/COMPSs/startApplication",
                            data=xml,

@@ -11,7 +11,8 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-import lifecycle.mF2C.mf2c as mf2c
+import lifecycle.data.mF2C.mf2c as mf2c
+import config as config
 import common.common as common
 from common.logs import LOG
 from common.common import SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS, SERVICE_KUBERNETES, SERVICE_DOCKER_SWARM
@@ -49,12 +50,12 @@ OUTPUT FROM LANDSCAPER/RECOMMENDER:
 #       }
 def get_available_agents_resources(service):
     try:
-        LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list ################")
-        LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list: " + str(service))
+        LOG.debug("LIFECYCLE: agent_decision: get_available_agents_list ################")
+        LOG.debug("LIFECYCLE: agent_decision: get_available_agents_list: " + str(service))
 
         if common.is_standalone_mode():
-            LOG.warning("Lifecycle-Management: agent_decision: get_available_agents_list: STANDALONE_MODE enabled")
-            LOG.error("Lifecycle-Management: agent_decision: get_available_agents_list: returning None...")
+            LOG.warning("LIFECYCLE: agent_decision: get_available_agents_list: STANDALONE_MODE enabled")
+            LOG.error("LIFECYCLE: agent_decision: get_available_agents_list: returning None...")
             return None
         else:
             # Call to ANALYTICS ENGINE (RECOMMENDER & LANDSCAPER)
@@ -62,20 +63,23 @@ def get_available_agents_resources(service):
             #   to run the service.
             # Based on this optimal configuration returned by the Recommender, the Lifecycle module asks the Landscaper
             #   for a list of resources that match this recommendation.
-            resources = mf2c.get_optimal_resources(service)
+            resources = mf2c.recommender_get_optimal_resources(service)
 
             # If no resources were found, then the Lifecycle Management forwards the request (submit a service) upwards
             if not resources or len(resources) == 0:
                 # forwards the request upwards
                 # TODO: not implemented
-                LOG.error("Lifecycle-Management: agent_decision: get_available_agents_list: forwards the request upwards: not implemented")
-                return None
+                LOG.warning("LIFECYCLE: agent_decision: get_available_agents_list: forwards the request upwards: not implemented")
+
+                # TODO remove
+                LOG.warning("LIFECYCLE: agent_decision: get_available_agents_list: returning localhost")
+                return [config.dic['HOST_IP']]
 
             else:
-                LOG.debug("Lifecycle-Management: agent_decision: get_available_agents_list: total=" + str(len(resources)))
+                LOG.debug("LIFECYCLE: agent_decision: get_available_agents_list: total=" + str(len(resources)))
                 return resources
     except:
-        LOG.error('Lifecycle-Management: agent_decision: get_available_agents_list: Exception')
+        LOG.error('LIFECYCLE: agent_decision: get_available_agents_list: Exception')
         return None
 
 
@@ -117,7 +121,7 @@ def user_management(service_instance):
         LOG.debug("Lifecycle-Management: agent_decision: user_management: " + str(service_instance))
 
         for agent in service_instance["agents"]:
-            LOG.info(">>> AGENT >>> " + agent['url'] + " <<<")
+            # LOG.info(">>> AGENT >>> " + agent['url'] + " <<<")
             # LOCAL
             if agent['url'] == common.get_local_ip():
                 LOG.debug("Lifecycle-Management: agent_decision: user_management: local user_profiling and user_sharing_model")
@@ -150,11 +154,11 @@ def user_management(service_instance):
 # select_agents_list: Select from list of available agents
 def select_agents(service_type, service_instance):
     try:
-        LOG.debug("Lifecycle-Management: agent_decision: select_agents ############################")
-        LOG.debug("Lifecycle-Management: agent_decision: select_agents: " + str(service_instance))
+        LOG.debug("LIFECYCLE: agent_decision: select_agents ############################")
+        LOG.debug("LIFECYCLE: agent_decision: select_agents: " + str(service_instance))
 
         if common.is_standalone_mode():
-            LOG.warning("Lifecycle-Management: agent_decision: select_agents: STANDALONE_MODE enabled")
+            LOG.warning("LIFECYCLE: agent_decision: select_agents: STANDALONE_MODE enabled")
             return service_instance
         else:
             # 1. QoS PROVIDING
@@ -164,17 +168,17 @@ def select_agents(service_type, service_instance):
             user_management(service_instance)
 
             # 3. TODO PROCESS INFORMATION AND SELECT BEST CANDIDATES
-            LOG.warning("Lifecycle-Management: agent_decision: select_agents: not implemented")
+            LOG.warning("LIFECYCLE: agent_decision: select_agents: not implemented")
 
-            LOG.debug("Lifecycle-Management: agent_decision: select_agents: agents initial list: " + str(service_instance['agents']))
+            LOG.debug("LIFECYCLE: agent_decision: select_agents: agents initial list: " + str(service_instance['agents']))
 
             # compss (docker)
             if service_type == SERVICE_COMPSS:
-                LOG.debug("Lifecycle-Management: agent_decision: select_agents: [SERVICE_COMPSS] service will be deployed in all selected agents")
+                LOG.debug("LIFECYCLE: agent_decision: select_agents: [SERVICE_COMPSS] service will be deployed in all selected agents")
             else:
                 list_of_agents = []
                 list_of_agents.append(service_instance['agents'][0])
-                LOG.debug("Lifecycle-Management: agent_decision: select_agents: [" + service_type + "] first agent: " + str(list_of_agents))
+                LOG.debug("LIFECYCLE: agent_decision: select_agents: [" + service_type + "] first agent: " + str(list_of_agents))
 
                 # docker-compose, docker, swarm, k8s
                 if service_type == SERVICE_DOCKER_COMPOSE or service_type == SERVICE_DOCKER \
@@ -182,11 +186,11 @@ def select_agents(service_type, service_instance):
                     service_instance['agents'] = list_of_agents
                 # not defined
                 else:
-                    LOG.warning("Lifecycle-Management: agent_decision: select_agents: [" + service_type + "] not defined")
+                    LOG.warning("LIFECYCLE: agent_decision: select_agents: [" + service_type + "] not defined")
 
-            LOG.debug("Lifecycle-Management: agent_decision: select_agents: agents final list: " + str(service_instance['agents']))
+            LOG.debug("LIFECYCLE: agent_decision: select_agents: agents final list: " + str(service_instance['agents']))
 
             return service_instance
     except:
-        LOG.error('Lifecycle-Management: agent_decision: select_agents: Exception')
+        LOG.error('LIFECYCLE: agent_decision: select_agents: Exception')
         return None

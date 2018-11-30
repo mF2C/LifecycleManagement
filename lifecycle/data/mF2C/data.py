@@ -11,7 +11,7 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-import lifecycle.mF2C.cimi as cimi
+import lifecycle.data.mF2C.cimi as cimi
 from common.logs import LOG
 from common.common import STATUS_CREATED_NOT_INITIALIZED
 

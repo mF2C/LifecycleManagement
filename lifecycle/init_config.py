@@ -20,7 +20,6 @@ from common.logs import LOG
 '''
 ENV VARIABLES (mF2C):
     CIMI_USER=
-    CIMI_PASSWORD=
     CIMI_API_KEY=
     CIMI_API_SECRET=
     CIMI_SSL_INSECURE=
@@ -30,7 +29,6 @@ ENV VARIABLES (mF2C):
 ENV VARIABLES (lifecycle):
     HOST_IP
     STANDALONE_MODE
-    CIMI_COOKIES_PATH
     
     URL_PM_SLA_MANAGER
     URL_AC_SERVICE_MNGMT
@@ -46,7 +44,7 @@ ENV VARIABLES (lifecycle):
 def init():
     try:
         # CONFIGURATION / ENVIRONMENT VALUES
-        LOG.info('Reading values from ENVIRONMENT...')
+        LOG.info('> LIFECYCLE: Reading values from ENVIRONMENT...')
         # STANDALONE_MODE
         common.set_value_env('STANDALONE_MODE')
         # docker
@@ -56,10 +54,14 @@ def init():
         common.set_value_env('DB_DOCKER_PORTS')
         # HOST IP from environment values:
         common.set_value_env('HOST_IP')
+        # K8S_MASTER
+        common.set_value_env('K8S_MASTER')
+        # DOCKER_SOCKET
+        common.set_value_env('DOCKER_SOCKET')
+        # DOCKER_SWARM
+        common.set_value_env('DOCKER_SWARM')
         # CIMI environment values:
-        common.set_value_env('CIMI_COOKIES_PATH')
         common.set_value_env('CIMI_USER')
-        common.set_value_env('CIMI_PASSWORD')
         # mF2C components: env variables
         common.set_value_env('TIMEOUT_ANALYTICSENGINE')
         common.set_value_env('PORT_COMPSs')
@@ -71,47 +73,46 @@ def init():
         common.set_value_env('URL_PM_RECOM_LANDSCAPER')
         # CIMI URL
         common.set_value_env('CIMI_URL')
-        LOG.debug('[CIMI_URL=' + config.dic['CIMI_URL'] + ']')
+        LOG.debug('LIFECYCLE: [CIMI_URL=' + config.dic['CIMI_URL'] + ']')
         if "/api" not in config.dic['CIMI_URL'] and not config.dic['CIMI_URL'].endswith("/api"):
-            LOG.debug("Adding '/api' to CIMI_URL ...")
+            LOG.debug("LIFECYCLE: Adding '/api' to CIMI_URL ...")
             if config.dic['CIMI_URL'].endswith("/"):
                 config.dic['CIMI_URL'] = config.dic['CIMI_URL'] + "api"
             else:
                 config.dic['CIMI_URL'] = config.dic['CIMI_URL'] + "/api"
-            LOG.debug('[CIMI_URL=' + config.dic['CIMI_URL'] + ']')
+            LOG.debug('LIFECYCLE: [CIMI_URL=' + config.dic['CIMI_URL'] + ']')
         else:
-            LOG.debug("CIMI_URL ... " + config.dic['CIMI_URL'])
+            LOG.debug("LIFECYCLE: CIMI_URL ... " + config.dic['CIMI_URL'])
 
-        LOG.info('Checking configuration...')
-        LOG.info('[SERVER_PORT=' + str(config.dic['SERVER_PORT']) + ']')
-        LOG.info('[HOST_IP=' + config.dic['HOST_IP'] + ']')
-        LOG.info('[API_DOC_URL=' + config.dic['API_DOC_URL'] + ']')
-        LOG.info('[CERT_CRT=' + config.dic['CERT_CRT'] + ']')
-        LOG.info('[CERT_KEY=' + config.dic['CERT_KEY'] + ']')
-        LOG.info('[STANDALONE_MODE=' + str(config.dic['STANDALONE_MODE']) + ']')
-        LOG.info('[VERIFY_SSL=' + str(config.dic['VERIFY_SSL']) + ']')
-        LOG.info('[CIMI_SERVICE_INSTANCES=' + config.dic['CIMI_SERVICE_INSTANCES'] + ']')
-        LOG.info('[CIMI_URL=' + config.dic['CIMI_URL'] + ']')
-        LOG.info('[CIMI_COOKIES_PATH=' + config.dic['CIMI_COOKIES_PATH'] + ']')
-        LOG.info('[CIMI_USER=' + config.dic['CIMI_USER'] + ']')
-        LOG.info('[CIMI_PASSWORD=' + config.dic['CIMI_PASSWORD'] + ']')
-        LOG.info('[WORKING_DIR_VOLUME=' + config.dic['WORKING_DIR_VOLUME'] + ']')
-        LOG.info('[DOCKER_COMPOSE_IMAGE=' + config.dic['DOCKER_COMPOSE_IMAGE'] + ']')
-        LOG.info('[DOCKER_COMPOSE_IMAGE_TAG=' + config.dic['DOCKER_COMPOSE_IMAGE_TAG'] + ']')
-        LOG.info('[DOCKER_SOCKET_VOLUME=' + config.dic['DOCKER_SOCKET_VOLUME'] + ']')
-        LOG.info('[DB_DOCKER_PORTS=' + config.dic['DB_DOCKER_PORTS'] + ']')
-        LOG.info('[URL_PM_SLA_MANAGER=' + config.dic['URL_PM_SLA_MANAGER'] + ']')
-        LOG.info('[URL_AC_SERVICE_MNGMT=' + config.dic['URL_AC_SERVICE_MNGMT'] + ']')
-        LOG.info('[URL_AC_USER_MANAGEMENT=' + config.dic['URL_AC_USER_MANAGEMENT'] + ']')
-        LOG.info('[URL_PM_RECOM_LANDSCAPER=' + config.dic['URL_PM_RECOM_LANDSCAPER'] + ']')
-        LOG.info('[TIMEOUT_ANALYTICSENGINE=' + str(config.dic['TIMEOUT_ANALYTICSENGINE']) + ']')
-        LOG.info('[PORT_COMPSs=' + str(config.dic['PORT_COMPSs']) + ']')
-        LOG.info('[NETWORK_COMPSs=' + config.dic['NETWORK_COMPSs'] + ']')
-        LOG.info('[DATACLAY_EP=' + config.dic['DATACLAY_EP'] + ']')
+        LOG.info('> LIFECYCLE: Checking configuration...')
+        LOG.info('LIFECYCLE: [SERVER_PORT=' + str(config.dic['SERVER_PORT']) + ']')
+        LOG.info('LIFECYCLE: [DOCKER_SOCKET=' + config.dic['DOCKER_SOCKET'] + ']')
+        LOG.info('LIFECYCLE: [DOCKER_SWARM_=' + str(config.dic['DOCKER_SWARM']) + ']')
+        LOG.info('LIFECYCLE: [K8S_MASTER=' + str(config.dic['K8S_MASTER']) + ']')
+        LOG.info('LIFECYCLE: [API_DOC_URL=' + config.dic['API_DOC_URL'] + ']')
+        LOG.info('LIFECYCLE: [CERT_CRT=' + config.dic['CERT_CRT'] + ']')
+        LOG.info('LIFECYCLE: [CERT_KEY=' + config.dic['CERT_KEY'] + ']')
+        LOG.info('LIFECYCLE: [STANDALONE_MODE=' + str(config.dic['STANDALONE_MODE']) + ']')
+        LOG.info('LIFECYCLE: [VERIFY_SSL=' + str(config.dic['VERIFY_SSL']) + ']')
+        LOG.info('LIFECYCLE: [CIMI_URL=' + config.dic['CIMI_URL'] + ']')
+        LOG.info('LIFECYCLE: [CIMI_USER=' + config.dic['CIMI_USER'] + ']')
+        LOG.info('LIFECYCLE: [WORKING_DIR_VOLUME=' + config.dic['WORKING_DIR_VOLUME'] + ']')
+        LOG.info('LIFECYCLE: [DOCKER_COMPOSE_IMAGE=' + config.dic['DOCKER_COMPOSE_IMAGE'] + ']')
+        LOG.info('LIFECYCLE: [DOCKER_COMPOSE_IMAGE_TAG=' + config.dic['DOCKER_COMPOSE_IMAGE_TAG'] + ']')
+        LOG.info('LIFECYCLE: [DOCKER_SOCKET_VOLUME=' + config.dic['DOCKER_SOCKET_VOLUME'] + ']')
+        LOG.info('LIFECYCLE: [DB_DOCKER_PORTS=' + config.dic['DB_DOCKER_PORTS'] + ']')
+        LOG.info('LIFECYCLE: [URL_PM_SLA_MANAGER=' + config.dic['URL_PM_SLA_MANAGER'] + ']')
+        LOG.info('LIFECYCLE: [URL_AC_SERVICE_MNGMT=' + config.dic['URL_AC_SERVICE_MNGMT'] + ']')
+        LOG.info('LIFECYCLE: [URL_AC_USER_MANAGEMENT=' + config.dic['URL_AC_USER_MANAGEMENT'] + ']')
+        LOG.info('LIFECYCLE: [URL_PM_RECOM_LANDSCAPER=' + config.dic['URL_PM_RECOM_LANDSCAPER'] + ']')
+        LOG.info('LIFECYCLE: [TIMEOUT_ANALYTICSENGINE=' + str(config.dic['TIMEOUT_ANALYTICSENGINE']) + ']')
+        LOG.info('LIFECYCLE: [PORT_COMPSs=' + str(config.dic['PORT_COMPSs']) + ']')
+        LOG.info('LIFECYCLE: [NETWORK_COMPSs=' + config.dic['NETWORK_COMPSs'] + ']')
+        LOG.info('LIFECYCLE: [DATACLAY_EP=' + config.dic['DATACLAY_EP'] + ']')
 
         if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
-            LOG.warning("STANDALONE_MODE enabled")
+            LOG.warning("LIFECYCLE: STANDALONE_MODE enabled")
         else:
-            LOG.info("STANDALONE_MODE not enabled")
+            LOG.info("LIFECYCLE: STANDALONE_MODE not enabled")
     except:
-        LOG.error('Lifecycle-Management: init_config: Exception: Error while initializing application')
+        LOG.error('LIFECYCLE: init_config: Exception: Error while initializing application')
