@@ -13,33 +13,27 @@ Created on 18 oct. 2018
 
 #!/usr/bin/python
 
-dic = { "VERSION":                      "0.1",
+dic = { "VERSION":                      "0.2.3",
 
-        # SERVER - REST API
+        # SERVER - REST API:
         "SERVER_PORT":                  46000,
-        "HOST_IP":                      "192.168.252.40",                       # if possible, read from env values
+        "HOST_IP":                      "localhost",
         "API_DOC_URL":                  "/api/v2/lm",
         "CERT_CRT":                     "cert/ia.crt",
         "CERT_KEY":                     "cert/ia.key",
         "STANDALONE_MODE":              False,
 
+        # DOCKER:
+        "DOCKER_SOCKET":                "unix://var/run/docker.sock",
+        "DOCKER_SWARM":                 False,
+        "K8S_MASTER":                   False,
+
         # VERIFY_SSL controls whether we verify the server's TLS certificate or not
         "VERIFY_SSL":                   False,
 
-        # for testing the interaction with the lifecycle management
-        "ENABLE_ASSESSMENT_TESTS":      True,
-
-        # CIMI RESOURCES managed by this component
-        "CIMI_SERVICE_INSTANCES": "serviceInstances",
-        "CIMI_USERS": "users",
-        "CIMI_PROFILES": "user-profile",  # "userProfiles",
-        "CIMI_SHARING_MODELS": "sharing-model",  # "sharingModels",
-
-        # CIMI
-        "CIMI_URL":                     "http://cimi:8201/api",         # https://dashboard.mf2c-project.eu/api
-        "CIMI_COOKIES_PATH":            "~./cookies",
-        "CIMI_USER":                    "rsucasas",
-        "CIMI_PASSWORD":                "password",
+        # CIMI:
+        "CIMI_URL":                     "http://cimi:8201/api",
+        "CIMI_USER":                    "rsucasas",   # TODO remove
 
         # docker:
         # working dir for docker compose applications / services
@@ -70,7 +64,7 @@ dic = { "VERSION":                      "0.1",
 
         # TODO fix/remove dependencies
         # PM-Lifecycle: /api/v1/lifecycle/<string:service_id>
-        "URL_PM_LIFECYCLE":             "https://lifecycle:46000/api/v1/lifecycle/",
+        "URL_PM_LIFECYCLE":             "http://lm-um:46000/api/v2/lm",
         # AC-USER MANAGEMENT
-        "URL_AC_USER_MANAGEMENT": "https://user-management:46300/api/v1/user-management"
+        "URL_AC_USER_MANAGEMENT":       "http://lm-um:46300/api/v2/um"
 }

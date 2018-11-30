@@ -41,4 +41,4 @@ wget==3.2
 # kubernetes
 #
 #
-kubernetes==7.0
+# kubernetes==7.0

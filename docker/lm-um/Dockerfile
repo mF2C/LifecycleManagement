@@ -1,6 +1,6 @@
 FROM python:3.4-alpine
 
-ADD ./LifecycleManagement_v2/ /code/lm
+ADD ./LifecycleManagement/ /code/lm
 ADD ./UserManagement/ /code/um
 ADD ./requirements.txt /code
 
