@@ -13,12 +13,12 @@ Created on 18 oct. 2018
 """
 
 import config as config
-import lifecycle.lifecycle as lifecycle
-import lifecycle.lifecycle_v2 as lifecycle_v2
+import lifecycle.lifecycle_operations as lifecycle_ops
+import lifecycle.lifecycle_deployment as lifecycle_depl
 import lifecycle.data.mF2C.handler_um as handler_um
 import lifecycle.data.mF2C.handler_sla as handler_sla
-import lifecycle.operations as operations
-import lifecycle.data_adapter as data_adapter
+import lifecycle.inter_lf_operations as operations
+import lifecycle.data.data_adapter as data_adapter
 import common.common as common
 from common.common import OPERATION_START, OPERATION_STOP, OPERATION_RESTART, OPERATION_TERMINATE, OPERATION_START_JOB
 from common.logs import LOG
@@ -28,8 +28,7 @@ from flask import Response, json
 # getAgentConfig
 def getAgentConfig():
     data = {
-        'app': "Lifecycle",
-        'name': "Lifecycle Management REST API",
+        'app': "Lifecycle Management REST API",
         'version': config.dic['VERSION'],
         'host': config.dic['HOST_IP'],
         'device id': 'not-defined',
@@ -59,19 +58,7 @@ def getAgentInfo():
         'version': config.dic['VERSION'],
         'host': config.dic['HOST_IP'],
         'device id': 'not-defined',
-        'user id': 'not-defined',
-        'properties': {
-            'swarm-master': config.dic['DOCKER_SWARM'],
-            'k8s-master': config.dic['K8S_MASTER'],
-            'cimi-url': config.dic['CIMI_URL'],
-            'mf2c': {
-                'LIFECYCLE MANAGER': config.dic['URL_PM_LIFECYCLE'],
-                'USER MANAGEMENT MODULE': config.dic['URL_AC_USER_MANAGEMENT'],
-                'RECOMENDER_LANDSCAPER': config.dic['URL_PM_RECOM_LANDSCAPER'],
-                'SERVICE MANAGER': config.dic['URL_AC_SERVICE_MNGMT'],
-                'SLA MANAGER': config.dic['URL_PM_SLA_MANAGER']
-            }
-        }
+        'user id': 'not-defined'
     }
     resp = Response(json.dumps(data), status=200, mimetype='application/json')
     return resp
@@ -80,9 +67,31 @@ def getAgentInfo():
 # getServiceInstance
 def getServiceInstance(service_instance_id):
     if service_instance_id == "all":
-        return lifecycle.get_all()
+        LOG.debug("LIFECYCLE: Lifecycle: get_all ")
+        try:
+            obj_response_cimi = common.ResponseCIMI()
+            service_instances = data_adapter.get_all_service_instances(obj_response_cimi)
+
+            if not service_instances is None:
+                return common.gen_response_ok('Service instances content', 'service_instances', service_instances, "Msg", obj_response_cimi.msj)
+            else:
+                return common.gen_response(500, "Error in 'get_all' function", "Error_Msg", obj_response_cimi.msj)
+        except:
+            LOG.error('LIFECYCLE: Lifecycle: get_all: Exception')
+            return common.gen_response(500, 'Exception', 'get_all', "-")
     else:
-        return lifecycle.get(service_instance_id)
+        LOG.debug("LIFECYCLE: Lifecycle: get: " + service_instance_id)
+        try:
+            obj_response_cimi = common.ResponseCIMI()
+            service_instance = data_adapter.get_service_instance(service_instance_id, obj_response_cimi)
+
+            if not service_instance is None and service_instance != -1:
+                return common.gen_response_ok('Service instance content', 'service_instance_id', service_instance_id, 'service_instance', service_instance)
+            else:
+                return common.gen_response(500, "Error in 'get' function", "service_instance_id", service_instance_id, "Error_Msg", obj_response_cimi.msj)
+        except:
+            LOG.error('LIFECYCLE: Lifecycle: get: Exception')
+            return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
 
 
 # postServiceInstanceEvent
@@ -111,16 +120,16 @@ def putServiceInstance(request, service_instance_id):
 
     # operations
     if data['operation'] == OPERATION_START:
-        return lifecycle.start(service_instance_id)
+        return lifecycle_ops.start(service_instance_id)
     elif data['operation'] == OPERATION_STOP:
-        return lifecycle.stop(service_instance_id)
+        return lifecycle_ops.stop(service_instance_id)
     elif data['operation'] == OPERATION_RESTART:
-        return lifecycle.start(service_instance_id)
+        return lifecycle_ops.start(service_instance_id)
     elif data['operation'] == OPERATION_START_JOB:
         if 'parameters' not in data:
             LOG.error('LIFECYCLE: REST API: putServiceInstance: Parameter not found: parameters')
             return Response(json.dumps({'error': True, 'message': 'parameter not found: parameters'}), status=406, content_type='application/json')
-        return lifecycle.start_job(data, service_instance_id)
+        return lifecycle_ops.start_job(data, service_instance_id)
     else:
         LOG.error('LIFECYCLE: REST API: putServiceInstance: operation not defined / implemented')
         return Response(json.dumps({'error': True, 'message': 'operation not defined / implemented'}), status=501, content_type='application/json')
@@ -129,11 +138,11 @@ def putServiceInstance(request, service_instance_id):
 # deleteServiceInstance: deletes a service instance
 def deleteServiceInstance(service_instance_id):
     if service_instance_id == "all":
-        return lifecycle.terminate_all()
+        return lifecycle_ops.terminate_all()
     else:
-        return lifecycle.terminate(service_instance_id)
+        return lifecycle_ops.terminate(service_instance_id)
 
-
+'''
 # postService1: deploy a service in one or more agents (deprecated)
 def postService1(request):
     data = request.get_json()
@@ -168,7 +177,7 @@ def postService1(request):
         return lifecycle.submit(service,
                                 data['user_id'],
                                 data['agreement_id'])
-
+'''
 
 # postService: deploy a service in one or more agents
 def postService(request):
@@ -201,17 +210,17 @@ def postService(request):
     # submit function returns a json with the content of the 'service_instance'
     if 'agents_list' in data:
         # using a predefined list of agents:
-        return lifecycle_v2.submit_service_in_agents(service,
-                                                     data['user_id'],
-                                                     data['agreement_id'],
-                                                     data['agents_list'],
-                                                     check_service=True)
+        return lifecycle_depl.submit_service_in_agents(service,
+                                                       data['user_id'],
+                                                       data['agreement_id'],
+                                                       data['agents_list'],
+                                                       check_service=True)
     # OPTION: submits the service with the help of the other mF2C components (landscaper, recommender ...)
     else:
         # using agent_decision module (landscaper, recommender...):
-        return lifecycle_v2.submit(service,
-                                   data['user_id'],
-                                   data['agreement_id'])
+        return lifecycle_depl.submit(service,
+                                     data['user_id'],
+                                     data['agreement_id'])
 
 
 ####################################################################################################################

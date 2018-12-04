@@ -45,6 +45,9 @@ STATUS_STOPPED = "stopped"
 STATUS_TERMINATED = "terminated"
 STATUS_CREATED_NOT_INITIALIZED = "created-not-initialized"
 STATUS_DEPLOYING = "deploying"
+STATUS_STARTING = "starting"
+STATUS_STOPPING = "stopping"
+STATUS_TERMINATING = "terminating"
 
 
 ###############################################################################

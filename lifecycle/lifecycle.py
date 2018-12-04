@@ -12,12 +12,10 @@ Created on 09 feb. 2018
 """
 
 import lifecycle.modules.agent_decision as agent_decision
-import lifecycle.modules.allocation_adapter as allocation_adapter
-import lifecycle.modules.execution_adapter as execution_adapter
 import lifecycle.modules.sla_adapter as sla_adapter
-import lifecycle.modules.adapters.lf_adapter as lf_adapter
+import lifecycle.modules.applications_adapter as apps_adapter
 import common.common as common
-import lifecycle.data_adapter as data_adapter
+import lifecycle.data.data_adapter as data_adapter
 import lifecycle.data.mF2C.mf2c as mf2c
 import sys, traceback
 from common.logs import LOG
@@ -126,13 +124,13 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
             if agent['url'] == common.get_local_ip():
                 LOG.debug("LIFECYCLE: Lifecycle: submit_service_in_agents: allocate service locally")
                 # agent.update({"master_compss": True})
-                resp_deploy = allocation_adapter.allocate_service_agent(service, agent)
+                resp_deploy = apps_adapter.deploy_service_agent(service, agent)
                 LOG.debug("LIFECYCLE: Lifecycle: submit_service_in_agents: allocate service locally: "
                           "[resp_deploy=" + str(resp_deploy) + "]")
                 if agent['status'] == "waiting":
                     LOG.debug("LIFECYCLE: Lifecycle: submit_service_in_agents: execute service locally")
                     # executes service
-                    execution_adapter.execute_service_agent(service, agent)
+                    apps_adapter.start_service_agent(service, agent)
                 else:
                     LOG.error("LIFECYCLE: Lifecycle: submit_service_in_agents: allocate service locally: NOT DEPLOYED")
                     agent['status'] = "not-deployed"
@@ -227,7 +225,7 @@ def operation_service(service_instance_id, operation):
             return common.gen_response(500, 'Error getting service instance object', 'service_instance_id', service_instance_id)
 
         # 2. start service in all agents
-        service = data_adapter.get_service(service_instance_id)
+        service = data_adapter.get_service(service_instance['service'])
         LOG.debug("LIFECYCLE: Lifecycle: operation_service: service: " + str(service))
         for agent in service_instance["agents"]:
             LOG.info("LIFECYCLE:>>> AGENT >>> " + agent['url'] + " <<<")
@@ -235,15 +233,15 @@ def operation_service(service_instance_id, operation):
             if agent['url'] == common.get_local_ip():
                 if operation == OPERATION_START:
                     LOG.debug("LIFECYCLE: Lifecycle: operation_service: start service locally: " + str(service) + ", agent: " + str(agent))
-                    lf_adapter.start_service_agent(service, agent)
+                    apps_adapter.start_service_agent(service, agent)
 
                 elif operation == OPERATION_STOP:
                     LOG.debug("LIFECYCLE: Lifecycle: operation_service: stop service locally: " + str(service) + ", agent: " + str(agent))
-                    lf_adapter.stop_service_agent(service, agent)
+                    apps_adapter.stop_service_agent(service, agent)
 
                 elif operation == OPERATION_TERMINATE:
                     LOG.debug("LIFECYCLE: Lifecycle: operation_service: terminate service locally: " + str(service) + ", agent: " + str(agent))
-                    lf_adapter.terminate_service_agent(service, agent)
+                    apps_adapter.terminate_service_agent(service, agent)
 
             # REMOTE AGENT (call lifecycle from agent)
             elif common.check_ip(agent['url']):
@@ -356,9 +354,9 @@ def start_job(body, service_instance_id):
 
         # start job in agent(s)
         if len(service_instance['agents']) == 1:
-            res = lf_adapter.start_job_compss(body['service_instance_id'], service_instance['agents'][0], body['parameters'])
+            res = apps_adapter.start_job_compss(body['service_instance_id'], service_instance['agents'][0], body['parameters'])
         elif len(service_instance['agents']) >= 2:
-            res = lf_adapter.start_job_compss_multiple_agents(service_instance, body['parameters'])
+            res = apps_adapter.start_job_compss_multiple_agents(service_instance, body['parameters'])
         else:
             LOG.warning("LIFECYCLE: Lifecycle: start_job: Execution supported in only 1 or more agents! agents size=" + str(len(service_instance['agents'])))
             res = None
@@ -370,40 +368,4 @@ def start_job(body, service_instance_id):
     except:
         LOG.error('LIFECYCLE: Lifecycle: start_job: Exception')
         return common.gen_response(500, 'Exception', 'data', str(body))
-
-
-# Get service instance
-def get(service_instance_id):
-    LOG.debug("LIFECYCLE: Lifecycle: get: " + service_instance_id)
-    try:
-        obj_response_cimi = common.ResponseCIMI()
-        service_instance = data_adapter.get_service_instance(service_instance_id, obj_response_cimi)
-
-        if not service_instance is None and service_instance != -1:
-            return common.gen_response_ok('Service instance content', 'service_instance_id', service_instance_id,
-                                          'service_instance', service_instance)
-        else:
-            return common.gen_response(500, "Error in 'get' function",
-                                       "service_instance_id", service_instance_id,
-                                       "Error_Msg", obj_response_cimi.msj)
-    except:
-        LOG.error('LIFECYCLE: Lifecycle: get: Exception')
-        return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
-
-
-# Get all service instances
-def get_all():
-    LOG.debug("LIFECYCLE: Lifecycle: get_all ")
-    try:
-        obj_response_cimi = common.ResponseCIMI()
-        service_instances = data_adapter.get_all_service_instances(obj_response_cimi)
-
-        if not service_instances is None:
-            return common.gen_response_ok('Service instances content', 'service_instances', service_instances,
-                                          "Msg", obj_response_cimi.msj)
-        else:
-            return common.gen_response(500, "Error in 'get_all' function", "Error_Msg", obj_response_cimi.msj)
-    except:
-        LOG.error('LIFECYCLE: Lifecycle: get_all: Exception')
-        return common.gen_response(500, 'Exception', 'get_all', "-")
 

@@ -73,7 +73,7 @@ def get_available_agents_resources(service):
 
                 # TODO remove
                 LOG.warning("LIFECYCLE: agent_decision: get_available_agents_list: returning localhost")
-                return [config.dic['HOST_IP']]
+                return [{"agent_ip": config.dic['HOST_IP']}]
 
             else:
                 LOG.debug("LIFECYCLE: agent_decision: get_available_agents_list: total=" + str(len(resources)))

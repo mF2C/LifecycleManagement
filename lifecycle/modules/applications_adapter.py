@@ -1,5 +1,5 @@
 """
-Common adapter
+Common adapter: Applications' allocation, deployment and exectution adapter
 This is being developed for the MF2C Project: http://www.mf2c-project.eu/
 
 Copyright: Atos Research and Innovation, 2017.
@@ -12,10 +12,10 @@ Created on 09 feb. 2018
 """
 
 
-import lifecycle.modules.adapters.docker.adapter as docker_adpt
-import lifecycle.modules.adapters.swarm.adapter as swarm_adpt
-import lifecycle.modules.adapters.kubernetes.adapter as k8s_adpt
-import lifecycle.modules.adapters.compss.adapter as compss_adpt
+import lifecycle.modules.apps.docker.adapter as docker_adpt
+import lifecycle.modules.apps.swarm.adapter as swarm_adpt
+import lifecycle.modules.apps.kubernetes.adapter as k8s_adpt
+import lifecycle.modules.apps.compss.adapter as compss_adpt
 from common.common import SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS, SERVICE_KUBERNETES, SERVICE_DOCKER_SWARM
 
 

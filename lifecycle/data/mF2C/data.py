@@ -59,25 +59,25 @@ from common.common import STATUS_CREATED_NOT_INITIALIZED
 # SERVICE INSTANCE
 # get_service_instance: Get service instance
 def get_service_instance(service_instance_id, obj_response_cimi=None):
-    LOG.debug("Lifecycle-Management: Data: get_service_instance: " + service_instance_id)
+    LOG.debug("LIFECYCLE: Data: get_service_instance: " + service_instance_id)
     return cimi.get_service_instance_by_id(service_instance_id, obj_response_cimi)
 
 
 # get_all_service_instances: Get all service instances
 def get_all_service_instances(obj_response_cimi=None):
-    LOG.debug("Lifecycle-Management: Data: get_all_service_instances")
+    LOG.debug("LIFECYCLE: Data: get_all_service_instances")
     return cimi.get_all_service_instances(obj_response_cimi)
 
 
 # del_service_instance: Delete service instance
 def del_service_instance(service_instance_id, obj_response_cimi=None):
-    LOG.debug("Lifecycle-Management: Data: del_service_instance: " + service_instance_id)
+    LOG.debug("LIFECYCLE: Data: del_service_instance: " + service_instance_id)
     return cimi.del_service_instance_by_id(service_instance_id, obj_response_cimi)
 
 
 # del_all_service_instances: Delete all service instances
 def del_all_service_instances(obj_response_cimi=None):
-    LOG.debug("Lifecycle-Management: Data: del_all_service_instances")
+    LOG.debug("LIFECYCLE: Data: del_all_service_instances")
     return cimi.del_all_service_instances(obj_response_cimi)
 
 
@@ -89,7 +89,7 @@ def del_all_service_instances(obj_response_cimi=None):
 #       4. agreement_id
 #   OUT: service_instance dict
 def create_service_instance(service, agents_list, user_id, agreement_id):
-    LOG.debug("Lifecycle-Management: Data: create_service_instance: " + str(service) + ", " + str(agents_list))
+    LOG.debug("LIFECYCLE: Data: create_service_instance: " + str(service) + ", " + str(agents_list))
 
     # create list of agents
     list_of_agents = []
@@ -99,7 +99,7 @@ def create_service_instance(service, agents_list, user_id, agreement_id):
     try:
         ports_l = service['exec_ports']
     except:
-        LOG.warning("Lifecycle-Management: Data: No ports values found in service definition")
+        LOG.warning("LIFECYCLE: Data: No ports values found in service definition")
 
     # AGENTs:
     i = 0
@@ -127,12 +127,12 @@ def create_service_instance(service, agents_list, user_id, agreement_id):
                             "agents":           list_of_agents,
                             "status":           STATUS_CREATED_NOT_INITIALIZED}
 
-    LOG.debug("Lifecycle-Management: Data: create_service_instance: adding service_intance to CIMI ...")
-    LOG.debug("Lifecycle-Management: Data: create_service_instance: " + str(new_service_instance))
+    LOG.debug("LIFECYCLE: Data: create_service_instance: adding service_intance to CIMI ...")
+    LOG.debug("LIFECYCLE: Data: create_service_instance: " + str(new_service_instance))
 
     res = cimi.add_service_instance(new_service_instance)
     if not res:
-        LOG.error("Lifecycle-Management: Data: create_service_instance: Error during the creation of the service_instance object")
+        LOG.error("LIFECYCLE: Data: create_service_instance: Error during the creation of the service_instance object")
         return new_service_instance
     return res
 
@@ -140,10 +140,10 @@ def create_service_instance(service, agents_list, user_id, agreement_id):
 # update_service_instance: Updates a service instance
 #       service_instance_id = "service-instance/250af452-959f-4ac6-9b06-54f757b46bf0"
 def update_service_instance(service_instance_id, service_instance):
-    LOG.debug("Lifecycle-Management: Data: (1) update_service_instance: " + service_instance_id + ", " + str(service_instance))
+    LOG.debug("LIFECYCLE: Data: (1) update_service_instance: " + service_instance_id + ", " + str(service_instance))
     res = cimi.update_service_instance(service_instance_id, service_instance)
-    LOG.debug("Lifecycle-Management: Data: (2) update_service_instance: " + str(res))
+    LOG.debug("LIFECYCLE: Data: (2) update_service_instance: " + str(res))
     if not res:
-        LOG.error("Lifecycle-Management: Data: update_service_instance: Error during the edition of the service_instance object")
+        LOG.error("LIFECYCLE: Data: update_service_instance: Error during the edition of the service_instance object")
         return None
     return res

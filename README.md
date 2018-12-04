@@ -38,7 +38,7 @@ The Lifecycle Manager can deploy services in agents with Docker, Docker Swarm an
 
 This component is part of the Platform Manager's Service Orchestration module:
 
-![Platform Manager](docresources/pm.png)
+![Platform Manager](resources/pm.png)
 
 -----------------------
 
@@ -141,8 +141,8 @@ sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:4600
     - List of services (swagger ui): _https://localhost:46000/api/v1/lifecycle.html_
 
 3. View the following examples:
-   - [COMPSs application](LifecycleExample_01.md): Complete lifecycle of a service based on COMPSs
-   - [GitLab application](LifecycleExample_02.md): Deployment of a service based on a docker-compose file
+   - [COMPSs application](resources/LifecycleExample_01.md): Complete lifecycle of a service based on COMPSs
+   - [GitLab application](resources/LifecycleExample_02.md): Deployment of a service based on a docker-compose file
 
 4. See also the user guide that can be found in https://github.com/mF2C/Documentation/blob/master/documentation/user_guide/api.rst
 
@@ -174,6 +174,8 @@ The **Lifecycle** Management module is connected with the following mF2C compone
 {
   "id": URI,
   "user": string,
+  "device_id": string,
+  "device_ip": string,
 	"service": string,
   "agreement": string,
 	"status": string,
@@ -197,6 +199,8 @@ The **Lifecycle** Management module is connected with the following mF2C compone
 
 Service launched in a set of mF2C agents. **SERVICE**'s properties:
 - **user** : user that launches the service
+- **device_id** : device that launches the service
+- **device_ip** : device's IP address
 - **service** : service identifier (service running in the agents)
 - **agreement** : agreement identifier
 - **status** : status of the service

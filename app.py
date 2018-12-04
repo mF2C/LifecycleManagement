@@ -14,7 +14,7 @@ Created on 18 oct. 2018
 """
 
 import config as config
-import lm as lm
+import app_funcs as lm
 # lm
 import lifecycle.init_config as lm_init_config
 # common
@@ -298,7 +298,7 @@ api.add_resource(ServiceInstance, '/api/v2/lm/service-instances/<string:service_
     '/api/v2/lm/service1'
     
         POST:       Submits a service; gets a service instance
-'''
+
 class Service(Resource):
     # POST: Submits a service
     # POST /api/v2/lm/service1
@@ -349,7 +349,7 @@ class Service(Resource):
         return lm.postService1(request)
 
 api.add_resource(Service, '/api/v2/lm/service1')
-
+'''
 
 '''
  Service route (v2): submits a service ==> service instance is created
@@ -358,7 +358,7 @@ api.add_resource(Service, '/api/v2/lm/service1')
     
         POST:       Submits a service; gets a service instance
 '''
-class ServiceV2(Resource):
+class Service(Resource):
     # POST: Submits a service
     # POST /api/v2/lm/service
     @swagger.operation(
@@ -372,27 +372,11 @@ class ServiceV2(Resource):
         parameters=[{
             "name": "body",
             "description": "Parameters in JSON format.<br/>Service example: <br/>"
-                           "{\"service\": {<br/>"
-                               "\"id\": \"120f1ae12ca\",<br/>"
-                               "\"name\": \"compss-mf2c\",<br/>"
-                               "\"description\": \"Hello World Service\",<br/>"
-                               "\"resourceURI\": \"/hello-world\",<br/>"
-                               "\"exec\": \"mf2c/compss-mf2c:1.0\",<br/>"
-                               "\"exec_type\": \"compss\",<br/>"
-                               "\"category\": {<br/>"
-                                   "\"cpu\": \"low\",<br/>"
-                                   "\"memory\": \"low\",<br/>"
-                                   "\"storage\": \"low\",<br/>"
-                                   "\"inclinometer\": false,<br/>"
-                                   "\"temperature\": false,<br/>"
-                                   "\"jammer\": false,<br/>"
-                                   "\"location\": false<br/>"
-                               "}},<br/>"
+                           "{<br/>"
                            "\"service_id\": \"120f1ae12ca\",<br/>"
                            "\"user_id\": \"rsucasas\",<br/>"
                            "\"agreement_id\": \"sla_agreement/12932af0ef123\",<br/>"
-                           "\"agents_list\": [{\"agent_ip\": \"192.168.252.41\", \"num_cpus\": 4, \"master_compss\": false},<br/>"
-                           "{\"agent_ip\": \"192.168.252.42\", \"num_cpus\": 2, \"master_compss\": true}] }",
+                           "\"agents_list\": [{\"agent_ip\": \"192.168.252.41\", \"num_cpus\": 4, \"master_compss\": false}]<br/>}",
             "required": True,
             "paramType": "body",
             "type": "string"
@@ -407,7 +391,7 @@ class ServiceV2(Resource):
     def post(self):
         return lm.postService(request)
 
-api.add_resource(ServiceV2, '/api/v2/lm/service')
+api.add_resource(Service, '/api/v2/lm/service')
 
 
 '''
@@ -421,6 +405,7 @@ api.add_resource(ServiceV2, '/api/v2/lm/service')
 class ServiceInstanceInt(Resource):
     # POST: Submits a service in an agent
     # POST /api/v2/lm/service-instance-int
+    '''
     @swagger.operation(
         summary="Submits a service in a mF2C agent",
         notes="Submits a service in a mF2C agent.",
@@ -465,12 +450,14 @@ class ServiceInstanceInt(Resource):
             "code": 500,
             "message": "Exception processing request"
         }])
+    '''
     def post(self):
         return lm.postServiceInt(request)
 
 
     # PUT: Starts / stops / restarts ... a service in an agent, and returns a JSON object with the result / status of the operation.
     # PUT /api/v2/lm/service-instance-int
+    '''
     @swagger.operation(
         summary="Starts / stops / restarts a <b>service instance</b> in a mF2C agent",
         notes="Available operations:<br/>"
@@ -502,6 +489,7 @@ class ServiceInstanceInt(Resource):
             "code": 500,
             "message": "Exception processing request"
         }])
+    '''
     def put(self):
         return lm.putServiceInt(request)
 

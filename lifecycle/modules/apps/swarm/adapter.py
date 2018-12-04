@@ -13,9 +13,9 @@ Created on 18 oct. 2018
 
 import docker, uuid, sys, traceback, time
 import common.common as common
-import lifecycle.modules.adapters.docker.ports_mngr as pmngr
+import lifecycle.modules.apps.docker.ports_mngr as pmngr
 from flask import json
-import lifecycle.modules.adapters.docker.client as docker_client
+import lifecycle.modules.apps.docker.client as docker_client
 import lifecycle.data.db as db
 from common.logs import LOG
 import config

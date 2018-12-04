@@ -1,0 +1,7 @@
+mf2c/lifecycle-usermngt
+
+sudo docker build -t lifecycle-usermngt .
+
+
+sudo docker run -p 46000:46000 -p 8083:8083 mf2c/lifecycle-usermngt:0.2
+

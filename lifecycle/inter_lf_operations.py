@@ -1,5 +1,5 @@
 """
-Lifecycle operations (deployment, execution, start, stop ...)
+Internal Lifecycle operations (deployment, execution, start, stop ...). Internal calls between Lifecycles from different agents.
 This is being developed for the MF2C Project: http://www.mf2c-project.eu/
 
 Copyright: Atos Research and Innovation, 2017.
@@ -11,8 +11,7 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-import lifecycle.modules.allocation_adapter as allocation_adapter
-import lifecycle.modules.adapters.lf_adapter as lf_adapter
+import lifecycle.modules.applications_adapter as apps_adapter
 import common.common as common
 from common.logs import LOG
 
@@ -22,14 +21,14 @@ from common.logs import LOG
 #    - Agent
 def deploy(service, agent):
     LOG.debug("LIFECYCLE: Operations: deploy: " + str(service) + ", agent: " + str(agent))
-    return allocation_adapter.allocate_service_agent(service, agent)
+    return apps_adapter.deploy_service_agent(service, agent)
 
 
 # Service Operation: start
 def start(agent):
     LOG.info("LIFECYCLE: Operations: start service: " + str(agent))
     try:
-        status = lf_adapter.start_service_agent(None, agent)
+        status = apps_adapter.start_service_agent(None, agent)
         return common.gen_response_ok('Start service', 'agent', str(agent), 'status', status)
     except:
         LOG.error('LIFECYCLE: Operations: start: Exception')
@@ -40,7 +39,7 @@ def start(agent):
 def stop(agent):
     LOG.info("LIFECYCLE: Operations: stop: " + str(agent))
     try:
-        status = lf_adapter.stop_service_agent(None, agent)
+        status = apps_adapter.stop_service_agent(None, agent)
         return common.gen_response_ok('Stop service', 'agent', str(agent), 'status', status)
     except:
         LOG.error('LIFECYCLE: Operations: stop: Exception')
@@ -51,7 +50,7 @@ def stop(agent):
 def terminate(agent):
     LOG.info("LIFECYCLE: Operations: terminate: " + str(agent))
     try:
-        status = lf_adapter.terminate_service_agent(None, agent)
+        status = apps_adapter.terminate_service_agent(None, agent)
         return common.gen_response_ok('Terminate service', 'agent', str(agent), 'status', status)
     except:
         LOG.error('LIFECYCLE: Operations: terminate: Exception')

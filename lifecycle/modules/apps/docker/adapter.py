@@ -11,7 +11,7 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-import lifecycle.modules.adapters.docker.client as docker_client
+import lifecycle.modules.apps.docker.client as docker_client
 import common.common as common
 import lifecycle.data.db as db
 import sys, traceback, wget, uuid, os, time

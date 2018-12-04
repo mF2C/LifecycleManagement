@@ -286,7 +286,7 @@ def service_management_get_service(service_id):
             LOG.error("LIFECYCLE: MF2C: service_management_get_service: status_code=" + str(r.status_code) + ", status: " + str(json_data['status']))
             return None
         elif r.status_code == 200:
-            LOG.debug("Lifecycle-Management: MF2C: service_management_get_service: status_code=" + str(r.status_code) + ", service: " + str(json_data["service"]))
+            LOG.debug("LIFECYCLE: MF2C: service_management_get_service: status_code=" + str(r.status_code) + ", service: " + str(json_data["service"]))
             return json_data["service"]
 
         LOG.error('LIFECYCLE: MF2C: service_management_get_service: Error: status_code=' + str(r.status_code))
