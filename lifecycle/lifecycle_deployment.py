@@ -11,6 +11,7 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
+import sys, traceback
 import threading
 import lifecycle.modules.agent_decision as agent_decision
 import lifecycle.modules.applications_adapter as apps_adapter
@@ -220,6 +221,7 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
 
         return common.gen_response_ok('Service deployment operation is being processed...', 'service_instance', service_instance)
     except:
+        traceback.print_exc(file=sys.stdout)
         LOG.error('LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Exception')
         return common.gen_response(500, 'Exception', 'service', str(service))
 

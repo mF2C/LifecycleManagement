@@ -89,7 +89,7 @@ def del_all_service_instances(obj_response_cimi=None):
 #       4. agreement_id
 #   OUT: service_instance dict
 def create_service_instance(service, agents_list, user_id, agreement_id):
-    LOG.debug("LIFECYCLE: Data: create_service_instance: " + str(service) + ", " + str(agents_list))
+    LOG.debug("LIFECYCLE: Data: create_service_instance: " + str(service) + ", " + str(agents_list) + ", " + str(user_id) + ", " + str(agreement_id))
 
     # create list of agents
     list_of_agents = []

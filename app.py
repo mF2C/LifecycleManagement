@@ -231,9 +231,10 @@ class ServiceInstance(Resource):
                 "type": "string"
             }, {
             "name": "body",
-            "description": "Parameters in JSON format.<br/>Example: <br/>"
-                           "{<font color='blue'>\"service_instance_id\":</font>\"617f823c-43f6-4c1a-b482-5ca5cfd4ec93\",<br/>"
-                           "<font color='blue'>\"operation\":</font>\"start/restart/stop\",<br/>"
+            "description": "Parameters in JSON format.<br/>Example 1: <br/>"
+                           "{<br/><font color='blue'>\"operation\":</font>\"start/restart/stop\"<br/>}"
+                           "<br/><br/>Example 2: <br/>"
+                           "{<br/><font color='blue'>\"operation\":</font>\"start-job\",<br/>"
                            "<font color='blue'>\"parameters\":</font>\"&lt;ceiClass&gt;es.bsc.compss.test.TestItf&lt;/ceiClass&gt; "
                            "  &lt;className&gt;es.bsc.compss.test.Test&lt;/className&gt;"
                            "  &lt;methodName&gt;main&lt;/methodName&gt;"
@@ -362,7 +363,7 @@ class Service(Resource):
     # POST: Submits a service
     # POST /api/v2/lm/service
     @swagger.operation(
-        summary="Submits a <b>service</b> (deployment phase) / <b>version 2</b>",
+        summary="Submits a <b>service</b> (deployment phase)</b>",
         notes="Submits a service and returns a json with the content of a service instance:<br/>"
               "<b>'exec_type'</b>='docker' ... deploy a docker image<br/>"
               "<b>'exec_type'</b>='docker-compose' ... deploy a docker compose service<br/>"
