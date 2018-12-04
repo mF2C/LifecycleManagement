@@ -26,6 +26,26 @@ from common.common import STATUS_STARTED, STATUS_DEPLOYING
 '''
  Data managed by this component:
  SERVICE:
+     new version:
+         {
+            "name": "hello-world",
+            "description": "Hello World Service",
+            "exec": "hello-world",
+            "exec_type": "docker",
+            "exec_ports": [8080],
+            "agent_type": "cloud",
+            "num_agents": 1,
+            "cpu_arch": "x86-64",
+            "os": "linux", 
+            "memory_min": 1000,
+            "storage_min": 100, 
+            "disk": 100, 
+            "req_resource": ["Location", "Sentinel", "Ambulance"],
+            "opt_resource": ["SenseHat", "GP-20U7"],
+            "category": 3 
+        }
+        
+    old version:
        {
            "name": "hello-world",
            "description": "Hello World Service",

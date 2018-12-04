@@ -16,9 +16,9 @@ import lifecycle.data.db as db
 from common.logs import LOG
 
 
-PORT_MIN = 46500
-PORT_MAX = 46600
-PORT_INDEX = 46500
+PORT_MIN = 50001
+PORT_MAX = 55000
+PORT_INDEX = 50001
 
 
 def tryPort(port):
@@ -67,7 +67,6 @@ def assign_new_port():
     global PORT_INDEX
     for i in range(PORT_MIN, PORT_MAX):
         LOG.debug("LIFECYCLE: ports_mngr: PORT_INDEX: [" + str(PORT_INDEX) + "]")
-        PORT_INDEX = PORT_INDEX + 1
-        #p = PORT_INDEX
         if is_port_free(PORT_INDEX):
             return PORT_INDEX
+        PORT_INDEX = PORT_INDEX + 1

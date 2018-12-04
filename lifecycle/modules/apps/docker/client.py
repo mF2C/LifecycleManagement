@@ -13,7 +13,7 @@ Created on 09 feb. 2018
 
 
 import docker, uuid
-import lifecycle.modules.apps.docker.ports_mngr as pmngr
+import lifecycle.modules.apps.ports_mngr as pmngr
 from common.logs import LOG
 import config
 

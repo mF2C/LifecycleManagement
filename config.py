@@ -23,10 +23,12 @@ dic = { "VERSION":                      "0.3.1",
         "CERT_KEY":                     "cert/ia.key",
         "STANDALONE_MODE":              False,
 
-        # DOCKER:
+        # DOCKER / SWARM / K8s:
         "DOCKER_SOCKET":                "unix://var/run/docker.sock",
         "DOCKER_SWARM":                 False,
         "K8S_MASTER":                   False,
+        "K8S_PROXY":                    "http://127.0.0.1:8001",
+        "K8S_NAMESPACE":                "default",
 
         # VERIFY_SSL controls whether we verify the server's TLS certificate or not
         "VERIFY_SSL":                   False,
@@ -39,8 +41,8 @@ dic = { "VERSION":                      "0.3.1",
         # working dir for docker compose applications / services
         "WORKING_DIR_VOLUME":           "/home/atos/mF2C/compose_examples",
         # docker compose image: needed to deploy docker compose based services
-        "DOCKER_COMPOSE_IMAGE":         "docker/compose:1.21.0",
-        "DOCKER_COMPOSE_IMAGE_TAG":     "1.21.0",
+        "DOCKER_COMPOSE_IMAGE":         "docker/compose:1.23.1", #1.21.0",
+        "DOCKER_COMPOSE_IMAGE_TAG":     "1.23.1", #"1.21.0",
         # docker socket volume
         "DOCKER_SOCKET_VOLUME":         "/var/run/docker.sock",
         # ports db

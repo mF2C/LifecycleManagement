@@ -133,12 +133,14 @@ sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:4600
     - **URL_AC_USER_MANAGEMENT** URL of the Agent Controller - User Management; e.g. https://192.168.192.192:46300/api/v1/user-management
     - **URL_PM_RECOM_LANDSCAPER** URL of the Platform Manager - Landscaper/Recommender; e.g. http://192.168.252.41:46020/mf2c
     - **K8S_MASTER**
+    - **K8S_PROXY**
+    - **K8S_NAMESPACE**
     - **DOCKER_SOCKET**
     - **DOCKER_SWARM**
 
 2. After launching the Lifecycle Management module, the REST API services can be accessed at port 46000:
-    - List of services (json): _https://localhost:46000/api/v1/lifecycle_
-    - List of services (swagger ui): _https://localhost:46000/api/v1/lifecycle.html_
+    - List of services (json): _https://localhost:46000/api/v2/lm
+    - List of services (swagger ui): _https://localhost:46000/api/v2/lm.html_
 
 3. View the following examples:
    - [COMPSs application](resources/LifecycleExample_01.md): Complete lifecycle of a service based on COMPSs
@@ -176,7 +178,7 @@ The **Lifecycle** Management module is connected with the following mF2C compone
   "user": string,
   "device_id": string,
   "device_ip": string,
-	"service": string,
+  "service": string,
   "agreement": string,
 	"status": string,
   "service_type": string,

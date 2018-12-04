@@ -1,5 +1,5 @@
 """
-Docker adapter
+Docker Swarm adapter
 This is being developed for the MF2C Project: http://www.mf2c-project.eu/
 
 Copyright: Atos Research and Innovation, 2017.
@@ -13,7 +13,7 @@ Created on 18 oct. 2018
 
 import docker, uuid, sys, traceback, time
 import common.common as common
-import lifecycle.modules.apps.docker.ports_mngr as pmngr
+import lifecycle.modules.apps.ports_mngr as pmngr
 from flask import json
 import lifecycle.modules.apps.docker.client as docker_client
 import lifecycle.data.db as db
@@ -25,29 +25,6 @@ from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, 
 
 '''
  Data managed by this component:
- SERVICE:
-       {
-           "name": "hello-world",
-           "description": "Hello World Service",
-           "resourceURI": "/hello-world",
-           "exec": "hello-world",
-           "exec_type": "kubernetes",
-           "exec_ports": ["8080", "8081"],
-           "category": {
-               "cpu": "low",
-               "memory": "low",
-               "storage": "low",
-               "inclinometer": false,
-               "temperature": false,
-               "jammer": false,
-               "location": false
-           }
-       }
-       
-       "exec_type": "docker" ........... "exec" = docker image (docker hub)
-                    "compss" ........... "exec" = docker image based on COMPSs (docker hub)
-                    "docker-compose" ... "exec" = docker-compose.yml location
-                    "kubernetes" ....... "exec" = docker image (docker hub)
 -----------------------------------------------------------------------------------------------
  SERVICE INSTANCE:
    {

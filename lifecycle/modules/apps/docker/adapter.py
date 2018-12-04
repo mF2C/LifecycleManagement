@@ -25,28 +25,6 @@ from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, 
 
 '''
  Data managed by this component:
- SERVICE:
-       {
-           "name": "hello-world",
-           "description": "Hello World Service",
-           "resourceURI": "/hello-world",
-           "exec": "hello-world",
-           "exec_type": "docker",
-           "exec_ports": ["8080", "8081"],
-           "category": {
-               "cpu": "low",
-               "memory": "low",
-               "storage": "low",
-               "inclinometer": false,
-               "temperature": false,
-               "jammer": false,
-               "location": false
-           }
-       }
-       
-       "exec_type": "docker" ........... "exec" = docker image (docker hub)
-                    "compss" ........... "exec" = docker image based on COMPSs (docker hub)
-                    "docker-compose" ... "exec" = docker-compose.yml location
 -----------------------------------------------------------------------------------------------
  SERVICE INSTANCE:
    {

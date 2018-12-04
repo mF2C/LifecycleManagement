@@ -292,66 +292,6 @@ class ServiceInstance(Resource):
 api.add_resource(ServiceInstance, '/api/v2/lm/service-instances/<string:service_instance_id>')
 
 
-
-'''
- Service route (deprecated): submits a service ==> service instance is created
- 
-    '/api/v2/lm/service1'
-    
-        POST:       Submits a service; gets a service instance
-
-class Service(Resource):
-    # POST: Submits a service
-    # POST /api/v2/lm/service1
-    @swagger.operation(
-        summary="Submits a <b>service</b> (deployment phase) (deprecated)",
-        notes="Submits a service and returns a json with the content of a service instance:<br/>"
-              "<b>'exec_type'</b>='docker' ... deploy a docker image<br/>"
-              "<b>'exec_type'</b>='docker-compose' ... deploy a docker compose service<br/>"
-              "<b>'exec_type'</b>='compss' ... deploy a docker COMPSs image<br/>",
-        produces=["application/json"],
-        authorizations=[],
-        parameters=[{
-            "name": "body",
-            "description": "Parameters in JSON format.<br/>Service example: <br/>"
-                            "{\"service\": {<br/>"
-                                 "\"id\": \"120f1ae12ca\",<br/>"
-                                 "\"name\": \"compss-mf2c\",<br/>"
-                                 "\"description\": \"Hello World Service\",<br/>"
-                                 "\"resourceURI\": \"/hello-world\",<br/>"
-                                 "\"exec\": \"mf2c/compss-mf2c:1.0\",<br/>"
-                                 "\"exec_type\": \"compss\",<br/>"
-                                 "\"category\": {<br/>"
-                                     "\"cpu\": \"low\",<br/>"
-                                     "\"memory\": \"low\",<br/>"
-                                     "\"storage\": \"low\",<br/>"
-                                     "\"inclinometer\": false,<br/>"
-                                     "\"temperature\": false,<br/>"
-                                     "\"jammer\": false,<br/>"
-                                     "\"location\": false<br/>"
-                                 "}},<br/>"
-                            "\"service_id\": \"120f1ae12ca\",<br/>"
-                            "\"user_id\": \"rsucasas\",<br/>"
-                            "\"agreement_id\": \"sla_agreement/12932af0ef123\",<br/>"
-                            "\"agents_list\": [{\"agent_ip\": \"192.168.252.41\", \"num_cpus\": 4, \"master_compss\": false},<br/>"
-                                              "{\"agent_ip\": \"192.168.252.42\", \"num_cpus\": 2, \"master_compss\": true}] }",
-            "required": True,
-            "paramType": "body",
-            "type": "string"
-        }],
-        responseMessages=[{
-            "code": 406,
-            "message": "'service_id' / 'service' / 'user_id' / agreement_id parameter not found"
-        }, {
-            "code": 500,
-            "message": "Error processing request"
-        }])
-    def post(self):
-        return lm.postService1(request)
-
-api.add_resource(Service, '/api/v2/lm/service1')
-'''
-
 '''
  Service route (v2): submits a service ==> service instance is created
  
@@ -406,91 +346,11 @@ api.add_resource(Service, '/api/v2/lm/service')
 class ServiceInstanceInt(Resource):
     # POST: Submits a service in an agent
     # POST /api/v2/lm/service-instance-int
-    '''
-    @swagger.operation(
-        summary="Submits a service in a mF2C agent",
-        notes="Submits a service in a mF2C agent.",
-        produces=["application/json"],
-        authorizations=[],
-        parameters=[{
-            "name": "body",
-            "description": "Parameters in JSON format.<br/>Service example: <br/>"
-                            "{\"service\": {"
-                                 "\"name\": \"app-compss\","
-                                 "\"description\": \"app-compss Service\","
-                                 "\"resourceURI\": \"/app-compss\","
-                                 "\"exec\": \"mf2c/compss-mf2c:1.0\","
-                                 "\"exec_type\": \"compss\","
-                                 "\"category\": {"
-                                     "\"cpu\": \"low\","
-                                     "\"memory\": \"low\","
-                                     "\"storage\": \"low\","
-                                     "\"inclinometer\": false,"
-                                     "\"temperature\": false,"
-                                     "\"jammer\": false,"
-                                     "\"location\": false"
-                                 "}},"
-                            "\"agent\": {"
-                                "\"agent\": {\"href\": \"agent/asdasd\"},"
-                                "\"url\": \"192.168.252.41\","
-                                "\"ports\": [8080]," 
-                                "\"container_id\": \"-\","
-                                "\"status\": \"waiting\"," 
-                                "\"num_cpus\": 1," 
-                                "\"allow\": true,"
-                                "\"master_compss\": false}"
-                            "}",
-            "required": True,
-            "paramType": "body",
-            "type": "string"
-        }],
-        responseMessages=[{
-            "code": 406,
-            "message": "'service' / 'agent' parameter not found"
-        }, {
-            "code": 500,
-            "message": "Exception processing request"
-        }])
-    '''
     def post(self):
         return lm.postServiceInt(request)
 
-
     # PUT: Starts / stops / restarts ... a service in an agent, and returns a JSON object with the result / status of the operation.
     # PUT /api/v2/lm/service-instance-int
-    '''
-    @swagger.operation(
-        summary="Starts / stops / restarts a <b>service instance</b> in a mF2C agent",
-        notes="Available operations:<br/>"
-              "<b>'start / stop / restart / terminate'</b> ... service instance operations<br/>",
-        produces=["application/json"],
-        authorizations=[],
-        parameters=[{
-            "name": "body",
-            "description": "Parameters in JSON format.<br/>Service example: <br/>"
-                           "{"
-                               "<font color='blue'>\"operation\":</font> \"start\" ,<br/>"
-                               "<font color='blue'>\"agent\":</font> {"
-                                    "\"agent\": {\"href\": \"agent/asdasd\"},"
-                                    "\"url\": \"192.168.252.41\","
-                                    "\"ports\": [8080]," 
-                                    "\"container_id\": \"-\","
-                                    "\"status\": \"waiting\"," 
-                                    "\"num_cpus\": 1," 
-                                    "\"allow\": true,"
-                                    "\"master_compss\": false}}",
-            "required": True,
-            "paramType": "body",
-            "type": "string"
-        }],
-        responseMessages=[{
-            "code": 406,
-            "message": "('agent' / 'operation' / 'parameters') Parameter not found"
-        }, {
-            "code": 500,
-            "message": "Exception processing request"
-        }])
-    '''
     def put(self):
         return lm.putServiceInt(request)
 
@@ -506,9 +366,6 @@ def main():
     # START (SSL) SERVER
     # context = (config.dic['CERT_CRT'], config.dic['CERT_KEY'])
     # app.run(host='0.0.0.0', port=config.dic['SERVER_PORT'], ssl_context=context, threaded=True, debug=False)
-
-    #LOG.info("Checking User Management component ...")
-    #lm.checkUserManagementComponent()
 
     # START SERVER
     app.run(host='0.0.0.0', port=config.dic['SERVER_PORT'], threaded=True, debug=False)

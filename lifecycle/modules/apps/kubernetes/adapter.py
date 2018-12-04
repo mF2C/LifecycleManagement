@@ -1,5 +1,5 @@
 """
-Docker adapter
+Kubernetes adapter
 This is being developed for the MF2C Project: http://www.mf2c-project.eu/
 
 Copyright: Atos Research and Innovation, 2017.
@@ -11,40 +11,16 @@ Created on 18 oct. 2018
 @author: Roi Sucasas - ATOS
 """
 
+import config
 import common.common as common
 import sys, traceback
 from common.logs import LOG
-from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, STATUS_ERROR, STATUS_STARTED, STATUS_TERMINATED
-#from kubernetes import config as k8scfg
-#from kubernetes import client as k8sclient
+from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, STATUS_ERROR, STATUS_STARTED, STATUS_TERMINATED, STATUS_STOPPED
+import requests
 
-# https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/
 
 '''
  Data managed by this component:
- SERVICE:
-       {
-           "name": "hello-world",
-           "description": "Hello World Service",
-           "resourceURI": "/hello-world",
-           "exec": "hello-world",
-           "exec_type": "kubernetes",
-           "exec_ports": ["8080", "8081"],
-           "category": {
-               "cpu": "low",
-               "memory": "low",
-               "storage": "low",
-               "inclinometer": false,
-               "temperature": false,
-               "jammer": false,
-               "location": false
-           }
-       }
-       
-       "exec_type": "docker" ........... "exec" = docker image (docker hub)
-                    "compss" ........... "exec" = docker image based on COMPSs (docker hub)
-                    "docker-compose" ... "exec" = docker-compose.yml location
-                    "kubernetes" ....... "exec" = docker image (docker hub)
 -----------------------------------------------------------------------------------------------
  SERVICE INSTANCE:
    {
@@ -64,6 +40,7 @@ from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, 
    
     Agent example: {"agent": resource-link, "url": "192.168.1.31", "ports": {8081}, "container_id": "10asd673f", 
                     "status": "waiting", "num_cpus": 3, "allow": true, "master_compss": false}
+-----------------------------------------------------------------------------------------------
 '''
 
 
@@ -76,49 +53,33 @@ from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, 
 def deploy_service(service, agent):
     LOG.debug("Lifecycle-Management: K8s adapter: (1) deploy_service: " + str(service) + ", " + str(agent))
     try:
-        # load config
-        #k8scfg.load_kube_config()
-        # create deployment
-        #k8sclient.AppsV1Api().create_namespaced_deployment(namespace="default",
-        #                                                   body={})
-        # create service
-        #k8sclient.CoreV1Api().create_namespaced_service(namespace="default",
-        #                                                body={})
+
+        '''
+        :oauth-token (config/get-openshift-oauth-token) 
+        :insecure? true
+        :content-type :json
+        :accept :json
+        
+        requests.post:
+            :param auth: (optional) Auth tuple to enable Basic/Digest/Custom HTTP Auth.
+            
+            requests.get('https://api.github.com/user', auth=HTTPBasicAuth('user', 'pass'))
+        '''
+        headers = {'content-type': 'application/json'}
+        # deployment
+        r = requests.post(config.dic['K8S_PROXY'] + "/apis/apps/v1/namespaces/" + config.dic['K8S_NAMESPACE'] + "/deployments",
+                          headers=headers,
+                          json={},
+                          verify=config.dic['VERIFY_SSL'])
+
+        # service
+        r = requests.post(config.dic['K8S_PROXY'] + "/api/v1/namespaces/" + config.dic['K8S_NAMESPACE'] + "/services",
+                          headers=headers,
+                          json={},
+                          verify=config.dic['VERIFY_SSL'])
 
         agent['status'] = STATUS_STARTED
 
-        # v1 = k8sclient.CoreV1Api()
-        # print("Listing pods with their IPs:")
-        # ret = v1.list_pod_for_all_namespaces(watch=False)
-
-        '''
-        # service image / location. Examples: "yeasy/simple-web"
-        service_image = service['exec']
-        # service_name examples: "simple-web-test"
-        service_name = service['name'] + "-" + str(uuid.uuid4())
-        # command. Docker examples: "/bin/sh -c 'python index.py'"
-        service_command = ""
-        # port(s)
-        ports = agent['ports']
-
-        container1 = docker_client.create_docker_container(service_image, service_name, service_command, ports)
-        if container1 is not None:
-            SERVICE_INSTANCES_LIST.append({
-                "type": "docker",
-                "container_main": container1['Id'],
-                "container_2": "-"
-            })
-            LOG.debug("  > container: " + str(container1))
-
-            # update agent properties
-            agent['container_id'] = container1['Id']
-            agent['status'] = STATUS_WAITING
-            return common.gen_response_ok('Deploy service in agent', 'agent', str(agent), 'service', str(service))
-        else:
-            LOG.error("Lifecycle-Management: K8s adapter: deploy_docker_image: Could not connect to K8s API")
-            agent['status'] = STATUS_ERROR
-            return common.gen_response(500, 'Error when connecting to K8s API', 'agent', str(agent), 'service', str(service))
-        '''
     except:
         traceback.print_exc(file=sys.stdout)
         LOG.error('Lifecycle-Management: K8s adapter: deploy_service: Exception')
@@ -136,35 +97,28 @@ def operation_service(agent, operation):
         #k8scfg.load_kube_config()
 
         if operation == OPERATION_START:
-            '''
             # create deployment
-            k8sclient.AppsV1Api().create_namespaced_deployment(namespace="default",
-                                                               body={})
+
             # create service
-            k8sclient.CoreV1Api().create_namespaced_service(namespace="default",
-                                                            body={})
 
             agent['status'] = STATUS_STARTED
-            '''
 
         elif operation == OPERATION_STOP:
-            '''
             # create deployment
-            k8sclient.AppsV1Api().create_namespaced_deployment(namespace="default",
-                                                               body={})
+
             # create service
-            k8sclient.CoreV1Api().create_namespaced_service(namespace="default",
-                                                            body={})
+
             agent['status'] = STATUS_STOPPED
-            '''
 
         elif operation == OPERATION_TERMINATE:
-            # delete deployment
-            #k8sclient.AppsV1Api().delete_namespaced_deployment(name="",
-            #                                                  namespace="default")
-            # delete service
-            #k8sclient.CoreV1Api().delete_namespaced_service(name="",
-            #                                               namespace="default")
+            # deployment
+            r = requests.delete(config.dic['K8S_PROXY'] + "/apis/apps/v1/namespaces/" + config.dic['K8S_NAMESPACE'] + "/deployments/",
+                              json={}, verify=config.dic['VERIFY_SSL'])
+
+            # service
+            r = requests.delete(config.dic['K8S_PROXY'] + "/api/v1/namespaces/" + config.dic['K8S_NAMESPACE'] + "/services/",
+                              json={}, verify=config.dic['VERIFY_SSL'])
+
             agent['status'] = STATUS_TERMINATED
 
         # return status
