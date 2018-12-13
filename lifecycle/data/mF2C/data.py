@@ -56,6 +56,14 @@ from common.common import STATUS_CREATED_NOT_INITIALIZED
 
 
 ###############################################################################
+# SERVICE
+# get_service_instance: Get service
+def get_service(service_id):
+    LOG.debug("LIFECYCLE: Data: get_service: " + service_id)
+    return cimi.get_service_by_id(service_id)
+
+
+###############################################################################
 # SERVICE INSTANCE
 # get_service_instance: Get service instance
 def get_service_instance(service_instance_id, obj_response_cimi=None):

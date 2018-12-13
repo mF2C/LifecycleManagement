@@ -25,7 +25,7 @@ from common.logs import LOG
 SERVICE_DOCKER = "docker"
 SERVICE_DOCKER_COMPOSE = "docker-compose"
 SERVICE_COMPSS = "compss"
-SERVICE_DOCKER_SWARM = "docker-swarm"
+SERVICE_DOCKER_SWARM = "swarm" #""docker-swarm"
 SERVICE_KUBERNETES = "K8s"
 
 # Operations:

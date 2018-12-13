@@ -59,7 +59,8 @@ import lifecycle.data.standalone.data as data_standalone
 # SERVICE
 # get_service: Get service
 def get_service(service_id):
-    return mf2c.service_management_get_service(service_id)
+    #return mf2c.service_management_get_service(service_id)
+    return data_mf2c.get_service(service_id)
 
 
 ###############################################################################

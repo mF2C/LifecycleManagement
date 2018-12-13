@@ -18,8 +18,11 @@ import config
 from common.logs import LOG
 
 
-# SERVICE_INSTANCE CIMI RESOURC
+# SERVICE_INSTANCE CIMI RESOURCE
 RSRC_SERVICE_INSTANCE = "service-instance"
+# SERVICE CIMI RESOURCE
+RSRC_SERVICE = "service"
+
 # ACL
 ACL = {"owner":
            {"principal": config.dic['CIMI_USER'], #"ADMIN",
@@ -74,6 +77,25 @@ def common_update_map_fields():
 
 
 ###############################################################################
+
+
+# get_service_by_id: get service by id
+def get_service_by_id(id):
+    try:
+        resource_id = id.replace(RSRC_SERVICE + '/', '')
+        LOG.debug("LIFECYCLE: cimi: get_service_by_id: Getting service instance [" + resource_id + "] ... ")
+
+        res = requests.get(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE + '/' + resource_id, headers=CIMI_HEADER, verify=False)
+        if res.status_code == 200:
+            return res.json()
+
+        LOG.error("LIFECYCLE: cimi: get_service_by_id: Request failed: " + res.status_code)
+        LOG.error("LIFECYCLE: cimi: get_service_by_id: Response: " + str(res.json()))
+        return None
+    except:
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('LIFECYCLE: cimi: get_service_by_id: Exception')
+        return None
 
 
 # get_service_instance_by_id: get service instance by id
