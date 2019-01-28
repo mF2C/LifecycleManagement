@@ -42,14 +42,19 @@ from common.common import STATUS_CREATED_NOT_INITIALIZED
        ...
        "id": "",
        "user": "testuser",
+       "device_id": "",
+	   "device_ip": "",
+	   "parent_device_id": "",
+	   "parent_device_ip": "",
        "service": "",
        "agreement": "",
        "status": "waiting",
+       "service_type": "swarm",
        "agents": [
            {"agent": resource-link, "url": "192.168.1.31", "ports": [8081], "container_id": "10asd673f", "status": "waiting",
-               "num_cpus": 3, "allow": true, "master_compss": true},
+               "num_cpus": 3, "allow": true, "master_compss": true, "app_type": "swarm"},
            {"agent": resource-link, "url": "192.168.1.34", "ports": [8081], "container_id": "99asd673f", "status": "waiting",
-               "num_cpus": 2, "allow": true, "master_compss": false}
+               "num_cpus": 2, "allow": true, "master_compss": false, "app_type": "swarm"}
       ]
    }
 '''

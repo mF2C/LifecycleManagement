@@ -248,8 +248,8 @@ def service_management_qos(service_instance):
         LOG.debug("LIFECYCLE: MF2C: service_management_qos: service_instance_id: " + id)
         LOG.info("LIFECYCLE: MF2C: service_management_qos: HTTP GET: " + str(config.dic['URL_AC_SERVICE_MNGMT']) + "/qos/" + id)
 
-        r = requests.get(str(config.dic['URL_AC_SERVICE_MNGMT']) + "/qos/" + id,
-                         verify=config.dic['VERIFY_SSL'])
+        #r = requests.get(str(config.dic['URL_AC_SERVICE_MNGMT']) + "/qos/" + id, verify=config.dic['VERIFY_SSL'])
+        r = requests.get(str(config.dic['URL_AC_SERVICE_MNGMT']) + "/" + id, verify=config.dic['VERIFY_SSL'])
         LOG.debug("LIFECYCLE: MF2C: service_management_qos: response: " + str(r))
 
         json_data = json.loads(r.text)
@@ -265,7 +265,7 @@ def service_management_qos(service_instance):
         LOG.error('LIFECYCLE: MF2C: service_management_qos: Exception')
         return None
 
-
+'''
 # service_management_get_service:
 def service_management_get_service(service_id):
     try:
@@ -294,7 +294,7 @@ def service_management_get_service(service_id):
     except:
         LOG.error('LIFECYCLE: MF2C: service_management_get_service: Exception')
         return None
-
+'''
 ###############################################################################
 
 # CALL TO User Management (Profiling)

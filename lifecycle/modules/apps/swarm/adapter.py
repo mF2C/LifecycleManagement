@@ -369,63 +369,25 @@ def get_docker_service(service_name):
 
 # operation_service_agent: service operation (start, stop...)
 def operation_service_agent(agent, operation):
-    LOG.debug("LIFECYCLE: Docker adapter: operation_service_agent [" + operation + "]: " + str(agent))
+    LOG.debug("LIFECYCLE: Docker Swarm: operation_service_agent [" + operation + "]: " + str(agent))
     try:
         # connect to docker api / check existing connection
         if docker_client.get_client_agent_docker() is not None:
-            if operation == OPERATION_START:
-                docker_client.start_container(agent['container_id'])
-                agent['status'] = STATUS_STARTED
-
-                if config.dic['NETWORK_COMPSs'] != "not-defined":
-                    docker_client.add_container_to_network(agent['container_id'])
-
-            elif operation == OPERATION_STOP:
-                l_elem = db.get_elem_from_list(agent['container_id'])
-                LOG.debug("  > docker-compose? [l_elem=" + str(l_elem) + "]")
-
-                # docker-compose
-                if l_elem is not None and l_elem['type'] == "docker-compose":
-                    LOG.debug("  >> Docker-compose down [" + l_elem['container_2'] + "] ...")
-                    docker_client.start_container(l_elem['container_2'])
-                    LOG.debug("  >> Docker-compose down: waiting 60 seconds...")
-                    time.sleep(60)
-                    LOG.debug("  >> Stop container 1 [" + agent['container_id'] + "] ...")
-                    docker_client.stop_container(agent['container_id'])
-                    LOG.debug("  >> Stop container 2 [" + l_elem['container_2'] + "] ...")
-                    docker_client.stop_container(l_elem['container_2'])
-                # 'normal' container
-                else:
-                    LOG.debug("  >> Stop container: " + agent['container_id'])
-                    docker_client.stop_container(agent['container_id'])
-                agent['status'] = STATUS_STOPPED
-
-            elif operation == OPERATION_TERMINATE:
-                l_elem = db.get_elem_from_list(agent['container_id'])
-                LOG.debug("  > docker-compose? [l_elem=" + str(l_elem) + "]")
-
-                # docker-compose
-                if l_elem is not None and l_elem['type'] == "docker-compose":
-                    LOG.debug("  >> Remove container 1 [" + agent['container_id'] + "] ...")
-                    docker_client.remove_container(agent)
-                    LOG.debug("  >> Remove container 2 [" + l_elem['container_2'] + "] ...")
-                    docker_client.remove_container_by_id(l_elem['container_2'])
-                # 'normal' container
-                else:
-                    LOG.debug("  >> Remove container: " + agent['container_id'])
-                    docker_client.remove_container(agent)
+            if operation == OPERATION_STOP or operation == OPERATION_TERMINATE:
+                delete_docker_service(agent['container_id'])
                 agent['status'] = STATUS_TERMINATED
-
+            else:
+                LOG.warning("LIFECYCLE: Docker Swarm: operation_service_agent [" + operation + "]: " + str(agent))
         # if error when connecting to agent...
         else:
-            LOG.error("LIFECYCLE: Docker adapter: operation_service_agent: Could not connect to DOCKER API")
+            LOG.error("LIFECYCLE: Docker Swarm: operation_service_agent: Could not connect to DOCKER API")
             agent['status'] = STATUS_UNKNOWN
         # return status
         return agent['status']
     except:
         agent['status'] = STATUS_ERROR
         traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: Docker adapter: operation_service_agent: Exception')
+        LOG.error('LIFECYCLE: Docker Swarm: operation_service_agent: Exception')
         return STATUS_ERROR
 
 

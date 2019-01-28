@@ -142,42 +142,6 @@ def deleteServiceInstance(service_instance_id):
     else:
         return lifecycle_ops.terminate(service_instance_id)
 
-'''
-# postService1: deploy a service in one or more agents (deprecated)
-def postService1(request):
-    data = request.get_json()
-    if 'user_id' not in data or 'agreement_id' not in data:
-        LOG.error('LIFECYCLE: REST API: postService1: Exception - parameter not found: user_id / agreement_id')
-        return Response(json.dumps({'error': True, 'message': 'parameter not found: user_id / agreement_id'}), status=406, content_type='application/json')
-    elif 'service' not in data and 'service_id' not in data:
-        LOG.error('LIFECYCLE: REST API: postService1: Exception - parameter not found: service / service_id')
-        return Response(json.dumps({'error': True, 'message': 'parameter not found: service /  service_id'}), status=406, content_type='application/json')
-
-    if 'service' in data:
-        service = data['service']
-    elif 'service' not in data and 'agents_list' not in data and common.is_standalone_mode():
-        LOG.error("LIFECYCLE: REST API: postService1: Exception - STANDALONE_MODE enabled: parameters are not valid: ")
-        return Response(json.dumps({'error': True, 'message': 'STANDALONE_MODE enabled: parameters are not valid'}), status=500, content_type='application/json')
-    else:
-        service = data_adapter.get_service(data['service_id'])
-        if service is None:
-            LOG.error("LIFECYCLE: REST API: postService1: Exception - service not found!")
-            return Response(json.dumps({"error": True, "message": "service not found; [id=" + data['service_id'] + "]"}), status=500, content_type='application/json')
-
-    # submit function returns a json with the content of the 'service_instance'
-    if 'agents_list' in data:
-        # using a predefined list of agents:
-        return lifecycle.submit_service_in_agents(service,
-                                                  data['user_id'],
-                                                  data['agreement_id'],
-                                                  data['agents_list'],
-                                                  check_service=True)
-    else:
-        # using agent_decision module (landscaper, recommender...):
-        return lifecycle.submit(service,
-                                data['user_id'],
-                                data['agreement_id'])
-'''
 
 # postService: deploy a service in one or more agents
 def postService(request):
