@@ -14,8 +14,9 @@ Created on 18 oct. 2018
 import config
 import common.common as common
 import sys, traceback
+import lifecycle.modules.apps.kubernetes.schemas as shemas
 from common.logs import LOG
-from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, STATUS_ERROR, STATUS_STARTED, STATUS_TERMINATED, STATUS_STOPPED
+from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, STATUS_ERROR, STATUS_WAITING, STATUS_TERMINATED
 import requests
 
 
@@ -69,16 +70,18 @@ def deploy_service(service, agent):
         # deployment
         r = requests.post(config.dic['K8S_PROXY'] + "/apis/apps/v1/namespaces/" + config.dic['K8S_NAMESPACE'] + "/deployments",
                           headers=headers,
-                          json={},
+                          json=shemas.genDeploymentDict(service['name']),
                           verify=config.dic['VERIFY_SSL'])
 
         # service
         r = requests.post(config.dic['K8S_PROXY'] + "/api/v1/namespaces/" + config.dic['K8S_NAMESPACE'] + "/services",
                           headers=headers,
-                          json={},
+                          json=shemas.genServiceDict(service['name']),
                           verify=config.dic['VERIFY_SSL'])
 
-        agent['status'] = STATUS_STARTED
+        # app name is stored in 'container_id' field
+        agent['container_id'] = service['name']
+        agent['status'] = STATUS_WAITING
 
     except:
         traceback.print_exc(file=sys.stdout)
@@ -93,33 +96,22 @@ def deploy_service(service, agent):
 def operation_service(agent, operation):
     LOG.debug("Lifecycle-Management: K8s adapter: operation_service [" + operation + "]: " + str(agent))
     try:
-        # load config
-        #k8scfg.load_kube_config()
-
-        if operation == OPERATION_START:
-            # create deployment
-
-            # create service
-
-            agent['status'] = STATUS_STARTED
-
-        elif operation == OPERATION_STOP:
-            # create deployment
-
-            # create service
-
-            agent['status'] = STATUS_STOPPED
-
-        elif operation == OPERATION_TERMINATE:
+        if operation == OPERATION_TERMINATE or operation == OPERATION_STOP:
+            # app name is stored in 'container_id' field
             # deployment
-            r = requests.delete(config.dic['K8S_PROXY'] + "/apis/apps/v1/namespaces/" + config.dic['K8S_NAMESPACE'] + "/deployments/",
-                              json={}, verify=config.dic['VERIFY_SSL'])
+            r = requests.delete(config.dic['K8S_PROXY'] + "/apis/apps/v1/namespaces/" + config.dic['K8S_NAMESPACE'] + "/deployments/" + agent['container_id'],
+                                json={},
+                                verify=config.dic['VERIFY_SSL'])
 
             # service
-            r = requests.delete(config.dic['K8S_PROXY'] + "/api/v1/namespaces/" + config.dic['K8S_NAMESPACE'] + "/services/",
-                              json={}, verify=config.dic['VERIFY_SSL'])
+            r = requests.delete(config.dic['K8S_PROXY'] + "/api/v1/namespaces/" + config.dic['K8S_NAMESPACE'] + "/services/serv_" + agent['container_id'],
+                                json={},
+                                verify=config.dic['VERIFY_SSL'])
 
             agent['status'] = STATUS_TERMINATED
+
+        else:
+            LOG.warning("LIFECYCLE: K8s adapter: operation_service_agent [" + operation + "]: " + str(agent) + ": operation not supported")
 
         # return status
         return agent['status']

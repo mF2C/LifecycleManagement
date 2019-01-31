@@ -23,6 +23,7 @@ from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, 
     STATUS_ERROR, STATUS_WAITING, STATUS_STARTED, STATUS_STOPPED, \
     STATUS_TERMINATED, STATUS_UNKNOWN
 
+
 '''
  Data managed by this component:
 -----------------------------------------------------------------------------------------------
@@ -204,15 +205,21 @@ def create_docker_service(service_image, service_name, service_command, prts, re
                                                         tty=True,
                                                         command=service_command)
 
+            LOG.debug("LIFECYCLE: Docker Swarm: create_docker_service: container_spec: " + str(container_spec))
+
             # TaskTemplate:
             # (self, container_spec, resources=None, restart_policy=None,
             #   placement=None, log_driver=None, networks=None,
             #   force_update=None)
-            task_tmpl = docker.types.TaskTemplate(container_spec)
+            task_tmpl = docker.types.TaskTemplate(container_spec, restart_policy=None)
+
+            LOG.debug("LIFECYCLE: Docker Swarm: create_docker_service: task_tmpl: " + str(task_tmpl))
 
             # ServiceMode:
             #   (self, mode, replicas=None)
             serv_mode = docker.types.ServiceMode(mode="replicated", replicas=replicas)
+
+            LOG.debug("LIFECYCLE: Docker Swarm: create_docker_service: serv_mode: " + str(serv_mode))
 
             # create a new service (DOCKER SWARM):
             # create_service(task_template, name=None, labels=None, mode=None, update_config=None, networks=None,
@@ -225,19 +232,13 @@ def create_docker_service(service_image, service_name, service_command, prts, re
                                                 #[{'Protocol': 'tcp', 'PublishedPort': 8013, 'TargetPort': 80}]
                                          }) # published_port: target_port
 
-            #SERVICE_INSTANCES_LIST.append({
-            #    "type": "docker",
-            #    "container_main": container1['Id'],
-            #    "container_2": "-"
-            #})
-            #LOG.debug("  > container: " + str(container1))
+            LOG.debug("LIFECYCLE: Docker Swarm: create_docker_service: res: " + str(res))
 
             # update agent properties
+            # service ID is stored in 'container_id' field
             agent['container_id'] = res['ID'] #container1['Id']
             agent['status'] = STATUS_WAITING
             return common.gen_response_ok('Deploy service in agent (Docker Swarm)', 'agent', str(agent), 'service', str(service))
-            #LOG.debug("LIFECYCLE: Docker Swarm: create_docker_service: create_service: " + str(res))
-            #return res
         else:
             LOG.error("LIFECYCLE: Docker Swarm: create_docker_service: Could not connect to DOCKER API")
             agent['status'] = STATUS_ERROR
@@ -316,18 +317,18 @@ def update_docker_service(service_id, service_image, service_name, replicas, ver
 
 
 # delete_docker_service
-def delete_docker_service(service_name):
-    LOG.debug("LIFECYCLE: Docker Swarm: delete_docker_service: [service_name=" + service_name + "]")
+def delete_docker_service(service_id):
+    LOG.debug("LIFECYCLE: Docker Swarm: delete_docker_service: [service_name=" + service_id + "]")
 
     # connect to docker api
     lclient = get_client_agent_docker()
     try:
         if lclient:
-            if lclient.remove_service(service_name):
-                LOG.info("LIFECYCLE: Docker Swarm: delete_docker_service: Service '" + service_name + "' removed")
+            if lclient.remove_service(service_id):
+                LOG.info("LIFECYCLE: Docker Swarm: delete_docker_service: Service '" + service_id + "' removed")
                 return True
             else:
-                LOG.error("LIFECYCLE: Docker Swarm: delete_docker_service: Error removing service '" + service_name + "'")
+                LOG.error("LIFECYCLE: Docker Swarm: delete_docker_service: Error removing service '" + service_id + "'")
                 return False
         else:
             LOG.error("LIFECYCLE: Docker Swarm: delete_docker_service: Could not connect to DOCKER API")
@@ -335,32 +336,6 @@ def delete_docker_service(service_name):
     except:
         traceback.print_exc(file=sys.stdout)
         LOG.error("LIFECYCLE: Docker Swarm: delete_docker_service: Exception")
-        return None
-
-
-# get_docker_service
-def get_docker_service(service_name):
-    LOG.debug("LIFECYCLE: Docker Swarm: get_docker_service: [service_name=" + service_name + "]")
-
-    # connect to docker api
-    lclient = get_client_agent_docker()
-    try:
-        if lclient:
-            res = lclient.inspect_service(service_name)
-            LOG.debug("LIFECYCLE: Docker Swarm: create_docker_service: get_docker_service: " + str(res))
-
-            if res:
-                LOG.info("LIFECYCLE: Docker Swarm: get_docker_service: Service '" + service_name + "' info retrieved")
-                return res
-            else:
-                LOG.error("LIFECYCLE: Docker Swarm: get_docker_service: Error getting service '" + service_name + "'")
-                return False
-        else:
-            LOG.error("LIFECYCLE: Docker Swarm: get_docker_service: Could not connect to DOCKER API")
-            return None
-    except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error("LIFECYCLE: Docker Swarm: get_docker_service: Exception")
         return None
 
 
@@ -374,10 +349,11 @@ def operation_service_agent(agent, operation):
         # connect to docker api / check existing connection
         if docker_client.get_client_agent_docker() is not None:
             if operation == OPERATION_STOP or operation == OPERATION_TERMINATE:
+                # service ID is stored in 'container_id' field
                 delete_docker_service(agent['container_id'])
                 agent['status'] = STATUS_TERMINATED
             else:
-                LOG.warning("LIFECYCLE: Docker Swarm: operation_service_agent [" + operation + "]: " + str(agent))
+                LOG.warning("LIFECYCLE: Docker Swarm: operation_service_agent [" + operation + "]: " + str(agent) + ": operation not supported")
         # if error when connecting to agent...
         else:
             LOG.error("LIFECYCLE: Docker Swarm: operation_service_agent: Could not connect to DOCKER API")

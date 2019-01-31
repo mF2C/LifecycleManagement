@@ -76,6 +76,19 @@ def common_update_map_fields():
     return default_map
 
 
+# patch_update_map_fields: TODO remove after dataclay is updated
+def patch_update_map_fields():
+    now = datetime.datetime.now()
+    default_map = {
+        "device_id":        "not-defined",
+        "device_ip":        "not-defined",
+        "parent_device_id": "not-defined",
+        "parent_device_ip": "not-defined",
+        "service_type": "not-defined"
+    }
+    return default_map
+
+
 ###############################################################################
 
 
@@ -177,8 +190,15 @@ def add_service_instance(content):
         # complete map and update resource
         content.update(common_new_map_fields())
 
-        res = requests.post(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE, headers=CIMI_HEADER, verify=False, json=content)
-        LOG.debug("res: " + str(res))
+        LOG.debug("LIFECYCLE: cimi: add_service_instance: [content=" + str(content) + "] ... ")
+
+        res = requests.post(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE,
+                            headers=CIMI_HEADER,
+                            verify=False,
+                            json=content)
+
+        LOG.debug("LIFECYCLE: cimi: add_service_instance: res: " + str(res))
+
         if res.status_code == 201:
             id = res.json()['resource-id'].replace(RSRC_SERVICE_INSTANCE + '/', '')
             return get_service_instance_by_id(id)
@@ -201,7 +221,17 @@ def update_service_instance(resource_id, content):
         # complete map and update resource
         content.update(common_update_map_fields())
 
-        res = requests.put(config.dic['CIMI_URL']  + '/' + RSRC_SERVICE_INSTANCE + '/' + resource_id, headers=CIMI_HEADER, verify=False, json=content)
+        content.update(patch_update_map_fields())
+
+        LOG.debug("LIFECYCLE: cimi: update_service_instance: [content=" + str(content) + "] ... ")
+
+        res = requests.put(config.dic['CIMI_URL']  + '/' + RSRC_SERVICE_INSTANCE + '/' + resource_id,
+                           headers=CIMI_HEADER,
+                           verify=False,
+                           json=content)
+
+        LOG.debug("LIFECYCLE: cimi: update_service_instance: [res=" + str(res) + "]")
+
         if res.status_code == 200:
             return get_service_instance_by_id(resource_id)
 

@@ -47,7 +47,7 @@ def start_service_agent(service, agent):
     if service['exec_type'] == SERVICE_KUBERNETES:
         return docker_adpt.start_service_agent(agent)
     elif service['exec_type'] == SERVICE_DOCKER_SWARM:
-        return docker_adpt.start_service_agent(agent)
+        return swarm_adpt.start_service_agent(agent)
     else: # SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS
         return docker_adpt.start_service_agent(agent)
 

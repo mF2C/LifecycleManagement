@@ -16,6 +16,7 @@ import sys, traceback
 from common.logs import LOG
 import common
 from common.common import STATUS_STARTED
+import lifecycle.data.db as db
 
 
 '''

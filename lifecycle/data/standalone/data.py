@@ -12,8 +12,8 @@ Created on 09 feb. 2018
 """
 
 import lifecycle.data.mF2C.cimi as cimi
+import lifecycle.data.service_instance as service_instance
 from common.logs import LOG
-from common.common import STATUS_CREATED_NOT_INITIALIZED
 
 
 '''
@@ -91,44 +91,7 @@ def del_all_service_instances(obj_response_cimi=None):
 def create_service_instance(service, agents_list, user_id, agreement_id):
     LOG.debug("Lifecycle-Management: Data: create_service_instance: " + str(service) + ", " + str(agents_list))
 
-    # create list of agents
-    list_of_agents = []
-
-    # ports:
-    ports_l = []
-    try:
-        ports_l = service['exec_ports']
-    except:
-        LOG.warning("Lifecycle-Management: Data: No ports values found in service definition")
-
-    # AGENTs:
-    i = 0
-    for agent in agents_list:
-        if len(agents_list) == 1 or i == 0:
-            master_compss = True
-        else:
-            master_compss = False
-        # Add new AGENT to list
-        list_of_agents.append({"agent":         {"href": "agent/default-value"},
-                               "ports":         ports_l,
-                               "url":           agent['agent_ip'],
-                               "status":        STATUS_CREATED_NOT_INITIALIZED,
-                               "num_cpus":      1,
-                               "allow":         True,
-                               "container_id":  "-",
-                               "master_compss": master_compss,  # TODO master_compss is not needed anymore
-                               "agent_param":   "not-defined"})
-        i += 1
-
-    # SERVICE_INSTANCE:
-    new_service_instance = {"service":          service['id'],
-                            "agreement":        agreement_id,
-                            "user":             user_id,
-                            "agents":           list_of_agents,
-                            "status":           STATUS_CREATED_NOT_INITIALIZED}
-
-    LOG.debug("Lifecycle-Management: Data: create_service_instance: adding service_intance to CIMI ...")
-    LOG.debug("Lifecycle-Management: Data: create_service_instance: " + str(new_service_instance))
+    new_service_instance = service_instance.new_service_instance(service, agents_list, user_id, agreement_id)
 
     res = cimi.add_service_instance(new_service_instance)
     if not res:

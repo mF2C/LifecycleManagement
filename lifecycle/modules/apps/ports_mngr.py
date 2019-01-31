@@ -70,3 +70,39 @@ def assign_new_port():
         if is_port_free(PORT_INDEX):
             return PORT_INDEX
         PORT_INDEX = PORT_INDEX + 1
+
+
+#################
+
+
+# replace_in_list: replace element in list
+def replace_in_list(l, xvalue, newxvalue):
+    for n, i in enumerate(l):
+        if i == xvalue:
+            l[n] = newxvalue
+    return l
+
+
+# create_ports_dict:
+def create_ports_dict(ports):
+    try:
+        LOG.debug("LIFECYCLE: ports_mngr: create_ports_dict: Configuring ports [" + str(ports) + "]...")
+        dict_ports = {}
+        for p in ports:
+            LOG.debug("LIFECYCLE: ports_mngr: create_ports_dict: port [" + str(p) + "]...")
+            if is_port_free(p):
+                dict_ports.update({p:p})
+                take_port(p, p)
+                LOG.debug("LIFECYCLE: ports_mngr: create_ports_dict: port [ " + str(p) + " ] is free")
+            else:
+                np = assign_new_port()
+                # original port : new port (exposed to host)
+                dict_ports.update({p: np})
+                take_port(np, p)
+                replace_in_list(ports, p, np)
+                LOG.debug("LIFECYCLE: ports_mngr: create_ports_dict: port [ " + str(p) + " ] not free: redirected to " + str(np))
+
+        return dict_ports
+    except:
+        LOG.error("LIFECYCLE: ports_mngr: create_ports_dict: Error during the ports dict creation: " + str(ports))
+        return {ports[0]:ports[0]}

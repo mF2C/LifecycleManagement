@@ -14,47 +14,15 @@ Created on 09 feb. 2018
 
 import docker, uuid
 import lifecycle.modules.apps.ports_mngr as pmngr
-from common.logs import LOG
 import config
+from common.logs import LOG
 
 
 # docker socket connection
-DOCKER_SOCKET = config.dic['DOCKER_SOCKET'] #"unix://var/run/docker.sock"
+DOCKER_SOCKET = config.dic['DOCKER_SOCKET'] # Example: "unix://var/run/docker.sock"
+
 # client
 client = None
-
-
-# replace_in_list: replace element in list
-def replace_in_list(l, xvalue, newxvalue):
-    for n, i in enumerate(l):
-        if i == xvalue:
-            l[n] = newxvalue
-    return l
-
-
-# create_ports_dict:
-def create_ports_dict(ports):
-    try:
-        LOG.debug("LIFECYCLE: Docker client: create_ports_dict: Configuring ports [" + str(ports) + "]...")
-        dict_ports = {}
-        for p in ports:
-            LOG.debug("LIFECYCLE: Docker client: create_ports_dict: port [" + str(p) + "]...")
-            if pmngr.is_port_free(p):
-                dict_ports.update({p:p})
-                pmngr.take_port(p, p)
-                LOG.debug("LIFECYCLE: Docker client: create_ports_dict: port free")
-            else:
-                np = pmngr.assign_new_port()
-                # original port : new port (exposed to host)
-                dict_ports.update({p: np})
-                pmngr.take_port(np, p)
-                replace_in_list(ports, p, np)
-                LOG.debug("LIFECYCLE: Docker client: create_ports_dict: port not free: redirected to " + str(np))
-
-        return dict_ports
-    except:
-        LOG.error("LIFECYCLE: Docker client: create_ports_dict: Error during the ports dict creation: " + str(ports))
-        return {ports[0]:ports[0]}
 
 
 # get_client_agent_docker: Get docker api client
@@ -80,6 +48,19 @@ def get_client_agent_docker():
         return None
 
 
+# download_docker_image: check if image is already downloaded, and if not, tries to download the image
+def download_docker_image(lclient, service_image, service_image_tag=None):
+    # check if image already exists in agent
+    l_images = lclient.images(name=service_image)
+    # if not, download image
+    if not l_images or len(l_images) == 0:
+        LOG.debug("LIFECYCLE: Docker client: download_docker_image: call to 'import_image' [" + service_image + "] ...")
+        if service_image_tag is not None:
+            lclient.import_image(tag=service_image_tag, image=service_image) # (tag="latest", image="ubuntu")
+        else:
+            lclient.import_image(image=service_image)  # (image="ubuntu")
+
+
 # create_docker_container
 def create_docker_container(service_image, service_name, service_command, prts):
     LOG.debug("LIFECYCLE: Docker client: create_docker_container: [service_name=" + service_name + "], "
@@ -89,17 +70,13 @@ def create_docker_container(service_image, service_name, service_command, prts):
     lclient = get_client_agent_docker()
     try:
         if lclient:
-            # check if image already exists in agent
-            l_images = lclient.images(name=service_image)
-            # if not, download image
-            if not l_images or len(l_images) == 0:
-                LOG.debug("LIFECYCLE: Docker client: create_docker_container: call to 'import_image' [" + service_image + "] ...")
-                lclient.import_image(image=service_image)  # (tag="latest", image="ubuntu") # (tag="latest", image="ubuntu")
+            # check if image already exists in agent or download image
+            download_docker_image(lclient, service_image)
 
             LOG.debug("LIFECYCLE: Docker client: create_docker_container: Creating container ...")
 
             prts_list = list(prts)
-            ports_dict = create_ports_dict(prts)
+            ports_dict = pmngr.create_ports_dict(prts)
             LOG.debug("LIFECYCLE: Docker client: create_docker_container: ports_dict: " + str(ports_dict))
             LOG.debug("LIFECYCLE: Docker client: create_docker_container: prts: " + str(prts))
             LOG.debug("LIFECYCLE: Docker client: create_docker_container: prts_list: " + str(prts_list))
@@ -121,35 +98,28 @@ def create_docker_container(service_image, service_name, service_command, prts):
 
 # create_docker_compss_container
 def create_docker_compss_container(service_image, ip, prts, master=None):
-    LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: [service_image=" + service_image + "], "
-              "[ports=" + str(prts) + "], [ip=" + ip + "], [master=" + str(master) + "]")
+    LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: Creating COMPSs container [service_image=" +
+              service_image + "], [ports=" + str(prts) + "], [ip=" + ip + "], [master=" + str(master) + "] ...")
     # connect to docker api
     lclient = get_client_agent_docker()
     try:
         if lclient:
-            # check if image already exists in agent
-            l_images = lclient.images(name=service_image)
-            # if not, download image
-            if not l_images or len(l_images) == 0:
-                LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: call to 'import_image' [" + service_image + "] ...")
-                lclient.import_image(image=service_image)  # (tag="latest", image="ubuntu") # (tag="latest", image="ubuntu")
+            # check if image already exists in agent or download image
+            download_docker_image(lclient, service_image)
 
             # create a new container: 'docker run'
-            LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: Creating COMPSs container ...")
-
-            # check COMPSs container:
-            LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: prts (1): " + str(prts))
+            # check ports for COMPSs container:
             if config.dic['PORT_COMPSs'] not in prts:
                 prts.insert(0, config.dic['PORT_COMPSs'])
             else:
                 prts.remove(config.dic['PORT_COMPSs'])
                 prts.insert(0, config.dic['PORT_COMPSs'])
-            LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: prts (2): " + str(prts))
+
+            LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: prts: " + str(prts))
 
             prts_list = list(prts)
-            ports_dict = create_ports_dict(prts)
+            ports_dict = pmngr.create_ports_dict(prts)
             LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: ports_dict: " + str(ports_dict))
-            LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: prts (3): " + str(prts))
             LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: prts_list: " + str(prts_list))
 
             # "docker run --rm -it --env MF2C_HOST=172.17.0.3 -p46100:46100 --env DEBUG=debug --name compss3123 mf2c/compss-test:latest"
@@ -175,23 +145,15 @@ def create_docker_compss_container(service_image, ip, prts, master=None):
 
 # create_docker_compose_container
 def create_docker_compose_container(service_name, service_command):
-    LOG.debug("LIFECYCLE: Docker client: create_docker_compose_container: [service_name=" + service_name +"], "
-              "[service_command=" + service_command + "]")
+    LOG.debug("LIFECYCLE: Docker client: create_docker_compose_container: Creating docker-compose containers [service_name=" +
+              service_name +"], [service_command=" + service_command + "] ...")
     try:
         # connect to docker api
         lclient = get_client_agent_docker()
         if lclient:
-            # check if image already exists in agent
-            l_images = lclient.images(name=config.dic['DOCKER_COMPOSE_IMAGE'])
-            if not l_images or len(l_images) == 0:
-                LOG.debug("LIFECYCLE: Docker client: create_docker_compose_container: call to 'import_image' [" +
-                          config.dic['DOCKER_COMPOSE_IMAGE'] + "] ...")
-                lclient.import_image(tag=config.dic['DOCKER_COMPOSE_IMAGE_TAG'], image=config.dic['DOCKER_COMPOSE_IMAGE'])
+            # check if image already exists in agent or download image
+            download_docker_image(lclient, config.dic['DOCKER_COMPOSE_IMAGE'], config.dic['DOCKER_COMPOSE_IMAGE_TAG'])
 
-            LOG.debug("LIFECYCLE: Docker client: create_docker_compose_container: Creating container ...")
-            # TODO swarm!!!!
-            #lclient.create_swarm_spec()
-            #lclient.create_service()
             # create a new container: 'docker run'
             container = lclient.create_container(config.dic['DOCKER_COMPOSE_IMAGE'],
                                                  command=service_command,
