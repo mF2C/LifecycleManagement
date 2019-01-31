@@ -247,10 +247,10 @@ def service_management_qos(service_instance):
         id = service_instance['id']
         id_service = service_instance['service']
         LOG.debug("LIFECYCLE: MF2C: service_management_qos: service: " + id_service + " service_instance_id: " + id)
-        LOG.info("LIFECYCLE: MF2C: service_management_qos: HTTP GET: " + str(config.dic['URL_AC_SERVICE_MNGMT']) + "/" + id_service)
+        LOG.info("LIFECYCLE: MF2C: service_management_qos: HTTP GET: " + str(config.dic['URL_AC_SERVICE_MNGMT']) + "/" + id)
 
         #r = requests.get(str(config.dic['URL_AC_SERVICE_MNGMT']) + "/qos/" + id, verify=config.dic['VERIFY_SSL'])
-        r = requests.get(str(config.dic['URL_AC_SERVICE_MNGMT']) + "/" + id_service, verify=config.dic['VERIFY_SSL'])
+        r = requests.get(str(config.dic['URL_AC_SERVICE_MNGMT']) + "/" + id, verify=config.dic['VERIFY_SSL'])
         LOG.debug("LIFECYCLE: MF2C: service_management_qos: response: " + str(r))
 
         json_data = json.loads(r.text)
