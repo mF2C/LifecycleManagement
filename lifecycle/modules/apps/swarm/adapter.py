@@ -262,7 +262,16 @@ def deploy_service_agent(service, agent):
     # port(s)
     ports = agent['ports']
 
-    create_docker_service(service_image, service_name, service_command, ports, 1, service, agent)
+    replicas = 1
+    try:
+        if not service is None and not service['num_agents'] is None:
+            replicas = service['num_agents']
+    except:
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('LIFECYCLE: Docker Swarm: deploy_service_agent: Exception: replicas set to 1')
+        replicas = 1
+
+    create_docker_service(service_image, service_name, service_command, ports, replicas, service, agent)
 
 
 # update_docker_service
