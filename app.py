@@ -70,7 +70,7 @@ try:
                        basePath='http://localhost:' + str(config.dic['SERVER_PORT']),
                        resourcePath='/')
 except ValueError:
-    LOG.error('Lifecycle-Management: app: Exception: Error while initializing app / api')
+    LOG.error('LIFECYCLE: app: Exception: Error while initializing app / api')
 
 
 ########################################################################################################################

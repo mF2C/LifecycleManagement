@@ -44,7 +44,7 @@ ENV VARIABLES (lifecycle):
 def init():
     try:
         # CONFIGURATION / ENVIRONMENT VALUES
-        LOG.info('> LIFECYCLE: Reading values from ENVIRONMENT...')
+        LOG.info('LIFECYCLE: Reading values from ENVIRONMENT...')
         # STANDALONE_MODE
         common.set_value_env('STANDALONE_MODE')
         # docker
@@ -84,7 +84,7 @@ def init():
         else:
             LOG.debug("LIFECYCLE: CIMI_URL ... " + config.dic['CIMI_URL'])
 
-        LOG.info('> LIFECYCLE: Checking configuration...')
+        LOG.info('LIFECYCLE: Checking configuration...')
         LOG.info('LIFECYCLE: [SERVER_PORT=' + str(config.dic['SERVER_PORT']) + ']')
         LOG.info('LIFECYCLE: [DOCKER_SOCKET=' + config.dic['DOCKER_SOCKET'] + ']')
         LOG.info('LIFECYCLE: [DOCKER_SWARM_=' + str(config.dic['DOCKER_SWARM']) + ']')

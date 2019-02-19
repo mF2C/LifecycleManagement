@@ -30,12 +30,12 @@ SERVICE_INSTANCES_LIST = {
 try:
     # SERVICE_INSTANCES_LIST
     # "MEMORY DB"
-    LOG.info('Lifecycle-Management: db: Initializing SERVICE_INSTANCES_LIST ...')
+    LOG.info('LIFECYCLE: db: Initializing SERVICE_INSTANCES_LIST ...')
     SERVICE_INSTANCES_LIST = []
 
     # DB_DOCKER_PORTS: PORTS DATABASE for each of the Lifecycles / agents
     # "PHYSICAL DB"
-    LOG.info('Lifecycle-Management: db: Initializing DB_DOCKER_PORTS ...')
+    LOG.info('LIFECYCLE: db: Initializing DB_DOCKER_PORTS ...')
     DB_DOCKER_PORTS = Base(config.dic['DB_DOCKER_PORTS'])
     # create new base with field names
     if not DB_DOCKER_PORTS.exists():
@@ -44,7 +44,7 @@ try:
         DB_DOCKER_PORTS.open()
         records = DB_DOCKER_PORTS()
 except:
-    LOG.error('Lifecycle-Management: db: Exception: Error while initializing db components')
+    LOG.error('LIFECYCLE: db: Exception: Error while initializing db components')
 
 
 # get_elem_from_list:
@@ -57,7 +57,7 @@ def get_elem_from_list(container_main_id):
 
 # print_records
 def print_records(db):
-    LOG.debug('Lifecycle-Management: db: print_records: Retrieving records from db...')
+    LOG.debug('LIFECYCLE: db: print_records: Retrieving records from db...')
     records = db()
     for r in records:
         LOG.debug("> " + str(r))
@@ -65,7 +65,7 @@ def print_records(db):
 
 # save_to_DB_DOCKER_PORTS
 def save_to_DB_DOCKER_PORTS(port, mapped_to):
-    LOG.debug('Lifecycle-Management: db: save_to_DB_DOCKER_PORTS: Saving record ...')
+    LOG.debug('LIFECYCLE: db: save_to_DB_DOCKER_PORTS: Saving record ...')
     try:
         record = get_from_DB_DOCKER_PORTS(port)
         if record is None:
@@ -77,70 +77,70 @@ def save_to_DB_DOCKER_PORTS(port, mapped_to):
             print_records(DB_DOCKER_PORTS)
             return True
         else:
-            LOG.warning('Lifecycle-Management: db: save_to_DB_DOCKER_PORTS: Port already added to DB')
+            LOG.warning('LIFECYCLE: db: save_to_DB_DOCKER_PORTS: Port already added to DB')
             return False
     except:
-        LOG.error('Lifecycle-Management: db: save_to_DB_DOCKER_PORTS: Exception')
+        LOG.error('LIFECYCLE: db: save_to_DB_DOCKER_PORTS: Exception')
         return False
 
 
 # get_from_DB_DOCKER_PORTS
 def get_from_DB_DOCKER_PORTS(port):
-    LOG.debug('Lifecycle-Management: db: get_from_DB_DOCKER_PORTS: Getting record ...')
+    LOG.debug('LIFECYCLE: db: get_from_DB_DOCKER_PORTS: Getting record ...')
     try:
         # debug DB
         print_records(DB_DOCKER_PORTS)
 
         records = [r for r in DB_DOCKER_PORTS if r['port'] == port]
-        LOG.debug("Lifecycle-Management: db: get_from_DB_DOCKER_PORTS: records: " + str(records))
+        LOG.debug("LIFECYCLE: db: get_from_DB_DOCKER_PORTS: records: " + str(records))
 
         #records = DB_DOCKER_PORTS(port=port)
         if len(records) >= 1:
             return records[0]
         else:
-            LOG.warning('Lifecycle-Management: db: get_from_DB_DOCKER_PORTS: No records found')
+            LOG.warning('LIFECYCLE: db: get_from_DB_DOCKER_PORTS: No records found')
     except:
-        LOG.error('Lifecycle-Management: db: get_from_DB_DOCKER_PORTS: Exception')
+        LOG.error('LIFECYCLE: db: get_from_DB_DOCKER_PORTS: Exception')
     return None
 
 
 # get_from_DB_DOCKER_PORTS
 def get_COMPSs_port_DB_DOCKER_PORTS(lports):
-    LOG.debug('Lifecycle-Management: db: get_from_DB_DOCKER_PORTS: Getting record ...')
+    LOG.debug('LIFECYCLE: db: get_from_DB_DOCKER_PORTS: Getting record ...')
     try:
         # debug DB
         print_records(DB_DOCKER_PORTS)
 
         for p in lports:
             records = [r for r in DB_DOCKER_PORTS if r['port'] == p]
-            LOG.debug("Lifecycle-Management: db: get_COMPSs_port_DB_DOCKER_PORTS: records: " + str(records))
+            LOG.debug("LIFECYCLE: db: get_COMPSs_port_DB_DOCKER_PORTS: records: " + str(records))
 
             if len(records) >= 1:
                 if records[0]['mapped_to'] == config.dic['PORT_COMPSs']:
-                    LOG.debug('Lifecycle-Management: db: get_COMPSs_port_DB_DOCKER_PORTS: PORT_COMPSs: ' + str(records[0]['port']))
+                    LOG.debug('LIFECYCLE: db: get_COMPSs_port_DB_DOCKER_PORTS: PORT_COMPSs: ' + str(records[0]['port']))
                     return records[0]['port']
     except:
-        LOG.error('Lifecycle-Management: db: get_COMPSs_port_DB_DOCKER_PORTS: Exception')
+        LOG.error('LIFECYCLE: db: get_COMPSs_port_DB_DOCKER_PORTS: Exception')
 
-    LOG.error('Lifecycle-Management: db: get_COMPSs_port_DB_DOCKER_PORTS: No COMPSs ports found in DB!')
+    LOG.error('LIFECYCLE: db: get_COMPSs_port_DB_DOCKER_PORTS: No COMPSs ports found in DB!')
     return config.dic['PORT_COMPSs']
 
 
 # del_from_DB_DOCKER_PORTS
 def del_from_DB_DOCKER_PORTS(port):
-    LOG.debug('Lifecycle-Management: db: get_from_DB_DOCKER_PORTS: Deleting record ...')
+    LOG.debug('LIFECYCLE: db: get_from_DB_DOCKER_PORTS: Deleting record ...')
     try:
         record = get_from_DB_DOCKER_PORTS(port)
         if record is not None:
-            LOG.debug("Lifecycle-Management: db: del_from_DB_DOCKER_PORTS: deleted records: " + str(DB_DOCKER_PORTS.delete(record)))
+            LOG.debug("LIFECYCLE: db: del_from_DB_DOCKER_PORTS: deleted records: " + str(DB_DOCKER_PORTS.delete(record)))
             # save changes on disk
             DB_DOCKER_PORTS.commit()
             return True
         else:
-            LOG.warning('Lifecycle-Management: db: save_to_DB_DOCKER_PORTS: Port was not found in DB')
+            LOG.warning('LIFECYCLE: db: save_to_DB_DOCKER_PORTS: Port was not found in DB')
             return False
     except:
-        LOG.error('Lifecycle-Management: db: del_from_DB_DOCKER_PORTS: Exception')
+        LOG.error('LIFECYCLE: db: del_from_DB_DOCKER_PORTS: Exception')
         return False
 
 

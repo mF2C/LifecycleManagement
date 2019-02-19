@@ -13,7 +13,7 @@ Created on 18 oct. 2018
 
 #!/usr/bin/python
 
-dic = { "VERSION":                      "1.0.3",
+dic = { "VERSION":                      "1.0.5",
 
         # SERVER - REST API:
         "SERVER_PORT":                  46000,

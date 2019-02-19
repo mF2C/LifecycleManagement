@@ -86,31 +86,31 @@ def get_available_agents_resources(service):
 # qos_providing: call to QoS PROVIDING
 def qos_providing(service_instance):
     try:
-        LOG.debug("Lifecycle-Management: agent_decision: qos_providing ############################")
-        LOG.debug("Lifecycle-Management: agent_decision: qos_providing: " + str(service_instance))
+        LOG.debug("LIFECYCLE: agent_decision: qos_providing ############################")
+        LOG.debug("LIFECYCLE: agent_decision: qos_providing: " + str(service_instance))
 
         service_instance_1 = mf2c.service_management_qos(service_instance)
-        LOG.debug("Lifecycle-Management: agent_decision: qos_providing: service_instance_1: " + str(service_instance_1))
+        LOG.debug("LIFECYCLE: agent_decision: qos_providing: service_instance_1: " + str(service_instance_1))
         if service_instance_1 is not None:
             try:
-                LOG.debug("Lifecycle-Management: agent_decision: qos_providing: processing response...")
+                LOG.debug("LIFECYCLE: agent_decision: qos_providing: processing response...")
                 for agent1 in service_instance_1["agents"]:
-                    LOG.debug("Lifecycle-Management: agent_decision: qos_providing: [agent1=" + str(agent1) + "]")
+                    LOG.debug("LIFECYCLE: agent_decision: qos_providing: [agent1=" + str(agent1) + "]")
                     if not agent1['allow']:
-                        LOG.debug("Lifecycle-Management: agent_decision: qos_providing: [agent1.allow=FALSE]")
+                        LOG.debug("LIFECYCLE: agent_decision: qos_providing: [agent1.allow=FALSE]")
                         for agent0 in service_instance["agents"]:
                             if agent0['url'] == agent1['url']:
                                 agent0['allow'] = False
-                                LOG.debug("Lifecycle-Management: agent_decision: qos_providing: [agent0=" + str(agent0) + "]")
+                                LOG.debug("LIFECYCLE: agent_decision: qos_providing: [agent0=" + str(agent0) + "]")
                     else:
-                        LOG.debug("Lifecycle-Management: agent_decision: qos_providing: [agent1.allow=TRUE]")
+                        LOG.debug("LIFECYCLE: agent_decision: qos_providing: [agent1.allow=TRUE]")
 
             except:
-                LOG.error('Lifecycle-Management: agent_decision: qos_providing: Exception while processing response')
+                LOG.error('LIFECYCLE: agent_decision: qos_providing: Exception while processing response')
 
         return True
     except:
-        LOG.error('Lifecycle-Management: agent_decision: qos_providing: Exception')
+        LOG.error('LIFECYCLE: agent_decision: qos_providing: Exception')
         return False
 
 
@@ -151,45 +151,75 @@ def check_user_sharing_model(user_sharing_model):
 # user_management: call to USER MANAGEMENT -> profiling and sharing model
 def user_management(service_instance):
     try:
-        LOG.debug("Lifecycle-Management: agent_decision: user_management ############################")
-        LOG.debug("Lifecycle-Management: agent_decision: user_management: " + str(service_instance))
+        LOG.debug("LIFECYCLE: agent_decision: user_management ############################")
+        LOG.debug("LIFECYCLE: agent_decision: user_management: " + str(service_instance))
 
-        service_instance['agents'] = []
-
+        l_filtered_agents = []
         for agent in service_instance["agents"]:
+            LOG.debug("LIFECYCLE: agent_decision: user_management: Getting user_profiling and user_sharing_model from " + agent['url'] + " ...")
             user_profiling = None
             user_sharing_model = None
 
             # LOCAL
             if agent['url'] == common.get_local_ip():
-                LOG.debug("Lifecycle-Management: agent_decision: user_management: local user_profiling and user_sharing_model")
+                LOG.debug("LIFECYCLE: agent_decision: user_management: LOCAL user_profiling and user_sharing_model")
                 user_profiling = mf2c.user_management_profiling()
                 user_sharing_model = mf2c.user_management_sharing_model()
             # 'REMOTE' AGENT
             elif common.check_ip(agent['url']):
-                LOG.debug("Lifecycle-Management: agent_decision: user_management: remote user_profiling and user_sharing_model")
+                LOG.debug("LIFECYCLE: agent_decision: user_management: REMOTE user_profiling and user_sharing_model")
                 user_profiling = mf2c.user_management_profiling(agent['url'])
                 user_sharing_model = mf2c.user_management_sharing_model(agent['url'])
+            else:
+                LOG.warning("LIFECYCLE: agent_decision: user_management: Could not get user_profiling and user_sharing_model")
 
-            LOG.debug("Lifecycle-Management: agent_decision: user_management: user_profiling: " + str(user_profiling))
-            LOG.debug("Lifecycle-Management: agent_decision: user_management: user_sharing_model: " + str(user_sharing_model))
+            LOG.debug("LIFECYCLE: agent_decision: user_management: user_profiling: " + str(user_profiling))
+            LOG.debug("LIFECYCLE: agent_decision: user_management: user_sharing_model: " + str(user_sharing_model))
 
-            LOG.debug("Lifecycle-Management: agent_decision: user_management: Checking user information ...")
-            allowed = True
-            if not check_user_profile(user_profiling):
-                allowed = False
-                LOG.debug("Lifecycle-Management: agent_decision: user_management: agent not allowed: " + str(agent))
-            if not check_user_sharing_model(user_sharing_model):
-                allowed = False
-                LOG.debug("Lifecycle-Management: agent_decision: user_management: agent not allowed: " + str(agent))
+            # mantain agent in list if no user_profiling or user_sharing_model
+            if user_profiling is None or user_sharing_model is None:
+                LOG.warning("LIFECYCLE: agent_decision: user_management: user_profiling or user_sharing_model is None")
+                l_filtered_agents.append(agent)
+            # check content
+            else:
+                LOG.debug("LIFECYCLE: agent_decision: user_management: Checking user information ...")
+                allowed = True
+                if not check_user_profile(user_profiling):
+                    allowed = False
+                    LOG.debug("LIFECYCLE: agent_decision: user_management: agent not allowed: " + str(agent))
+                if not check_user_sharing_model(user_sharing_model):
+                    allowed = False
+                    LOG.debug("LIFECYCLE: agent_decision: user_management: agent not allowed: " + str(agent))
 
-            if allowed:
-                service_instance['agents'].append(agent)
+                if allowed:
+                    l_filtered_agents.append(agent)
+        service_instance['agents'] = l_filtered_agents
 
         return service_instance
     except:
-        LOG.error('Lifecycle-Management: agent_decision: user_management: Exception')
+        LOG.error('LIFECYCLE: agent_decision: user_management: Exception')
         return None
+
+
+# service_manager_qos_providing: call to QoS PROVIDING
+def service_manager_qos_providing(service_instance):
+    try:
+        LOG.debug("LIFECYCLE: agent_decision: service_manager_qos_providing ############################")
+        LOG.debug("LIFECYCLE: agent_decision: service_manager_qos_providing: " + str(service_instance))
+
+        service_instance_res = mf2c.service_management_qos(service_instance)
+        LOG.debug("LIFECYCLE: agent_decision: service_manager_qos_providing: service_instance_res: " + str(service_instance_res))
+        if service_instance_res is not None:
+            LOG.debug("LIFECYCLE: agent_decision: service_manager_qos_providing: processing response...")
+
+            service_instance['agents'] = []
+
+            for agent_res in service_instance_res["agents"]:
+                if agent_res['allow']:
+                    service_instance['agents'].append(agent_res)
+    except:
+        LOG.error('LIFECYCLE: agent_decision: service_manager_qos_providing: Exception')
+    return service_instance
 
 
 # select_agents_list: Select from list of available agents
@@ -203,11 +233,13 @@ def select_agents(service_type, service_instance):
         else:
             LOG.debug("LIFECYCLE: agent_decision: select_agents: agents INITIAL list: " + str(service_instance['agents']))
 
-            # TODO 1. QoS PROVIDING
+            # 1. QoS PROVIDING
             qos_providing(service_instance)
 
             # 2. USER MANAGEMENT -> profiling and sharing model
-            service_instance = user_management(service_instance)
+            service_instance_res = user_management(service_instance)
+            if not service_instance_res is None:
+                service_instance = service_instance_res
 
             LOG.debug("LIFECYCLE: agent_decision: select_agents: agents FILTERED list: " + str(service_instance['agents']))
 
