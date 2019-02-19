@@ -154,6 +154,10 @@ def postService(request):
         LOG.error('LIFECYCLE: REST API: postService: Exception - parameter not found: service / service_id')
         return Response(json.dumps({'error': True, 'message': 'parameter not found: service /  service_id'}), status=406, content_type='application/json')
 
+    # check if user exists
+    if not data_adapter.exist_user(data['user_id']):
+        return common.gen_response(404, "Error", "user_id", data['user_id'], "message", "User ID not found")
+
     # 2. Get service
     # OPTION: full service defined in the request
     if 'service' in data:

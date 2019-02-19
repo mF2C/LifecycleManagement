@@ -114,36 +114,77 @@ def qos_providing(service_instance):
         return False
 
 
+'''
+ SERVICE INSTANCE:
+   {
+       ...
+       "id": "",
+       "user": "testuser",
+       "device_id": "",
+	   "device_ip": "",
+	   "parent_device_id": "",
+	   "parent_device_ip": "",
+       "service": "",
+       "agreement": "",
+       "status": "waiting",
+       "service_type": "swarm",
+       "agents": [
+           {"agent": resource-link, "url": "192.168.1.31", "ports": [8081], "container_id": "10asd673f", "status": "waiting",
+               "num_cpus": 3, "allow": true, "master_compss": true, "app_type": "swarm"},
+           {"agent": resource-link, "url": "192.168.1.34", "ports": [8081], "container_id": "99asd673f", "status": "waiting",
+               "num_cpus": 2, "allow": true, "master_compss": false, "app_type": "swarm"}
+      ]
+   }
+'''
+
+
+# check_user_profile:
+def check_user_profile(user_profiling):
+    return True
+
+
+# check_user_sharing_model:
+def check_user_sharing_model(user_sharing_model):
+    return True
+
+
 # user_management: call to USER MANAGEMENT -> profiling and sharing model
 def user_management(service_instance):
     try:
         LOG.debug("Lifecycle-Management: agent_decision: user_management ############################")
         LOG.debug("Lifecycle-Management: agent_decision: user_management: " + str(service_instance))
 
+        service_instance['agents'] = []
+
         for agent in service_instance["agents"]:
-            # LOG.info(">>> AGENT >>> " + agent['url'] + " <<<")
+            user_profiling = None
+            user_sharing_model = None
+
             # LOCAL
             if agent['url'] == common.get_local_ip():
                 LOG.debug("Lifecycle-Management: agent_decision: user_management: local user_profiling and user_sharing_model")
-
-                user_profiling = mf2c.user_management_profiling(service_instance['user'])
-                LOG.debug("Lifecycle-Management: agent_decision: user_management: user_profiling: " + str(user_profiling))
-
-                user_sharing_model = mf2c.user_management_sharing_model(service_instance['user'])
-                LOG.debug("Lifecycle-Management: agent_decision: user_management: user_sharing_model: " + str(user_sharing_model))
-
+                user_profiling = mf2c.user_management_profiling()
+                user_sharing_model = mf2c.user_management_sharing_model()
             # 'REMOTE' AGENT
             elif common.check_ip(agent['url']):
                 LOG.debug("Lifecycle-Management: agent_decision: user_management: remote user_profiling and user_sharing_model")
+                user_profiling = mf2c.user_management_profiling(agent['url'])
+                user_sharing_model = mf2c.user_management_sharing_model(agent['url'])
 
-                user_profiling = mf2c.user_management_profiling(service_instance['user'], agent['url'])
-                LOG.debug("Lifecycle-Management: agent_decision: user_management: user_profiling: " + str(user_profiling))
+            LOG.debug("Lifecycle-Management: agent_decision: user_management: user_profiling: " + str(user_profiling))
+            LOG.debug("Lifecycle-Management: agent_decision: user_management: user_sharing_model: " + str(user_sharing_model))
 
-                user_sharing_model = mf2c.user_management_sharing_model(service_instance['user'], agent['url'])
-                LOG.debug("Lifecycle-Management: agent_decision: user_management: user_sharing_model: " + str(user_sharing_model))
+            LOG.debug("Lifecycle-Management: agent_decision: user_management: Checking user information ...")
+            allowed = True
+            if not check_user_profile(user_profiling):
+                allowed = False
+                LOG.debug("Lifecycle-Management: agent_decision: user_management: agent not allowed: " + str(agent))
+            if not check_user_sharing_model(user_sharing_model):
+                allowed = False
+                LOG.debug("Lifecycle-Management: agent_decision: user_management: agent not allowed: " + str(agent))
 
-        # TODO PROCESS INFORMATION
-        LOG.debug("Lifecycle-Management: agent_decision: user_management: not implemented")
+            if allowed:
+                service_instance['agents'].append(agent)
 
         return service_instance
     except:
@@ -154,23 +195,21 @@ def user_management(service_instance):
 # select_agents_list: Select from list of available agents
 def select_agents(service_type, service_instance):
     try:
-        LOG.debug("LIFECYCLE: agent_decision: select_agents ############################")
-        LOG.debug("LIFECYCLE: agent_decision: select_agents: " + str(service_instance))
+        LOG.debug("LIFECYCLE: agent_decision: select_agents: [service_type=" + service_type + "], [agents=" + str(service_instance) + "]")
 
         if common.is_standalone_mode():
             LOG.warning("LIFECYCLE: agent_decision: select_agents: STANDALONE_MODE enabled")
             return service_instance
         else:
-            # 1. QoS PROVIDING
+            LOG.debug("LIFECYCLE: agent_decision: select_agents: agents INITIAL list: " + str(service_instance['agents']))
+
+            # TODO 1. QoS PROVIDING
             qos_providing(service_instance)
 
             # 2. USER MANAGEMENT -> profiling and sharing model
-            user_management(service_instance)
+            service_instance = user_management(service_instance)
 
-            # 3. TODO PROCESS INFORMATION AND SELECT BEST CANDIDATES
-            LOG.warning("LIFECYCLE: agent_decision: select_agents: not implemented")
-
-            LOG.debug("LIFECYCLE: agent_decision: select_agents: agents initial list: " + str(service_instance['agents']))
+            LOG.debug("LIFECYCLE: agent_decision: select_agents: agents FILTERED list: " + str(service_instance['agents']))
 
             # compss (docker)
             if service_type == SERVICE_COMPSS:
@@ -188,7 +227,7 @@ def select_agents(service_type, service_instance):
                 else:
                     LOG.warning("LIFECYCLE: agent_decision: select_agents: [" + service_type + "] not defined")
 
-            LOG.debug("LIFECYCLE: agent_decision: select_agents: agents final list: " + str(service_instance['agents']))
+            LOG.debug("LIFECYCLE: agent_decision: select_agents: agents FINAL list: " + str(service_instance['agents']))
 
             return service_instance
     except:

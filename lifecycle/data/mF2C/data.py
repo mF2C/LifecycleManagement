@@ -61,6 +61,19 @@ from common.logs import LOG
 
 
 ###############################################################################
+# COMMON
+
+# exist_user: check if 'user id' exists
+def exist_user(user_id):
+    return cimi.exist_user(user_id)
+
+
+# exist_device: check if 'device id' exists
+def exist_device(device_id):
+    return cimi.exist_device(device_id)
+
+
+###############################################################################
 # SERVICE
 # get_service_instance: Get service
 def get_service(service_id):

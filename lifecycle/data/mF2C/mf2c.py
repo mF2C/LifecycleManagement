@@ -298,19 +298,20 @@ def service_management_get_service(service_id):
 '''
 ###############################################################################
 
-# CALL TO User Management (Profiling)
-def user_management_profiling(user_id, remote=None):
+# user_management_profiling: CALL TO User Management (Profiling)
+def user_management_profiling(remote=None):
     try:
-        LOG.debug("LIFECYCLE: MF2C: user_management_profiling: user_id: " + user_id)
-
         if remote is None:
-            LOG.info("LIFECYCLE: MF2C: user_management_profiling: HTTP GET: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/profiling/" + user_id)
-            r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/profiling/" + user_id,
+            LOG.debug("LIFECYCLE: MF2C: user_management_profiling: Getting User Profile from localhost ...")
+            LOG.debug("LIFECYCLE: MF2C: user_management_profiling: HTTP GET: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/user-profile/")
+            r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/user-profile/",
                              verify=config.dic['VERIFY_SSL'])
         else:
-            LOG.info("LIFECYCLE: MF2C: user_management_profiling: HTTP GET: http://" + remote + ":46300/api/v2/um/profiling/" + user_id)
-            r = requests.get("http://" + remote + ":46300/api/v2/um/profiling/" + user_id,
+            LOG.debug("LIFECYCLE: MF2C: user_management_profiling: Getting User Profile from " + remote + " ...")
+            LOG.debug("LIFECYCLE: MF2C: user_management_profiling: HTTP GET: http://" + remote + ":46300/api/v2/um/user-profile/")
+            r = requests.get("http://" + remote + ":46300/api/v2/um/user-profile/",
                              verify=config.dic['VERIFY_SSL'])
+
         json_data = json.loads(r.text)
         LOG.debug("LIFECYCLE: MF2C: user_management_profiling: response: " + str(r) + ", json_data: " + str(json_data))
 
@@ -319,25 +320,25 @@ def user_management_profiling(user_id, remote=None):
             return json_data
 
         LOG.error('LIFECYCLE: MF2C: user_management_profiling: Error: status_code=' + str(r.status_code))
-        return None
     except:
         LOG.error('LIFECYCLE: MF2C: user_management_profiling: Exception')
-        return None
+    return None
 
 
-# CALL TO User Management (Sharing Model)
-def user_management_sharing_model(user_id, remote=None):
+# user_management_sharing_model: CALL TO User Management (Sharing Model)
+def user_management_sharing_model(remote=None):
     try:
-        LOG.debug("LIFECYCLE: MF2C: user_management_sharing_model: user_id: " + user_id)
-
         if remote is None:
-            LOG.info("LIFECYCLE: MF2C: user_management_sharing_model: HTTP GET: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharingmodel/" + user_id)
-            r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharingmodel/" + user_id,
+            LOG.debug("LIFECYCLE: MF2C: user_management_sharing_model: Getting Sharing model from localhost ...")
+            LOG.info("LIFECYCLE: MF2C: user_management_sharing_model: HTTP GET: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharing-model/")
+            r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharing-model/",
                              verify=config.dic['VERIFY_SSL'])
         else:
-            LOG.info("LIFECYCLE: MF2C: user_management_sharing_model: HTTP GET: http://" + remote + ":46300/api/v2/um/sharingmodel/" + user_id)
-            r = requests.get("http://" + remote + ":46300/api/v2/um/sharingmodel/" + user_id,
+            LOG.debug("LIFECYCLE: MF2C: user_management_sharing_model: Getting Sharing model from " + remote + " ...")
+            LOG.info("LIFECYCLE: MF2C: user_management_sharing_model: HTTP GET: http://" + remote + ":46300/api/v2/um/sharing-model/")
+            r = requests.get("http://" + remote + ":46300/api/v2/um/sharing-model/",
                              verify=config.dic['VERIFY_SSL'])
+
         json_data = json.loads(r.text)
         LOG.debug("LIFECYCLE: MF2C: user_management_sharing_model: response: " + str(r) + ", json_data: " + str(json_data))
 
@@ -346,8 +347,7 @@ def user_management_sharing_model(user_id, remote=None):
             return json_data
 
         LOG.error('LIFECYCLE: MF2C: user_management_sharing_model: Error: status_code=' + str(r.status_code))
-        return None
     except:
         LOG.error('LIFECYCLE: MF2C: user_management_sharing_model: Exception')
-        return None
+    return None
 

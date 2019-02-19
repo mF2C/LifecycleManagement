@@ -159,21 +159,14 @@ def thr_submit_remote(service, agent):
 
 
 # thr_submit_service_in_agents: deploy agents (parallel process)
-def thr_submit_service_in_agents(service, service_instance, user_id, agreement_id):
+def thr_submit_service_in_agents(service, service_instance, agreement_id):
     try:
-        LOG.debug("LIFECYCLE: Lifecycle_Deployment: thr_submit_service_in_agents: " + str(service) + ", user_id: " + user_id)
-
-        # 3. select from agents list
-        r = agent_decision.select_agents(service['exec_type'], service_instance)
-        if not r is None:
-            service_instance = r
-
-        LOG.debug("LIFECYCLE: Lifecycle_Deployment: thr_submit_service_in_agents: service_instance: " + str(service_instance))
+        LOG.debug("LIFECYCLE: Lifecycle_Deployment: thr_submit_service_in_agents: Executing thread ...")
 
         # 4. allocate service / call remote container
         thrs = []   # 1 thread per agent
         for agent in service_instance["agents"]:
-            LOG.info("LIFECYCLE:>>> AGENT >>> " + agent['url'] + " <<<")
+            LOG.debug("LIFECYCLE:>>> AGENT >>> " + agent['url'] + " <<<")
             # LOCAL
             if agent['url'] == common.get_local_ip():
                 thrs.append(threading.Thread(target=thr_submit_local, args=(service, agent,)))
@@ -213,21 +206,22 @@ def thr_submit_service_in_agents(service, service_instance, user_id, agreement_i
 # IN: service, user_id, agreement_id, agents_list
 # OUT: service_instance
 def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_service=False):
-    LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: " + str(service) + ", user_id: " + user_id)
+    LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: " + str(service) +
+              ", user_id: " + user_id + ", agreement_id: " + agreement_id + ", agents_list: " + str(agents_list))
     try:
         # 1. check parameters content
         if check_service and not check_service_content(service):
             return common.gen_response(500, 'field(s) category/exec/exec_type not found', 'service', str(service))
 
         # 2. create new service instance
-        LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: agents_list" + str(agents_list))
-
+        LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Creating service instance ... ")
         service_instance = data_adapter.create_service_instance(service, agents_list, user_id, agreement_id)
         if not service_instance:
             LOG.error("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: error creating service_instance")
             return common.gen_response(500, 'error creating service_instance', 'service', str(service))
 
         # 3. select from agents list
+        LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Selecting agents ... ")
         r = agent_decision.select_agents(service['exec_type'], service_instance)
         if not r is None:
             service_instance = r
@@ -236,7 +230,7 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
 
         # submit service thread
         service_instance['status'] = STATUS_DEPLOYING
-        t = threading.Thread(target=thr_submit_service_in_agents, args=(service, service_instance, user_id, agreement_id,))
+        t = threading.Thread(target=thr_submit_service_in_agents, args=(service, service_instance, agreement_id,))
         t.start()
 
         return common.gen_response_ok('Service deployment operation is being processed...', 'service_instance', service_instance)

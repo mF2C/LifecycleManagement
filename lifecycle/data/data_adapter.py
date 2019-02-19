@@ -55,6 +55,20 @@ import lifecycle.data.standalone.data as data_standalone
    }
 '''
 
+
+###############################################################################
+# COMMON
+
+# exist_user: check if 'user id' exists
+def exist_user(user_id):
+    return data_mf2c.exist_user(user_id)
+
+
+# exist_device: check if 'device id' exists
+def exist_device(device_id):
+    return data_mf2c.exist_device(device_id)
+
+
 ###############################################################################
 # SERVICE
 # get_service: Get service

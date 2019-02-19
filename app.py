@@ -33,13 +33,14 @@ REST API
             /api/v2
                         GET:    get rest api service status
             Lifecycle:
-                /api/v2/lm/agent-config
+                /lm
+                        POST:   SLA / UM notifications
+                /lm/agent-config
                         GET:    get agent's lifecycle configuration: docker, docker-swarm, kubernetes, ...         
-                /api/v2/lm/agent-info
+                /lm/agent-info
                         GET:    get agent's lifecycle information: service_instances, ...
                 /lm/service-instance/<string:service_instance_id>
                         GET:    get service instance / all service instances (from cimi)
-                        POST:   SLA / UM notifications
                         PUT:    Starts / stops / restarts a service instance  //  starts a job in COMPSs
                         DELETE: terminates a service instance; deletes service instance (from cimi)
                 /lm/service
@@ -72,28 +73,26 @@ except ValueError:
     LOG.error('Lifecycle-Management: app: Exception: Error while initializing app / api')
 
 
+########################################################################################################################
+### LIFECYCLE MANAGER
+########################################################################################################################
 '''
  API 'home' Route
 
     '/api/v2/'
-    
+
         GET:    get rest api service status
 '''
 @app.route('/api/v2/', methods=['GET'])
 def default_route():
     data = {
-        'app': "Lifecycle Management REST API",
-        'status': "Running",
-        'api_doc_json': "http://" + config.dic['HOST_IP'] + ":" + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'],
+        'app': "Lifecycle Management REST API", 'status': "Running", 'api_doc_json': "http://" + config.dic['HOST_IP'] + ":" + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'],
         'api_doc_html': "http://" + config.dic['HOST_IP'] + ":" + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'] + ".html#!/spec"
     }
     resp = Response(json.dumps(data), status=200, mimetype='application/json')
     return resp
 
 
-########################################################################################################################
-### LIFECYCLE MANAGER
-########################################################################################################################
 '''
  Service instance route: status, service events handler
 
@@ -145,12 +144,11 @@ api.add_resource(InstanceInfo, '/api/v2/lm/agent-info')
 
 
 '''
- Service instance route: status, service events handler
+ Service instance route:
 
     '/api/v2/lm/service-instances/<string:service_instance_id>'
     
         GET:    get service instance / all service instances
-        POST:   SLA / UM notifications
         PUT:    Starts / stops / restarts a service instance  //  starts a job in COMPSs
         DELETE: Terminate service, Deallocate service's resources
 '''
@@ -175,41 +173,6 @@ class ServiceInstance(Resource):
             }])
     def get(self, service_instance_id):
         return lm.getServiceInstance(service_instance_id)
-
-
-    # POST: process warnings and notifications
-    # POST /api/v2/lm/service-instance/<string:service_instance_id>
-    @swagger.operation(
-        summary="Process warnings and notifications",
-        notes="Process warnings and notifications from other components.",
-        produces=["application/json"],
-        authorizations=[],
-        parameters=[{
-            "name": "service_instance_id",
-            "description": "Service instance ID",
-            "required": True,
-            "paramType": "path",
-            "type": "string"
-            }, {
-            "name": "body",
-            "description": "Parameters in JSON format.<br/>Example: <br/>"
-                           "{\"type\":\"sla_notification/um_warning\", <br/>\"data\":{}}",
-            "required": True,
-            "paramType": "body",
-            "type": "string"
-        }],
-        responseMessages=[{
-            "code": 406,
-            "message": "'type' / 'data' parameter not found"
-        }, {
-            "code": 500,
-            "message": "Exception processing request"
-        }, {
-            "code": 501,
-            "message": "Operation not defined / implemented"
-        }])
-    def post(self, service_instance_id):
-        return lm.postServiceInstanceEvent(request, service_instance_id)
 
 
     # PUT: Starts / stops / restarts ... a service and returns a JSON object with the result / status of the operation.
@@ -355,6 +318,48 @@ class ServiceInstanceInt(Resource):
         return lm.putServiceInt(request)
 
 api.add_resource(ServiceInstanceInt, '/api/v2/lm/service-instance-int')
+
+
+'''
+ Service instance route: service events handler
+
+    '/api/v2/lm'
+
+        POST:   SLA / UM notifications
+'''
+class LmEvents(Resource):
+    # POST: process warnings and notifications
+    # POST /api/v2/lm/service-instance/<string:service_instance_id>
+    @swagger.operation(
+        summary="Process warnings and notifications",
+        notes="Process warnings and notifications from other components.",
+        produces=["application/json"],
+        authorizations=[],
+        parameters=[{
+            "name": "service_instance_id",
+            "description": "Service instance ID",
+            "required": True,
+            "paramType": "path",
+            "type": "string"
+        }, {
+            "name": "body",
+            "description": "Parameters in JSON format.<br/>Example: <br/>"
+                "{\"type\":\"sla_notification/um_warning\", <br/>\"data\":{}}",
+            "required": True,
+            "paramType": "body",
+            "type": "string"
+        }], responseMessages=[{
+            "code": 406, "message": "'type' / 'data' parameter not found"
+        }, {
+            "code": 500, "message": "Exception processing request"
+        }, {
+            "code": 501, "message": "Operation not defined / implemented"
+        }])
+    def post(self, service_instance_id):
+        return lm.postServiceInstanceEvent(request, service_instance_id)
+
+
+api.add_resource(LmEvents, '/api/v2/lm')
 
 
 ########################################################################################################################

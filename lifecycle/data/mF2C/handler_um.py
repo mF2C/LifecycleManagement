@@ -26,9 +26,9 @@ import time
 #           {
 #               "user_id": "",
 #               "device_id": "",
-#               "service_instance_id": "",
-#               "warning_id": "",
-#               "warning_txt": ""
+#               "user_profile": {},
+#               "sharing_model": {},
+#               "result": {'battery_limit_violation': true, 'max_apps_violation': true}
 #           }
 #   }
 

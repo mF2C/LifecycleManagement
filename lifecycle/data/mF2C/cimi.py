@@ -90,6 +90,39 @@ def patch_update_map_fields():
 
 
 ###############################################################################
+# COMMON
+
+# TODO get this information from new RESOURCE: AGENT
+# get_current_device_info
+def get_current_device_info():
+    try:
+        res = requests.get(config.dic['CIMI_URL'] + "/device",
+                           headers=CIMI_HEADER,
+                           verify=False)
+
+        LOG.info("LIFECYCLE: cimi: get_current_device_info: response: " + str(res.json()))
+        if res.status_code == 200:
+            return res.json()['devices'][0]
+        else:
+            LOG.warning("'device' not found")
+            return -1
+    except:
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('LIFECYCLE: cimi: get_current_device_info: Exception')
+        return None
+
+
+# exist_user: check if 'user id' exists
+def exist_user(user_id):
+    return True
+
+
+# exist_device: check if 'device id' exists
+def exist_device(device_id):
+    return True
+
+
+###############################################################################
 
 
 # get_service_by_id: get service by id
