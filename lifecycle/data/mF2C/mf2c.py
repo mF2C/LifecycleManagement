@@ -18,7 +18,11 @@ from common.logs import LOG
 
 
 ###############################################################################
-# LIFECYCLE interactions
+# LIFECYCLE
+#   Calls to other agents' Lifecycle Managers
+###############################################################################
+
+# FORWARD REQUEST TO LEADER
 # lifecycle_deploy: call to parent's lifceycle; forwards a "submit service" request
 def lifecycle_parent_deploy(parent, service_id, user_id, agreement_id):
     LOG.debug("LIFECYCLE: MF2C: lifecycle_parent_deploy: forward request to parent: " + str(parent) + ", service_id: " + str(service_id) +
@@ -37,32 +41,11 @@ def lifecycle_parent_deploy(parent, service_id, user_id, agreement_id):
         LOG.error('LIFECYCLE: MF2C: lifecycle_parent_deploy: Error: status_code=' + str(r.status_code))
         return False
     except:
-        LOG.error('LIFECYCLE: MF2C: lifecycle_parent_deploy: Exception')
+        LOG.exception('LIFECYCLE: MF2C: lifecycle_parent_deploy: Exception')
         return False
 
 
-# lifecycle_get_agent_info: get type of agent: docker, docker-swarm, ...
-def lifecycle_get_agent_info(agent):
-    LOG.debug("LIFECYCLE: MF2C: lifecycle_get_agent_info: agent: " + str(agent))
-    try:
-        LOG.info("LIFECYCLE: MF2C: lifecycle_get_agent_info: HTTP GET: http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/agent-info")
-        r = requests.get("http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/agent-info",
-                          verify=config.dic['VERIFY_SSL'])
-        LOG.debug("LIFECYCLE: MF2C: lifecycle_get_agent_info: response: " + str(r))
-
-        json_data = json.loads(r.text)
-
-        if r.status_code == 200:
-            LOG.debug('LIFECYCLE: MF2C: lifecycle_get_agent_info: status_code=' + str(r.status_code) + '; response: ' + str(json_data))
-            return json_data
-
-        LOG.error('LIFECYCLE: MF2C: lifecycle_get_agent_info: Error: status_code=' + str(r.status_code))
-        return None
-    except:
-        LOG.error('LIFECYCLE: MF2C: lifecycle_parent_deploy: Exception')
-        return None
-
-
+# DEPLOY A SERVICE
 # lifecycle_deploy: call to lifceycle from other agent in order to deploy a service
 def lifecycle_deploy(service, agent):
     LOG.debug("LIFECYCLE: MF2C: lifecycle_deploy: deploy service in agent: " + str(service) + ", " + str(agent))
@@ -84,10 +67,11 @@ def lifecycle_deploy(service, agent):
         LOG.error('LIFECYCLE: MF2C: lifecycle_deploy: Error: status_code=' + str(r.status_code))
         return None
     except:
-        LOG.error('LIFECYCLE: MF2C: lifecycle_deploy: Exception')
+        LOG.exception('LIFECYCLE: MF2C: lifecycle_deploy: Exception')
         return None
 
 
+# START / STOP SERVICE INSTANCE
 # lifecycle_operation: call to lifceycle from other agent in order to start/stop... a service
 def lifecycle_operation(agent, operation):
     LOG.debug("LIFECYCLE: MF2C: lifecycle_operation: " + str(agent) + ", " + operation)
@@ -109,7 +93,62 @@ def lifecycle_operation(agent, operation):
         LOG.error('LIFECYCLE: MF2C: lifecycle_operation: Error: status_code=' +  str(r.status_code))
         return None
     except:
-        LOG.error('LIFECYCLE: MF2C: lifecycle_operation: Exception')
+        LOG.exception('LIFECYCLE: MF2C: lifecycle_operation: Exception')
+        return None
+
+
+# GET UM INFORMATION
+# lifecycle_um_info: call to lifceycle from other agent in order to get sharing model and user profile
+def lifecycle_um_info(agent):
+    LOG.debug("LIFECYCLE: MF2C: lifecycle_um_info: " + str(agent))
+    try:
+        LOG.info("LIFECYCLE: MF2C: lifecycle_um_info: HTTP GET: http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/agent-um")
+        r = requests.get("http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/agent-um",
+                         verify=config.dic['VERIFY_SSL'])
+        LOG.debug("LIFECYCLE: MF2C: lifecycle_um_info: response:" + str(r))
+
+        json_data = json.loads(r.text)
+        agent_um = json_data['agent_um']
+        LOG.debug("LIFECYCLE: MF2C: lifecycle_um_info: agent_um: " + str(agent_um))
+
+        if r.status_code == 200:
+            LOG.debug('LIFECYCLE: MF2C: lifecycle_um_info: status_code=' +  str(r.status_code) + '; response: ' + str(json_data))
+            return ast.literal_eval(agent_um)
+
+        LOG.error('LIFECYCLE: MF2C: lifecycle_um_info: Error: status_code=' +  str(r.status_code))
+        return None
+    except:
+        LOG.exception('LIFECYCLE: MF2C: lifecycle_um_info: Exception')
+        return None
+
+
+###############################################################################
+# USER MANAGEMENT
+#   Calls to local User Management
+###############################################################################
+
+
+# SET UM INFORMATION
+# set_lifecycle_um_properties: call to lifceycle from other agent in order to update user management properties
+def user_management_set_um_properties(apps=0):
+    LOG.debug("LIFECYCLE: MF2C: user_management_set_um_properties: localhost - local UM ")
+    try:
+        LOG.debug("LIFECYCLE: MF2C: user_management_set_um_properties: Updating UM properties ...")
+        LOG.info("LIFECYCLE: MF2C: user_management_set_um_properties: HTTP PUT: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/user-profile")
+        r = requests.put(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/user-profile",
+                         json={"apps_running": apps},
+                         verify=config.dic['VERIFY_SSL'])
+
+        json_data = json.loads(r.text)
+        LOG.debug("LIFECYCLE: MF2C: user_management_set_um_properties: response: " + str(r) + ", json_data: " + str(json_data))
+
+        if r.status_code == 200:
+            LOG.debug('LIFECYCLE: MF2C: user_management_set_um_properties: status_code=' + str(r.status_code))
+            return json_data
+
+        LOG.error('LIFECYCLE: MF2C: user_management_set_um_properties: Error: status_code=' + str(r.status_code))
+    except:
+        LOG.exception('LIFECYCLE: MF2C: user_management_set_um_properties: Exception')
         return None
 
 
@@ -166,7 +205,7 @@ def recommender_get_optimal_resources(service):
         LOG.error('LIFECYCLE: MF2C: get_available_resources: Error: status_code=' +  str(r.status_code))
         return None
     except:
-        LOG.error('LIFECYCLE: MF2C: get_available_resources: Exception')
+        LOG.exception('LIFECYCLE: MF2C: get_available_resources: Exception')
         return None
 
 ###############################################################################
@@ -189,7 +228,7 @@ def sla_start_agreement(agreement_id):
         LOG.error('LIFECYCLE: MF2C: start_sla_agreement: Error: status_code=' +  str(r.status_code))
         return False
     except:
-        LOG.error('LIFECYCLE: MF2C: start_sla_agreement: Exception')
+        LOG.exception('LIFECYCLE: MF2C: start_sla_agreement: Exception')
         return False
 
 
@@ -210,7 +249,7 @@ def sla_stop_agreement(agreement_id):
         LOG.error('LIFECYCLE: MF2C: stop_sla_agreement: Error: status_code=' +  str(r.status_code))
         return False
     except:
-        LOG.error('LIFECYCLE: MF2C: stop_sla_agreement: Exception')
+        LOG.exception('LIFECYCLE: MF2C: stop_sla_agreement: Exception')
         return False
 
 
@@ -232,7 +271,7 @@ def sla_terminate_agreement(agreement_id):
         LOG.error('LIFECYCLE: MF2C: stop_sla_agreement: Error: status_code=' +  str(r.status_code))
         return False
     except:
-        LOG.error('LIFECYCLE: MF2C: stop_sla_agreement: Exception')
+        LOG.exception('LIFECYCLE: MF2C: stop_sla_agreement: Exception')
         return False
 
 ###############################################################################
@@ -263,7 +302,7 @@ def service_management_qos(service_instance):
         LOG.error("LIFECYCLE: MF2C: service_management_qos: Error: status: " + str(json_data['status']))
         return None
     except:
-        LOG.error('LIFECYCLE: MF2C: service_management_qos: Exception')
+        LOG.exception('LIFECYCLE: MF2C: service_management_qos: Exception')
         return None
 
 '''
@@ -298,18 +337,22 @@ def service_management_get_service(service_id):
 '''
 ###############################################################################
 
+# TODO remove method ==> call to LM
 # user_management_profiling: CALL TO User Management (Profiling)
+
+'''
+
 def user_management_profiling(remote=None):
     try:
         if remote is None:
             LOG.debug("LIFECYCLE: MF2C: user_management_profiling: Getting User Profile from localhost ...")
-            LOG.debug("LIFECYCLE: MF2C: user_management_profiling: HTTP GET: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/user-profile/")
-            r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/user-profile/",
+            LOG.debug("LIFECYCLE: MF2C: user_management_profiling: HTTP GET: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/user-profile")
+            r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/user-profile",
                              verify=config.dic['VERIFY_SSL'])
         else:
             LOG.debug("LIFECYCLE: MF2C: user_management_profiling: Getting User Profile from " + remote + " ...")
-            LOG.debug("LIFECYCLE: MF2C: user_management_profiling: HTTP GET: http://" + remote + ":46300/api/v2/um/user-profile/")
-            r = requests.get("http://" + remote + ":46300/api/v2/um/user-profile/",
+            LOG.debug("LIFECYCLE: MF2C: user_management_profiling: HTTP GET: http://" + remote + ":46300/api/v2/um/user-profile")
+            r = requests.get("http://" + remote + ":46300/api/v2/um/user-profile",
                              verify=config.dic['VERIFY_SSL'])
 
         json_data = json.loads(r.text)
@@ -321,22 +364,23 @@ def user_management_profiling(remote=None):
 
         LOG.error('LIFECYCLE: MF2C: user_management_profiling: Error: status_code=' + str(r.status_code))
     except:
-        LOG.error('LIFECYCLE: MF2C: user_management_profiling: Exception')
+        LOG.exception('LIFECYCLE: MF2C: user_management_profiling: Exception')
     return None
 
 
+# TODO remove method ==> call to LM
 # user_management_sharing_model: CALL TO User Management (Sharing Model)
 def user_management_sharing_model(remote=None):
     try:
         if remote is None:
             LOG.debug("LIFECYCLE: MF2C: user_management_sharing_model: Getting Sharing model from localhost ...")
-            LOG.info("LIFECYCLE: MF2C: user_management_sharing_model: HTTP GET: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharing-model/")
-            r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharing-model/",
+            LOG.info("LIFECYCLE: MF2C: user_management_sharing_model: HTTP GET: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharing-model")
+            r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharing-model",
                              verify=config.dic['VERIFY_SSL'])
         else:
             LOG.debug("LIFECYCLE: MF2C: user_management_sharing_model: Getting Sharing model from " + remote + " ...")
-            LOG.info("LIFECYCLE: MF2C: user_management_sharing_model: HTTP GET: http://" + remote + ":46300/api/v2/um/sharing-model/")
-            r = requests.get("http://" + remote + ":46300/api/v2/um/sharing-model/",
+            LOG.info("LIFECYCLE: MF2C: user_management_sharing_model: HTTP GET: http://" + remote + ":46300/api/v2/um/sharing-model")
+            r = requests.get("http://" + remote + ":46300/api/v2/um/sharing-model",
                              verify=config.dic['VERIFY_SSL'])
 
         json_data = json.loads(r.text)
@@ -348,6 +392,7 @@ def user_management_sharing_model(remote=None):
 
         LOG.error('LIFECYCLE: MF2C: user_management_sharing_model: Error: status_code=' + str(r.status_code))
     except:
-        LOG.error('LIFECYCLE: MF2C: user_management_sharing_model: Exception')
+        LOG.exception('LIFECYCLE: MF2C: user_management_sharing_model: Exception')
     return None
-
+    
+'''

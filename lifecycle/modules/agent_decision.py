@@ -12,6 +12,7 @@ Created on 09 feb. 2018
 """
 
 import lifecycle.data.mF2C.mf2c as mf2c
+import lifecycle.data.data_adapter as data_adapter
 import config as config
 import common.common as common
 from common.logs import LOG
@@ -163,13 +164,23 @@ def user_management(service_instance):
             # LOCAL
             if agent['url'] == common.get_local_ip():
                 LOG.debug("LIFECYCLE: agent_decision: user_management: LOCAL user_profiling and user_sharing_model")
-                user_profiling = mf2c.user_management_profiling()
-                user_sharing_model = mf2c.user_management_sharing_model()
+
+                user_profiling = data_adapter.get_um_profile()
+                user_sharing_model = data_adapter.get_um_sharing_model()
+
+                #user_profiling = mf2c.user_management_profiling()
+                #user_sharing_model = mf2c.user_management_sharing_model()
             # 'REMOTE' AGENT
             elif common.check_ip(agent['url']):
                 LOG.debug("LIFECYCLE: agent_decision: user_management: REMOTE user_profiling and user_sharing_model")
-                user_profiling = mf2c.user_management_profiling(agent['url'])
-                user_sharing_model = mf2c.user_management_sharing_model(agent['url'])
+
+                agent_um = mf2c.lifecycle_um_info(agent)
+                if not agent_um:
+                    user_profiling = agent_um['user-profile']
+                    user_sharing_model = agent_um['sharing-model']
+
+                #user_profiling = mf2c.user_management_profiling(agent['url'])
+                #user_sharing_model = mf2c.user_management_sharing_model(agent['url'])
             else:
                 LOG.warning("LIFECYCLE: agent_decision: user_management: Could not get user_profiling and user_sharing_model")
 

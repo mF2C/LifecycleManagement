@@ -16,7 +16,8 @@ import lifecycle.modules.apps.docker.adapter as docker_adpt
 import lifecycle.modules.apps.swarm.adapter as swarm_adpt
 import lifecycle.modules.apps.kubernetes.adapter as k8s_adpt
 import lifecycle.modules.apps.compss.adapter as compss_adpt
-from common.common import SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS, SERVICE_KUBERNETES, SERVICE_DOCKER_SWARM
+from common.common import SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS, SERVICE_KUBERNETES, SERVICE_DOCKER_SWARM, STATUS_ERROR
+import lifecycle.data.mF2C.mf2c as mf2c
 
 
 # Deploy / allocate service
@@ -38,7 +39,8 @@ def stop_service_agent(service, agent):
     elif service['exec_type'] == SERVICE_DOCKER_SWARM:
         return swarm_adpt.stop_service_agent(agent)
     else: # SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS
-        return docker_adpt.stop_service_agent(agent)
+        if docker_adpt.stop_service_agent(agent) != STATUS_ERROR:
+            mf2c.user_management_set_um_properties(apps=-1)
 
 
 # Start service in agent
@@ -49,7 +51,8 @@ def start_service_agent(service, agent):
     elif service['exec_type'] == SERVICE_DOCKER_SWARM:
         return swarm_adpt.start_service_agent(agent)
     else: # SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS
-        return docker_adpt.start_service_agent(agent)
+        if docker_adpt.start_service_agent(agent) != STATUS_ERROR:
+            mf2c.user_management_set_um_properties(apps=1)
 
 
 # terminate service in agent

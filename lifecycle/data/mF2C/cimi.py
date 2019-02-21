@@ -101,25 +101,102 @@ def get_current_device_info():
                            verify=False)
 
         LOG.info("LIFECYCLE: cimi: get_current_device_info: response: " + str(res.json()))
-        if res.status_code == 200:
-            return res.json()['devices'][0]
-        else:
-            LOG.warning("'device' not found")
+
+        if res.status_code == 200 and res.json()['count'] == 0:
+            LOG.warning("LIFECYCLE: cimi: get_current_device_info: 'device' not found")
             return -1
+        elif res.status_code == 200:
+            return res.json()['devices'][0]
+
+        LOG.warning("LIFECYCLE: cimi: get_current_device_info: 'device' not found")
+        return -1
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: cimi: get_current_device_info: Exception')
+        LOG.exception('LIFECYCLE: cimi: get_current_device_info: Exception')
         return None
 
 
 # exist_user: check if 'user id' exists
 def exist_user(user_id):
-    return True
+    try:
+        user_id = user_id.replace('user/', '')
+        res = requests.get(config.dic['CIMI_URL'] + "/user/" + user_id,
+                           headers=CIMI_HEADER,
+                           verify=False)
+        LOG.debug("LIFECYCLE: cimi: exist_user: Response: " + str(res.json()))
+
+        if res.status_code == 200 and not res.json()['id'] is None:
+            return True
+    except:
+        traceback.print_exc(file=sys.stdout)
+        LOG.warning("LIFECYCLE: cimi: exist_user: controlled exception")
+    LOG.warning("LIFECYCLE: cimi: exist_user: 'user' not found / error getting user")
+    return False
 
 
 # exist_device: check if 'device id' exists
 def exist_device(device_id):
-    return True
+    try:
+        device_id = device_id.replace('device/', '')
+        res = requests.get(config.dic['CIMI_URL'] + "/device/" + device_id,
+                           headers=CIMI_HEADER,
+                           verify=False)
+        LOG.debug("LIFECYCLE: cimi: exist_device: Response: " + str(res.json()))
+        if res.status_code == 200 and not res.json()['id'] is None:
+            return True
+    except:
+        traceback.print_exc(file=sys.stdout)
+        LOG.warning("LIFECYCLE: cimi: exist_user: controlled exception")
+    LOG.warning("LIFECYCLE: cimi: exist_device: 'device' not found / error getting device")
+    return False
+
+
+###############################################################################
+# UM
+
+# TODO get this information from new RESOURCE: AGENT
+# get_user_profile_by_device: get profile from device
+def get_user_profile_by_device(device_id):
+    try:
+        device_id = device_id.replace('device/', '')
+
+        res = requests.get(config.dic['CIMI_URL'] + "/user-profile?$filter=device_id=\"device/" + device_id + "\"",
+                           headers=CIMI_HEADER,
+                           verify=False)
+
+        LOG.debug("LIFECYCLE: cimi: get_user_profile_by_device: response: " + str(res))
+        LOG.debug("LIFECYCLE: cimi: get_user_profile_by_device: response: " + str(res.json()))
+
+        if res.status_code == 200 and len(res.json()['userProfiles']) > 0:
+            return res.json()['userProfiles'][0]
+        else:
+            LOG.warning("LIFECYCLE: cimi: get_user_profile_by_device: User's profile not found [device_id=" + device_id + "]")
+            return -1
+    except:
+        LOG.exception('LIFECYCLE: cimi: get_user_profile_by_device: Exception')
+        return None
+
+
+# TODO get this information from new RESOURCE: AGENT
+# get_sharing_model_by_device: get sharing model from device
+def get_sharing_model_by_device(device_id):
+    try:
+        device_id = device_id.replace('device/', '')
+
+        res = requests.get(config.dic['CIMI_URL'] + "/sharing-model?$filter=device_id=\"device/" + device_id + "\"",
+                           headers=CIMI_HEADER,
+                           verify=False)
+
+        LOG.debug("LIFECYCLE: cimi: get_sharing_model_by_device: response: " + str(res))
+        LOG.debug("LIFECYCLE: cimi: get_sharing_model_by_device: response: " + str(res.json()))
+
+        if res.status_code == 200 and len(res.json()['sharingModels']) > 0:
+            return res.json()['sharingModels'][0]
+        else:
+            LOG.warning("LIFECYCLE: cimi: get_sharing_model_by_device: Sharing-model not found [device_id=" + device_id + "]")
+            return -1
+    except:
+        LOG.exception('LIFECYCLE: cimi: get_sharing_model_by_device: Exception')
+        return None
 
 
 ###############################################################################

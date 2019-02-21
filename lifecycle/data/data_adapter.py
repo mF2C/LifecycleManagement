@@ -13,8 +13,8 @@ Created on 09 feb. 2018
 
 
 import lifecycle.data.mF2C.data as data_mf2c
-import lifecycle.data.mF2C.mf2c as mf2c
-import lifecycle.data.standalone.data as data_standalone
+#import lifecycle.data.mF2C.mf2c as mf2c
+#import lifecycle.data.standalone.data as data_standalone
 
 
 '''
@@ -70,10 +70,26 @@ def exist_device(device_id):
 
 
 ###############################################################################
+# USER MANAGEMENT
+# get_um_profile: Get um_profile
+def get_um_profile():
+    return data_mf2c.get_um_profile()
+
+
+# get_um_sharing_model: Get sharing_model
+def get_um_sharing_model():
+    return data_mf2c.get_um_sharing_model()
+
+
+# set_um_profile:
+# def set_um_profile(apps=0):
+#     return data_mf2c.get_um_profile()
+
+
+###############################################################################
 # SERVICE
 # get_service: Get service
 def get_service(service_id):
-    #return mf2c.service_management_get_service(service_id)
     return data_mf2c.get_service(service_id)
 
 

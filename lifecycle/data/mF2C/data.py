@@ -63,6 +63,21 @@ from common.logs import LOG
 ###############################################################################
 # COMMON
 
+# TODO get this information from new RESOURCE: AGENT
+# get_current_device_id
+def get_current_device_id():
+    LOG.info("LIFECYCLE: Data: get_device_id: Getting 'my' device ID ...")
+
+    device = cimi.get_current_device_info()
+    LOG.debug("LIFECYCLE: Data: get_device_id: device = " + str(device))
+
+    if not device is None and device != -1:
+        LOG.info("LIFECYCLE: Data: get_device_id: Returning 'my' device ID = " + str(device['id']))
+        return device['id']
+    else:
+        return -1
+
+
 # exist_user: check if 'user id' exists
 def exist_user(user_id):
     return cimi.exist_user(user_id)
@@ -71,6 +86,31 @@ def exist_user(user_id):
 # exist_device: check if 'device id' exists
 def exist_device(device_id):
     return cimi.exist_device(device_id)
+
+
+
+###############################################################################
+# USER MANAGEMENT
+# get_um_profile: Get um_profile
+def get_um_profile():
+    LOG.debug("LIFECYCLE: Data: get_current_user_profile: Getting information about current user and device...")
+    # get 'my' device_id
+    device_id = get_current_device_id()
+    if device_id == -1:
+        return None
+    else:
+        return cimi.get_user_profile_by_device(device_id)
+
+
+# get_um_sharing_model: Get sharing_model
+def get_um_sharing_model():
+    LOG.debug("LIFECYCLE: Data: get_current_sharing_model: Getting information about current user and device...")
+    # get 'my' device_id
+    device_id = get_current_device_id()
+    if device_id == -1:
+        return None
+    else:
+        return cimi.get_sharing_model_by_device(device_id)
 
 
 ###############################################################################

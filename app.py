@@ -35,24 +35,26 @@ REST API
             Lifecycle:
                 /lm
                         POST:   SLA / UM notifications
+                        
                 /lm/agent-config
-                        GET:    get agent's lifecycle configuration: docker, docker-swarm, kubernetes, ...         
-                /lm/agent-info
-                        GET:    get agent's lifecycle information: service_instances, ...
+                        GET:    get agent's lifecycle configuration: docker, docker-swarm, kubernetes, ...        
+                         
+                /lm/agent-um
+                        GET:    get agent's current user-profile and sharing-model (from 'local' User Management module)
+                        PUT:    updates user-profile current number of applications running
+                        
                 /lm/service-instance/<string:service_instance_id>
                         GET:    get service instance / all service instances (from cimi)
                         PUT:    Starts / stops / restarts a service instance  //  starts a job in COMPSs
                         DELETE: terminates a service instance; deletes service instance (from cimi)
+                        
                 /lm/service
                         POST:   Submits a service and gets a service instance (new version)
-                /lm/service1 (deprecated)
-                        POST:   Submits a service and gets a service instance (deprecated version)
+
                 /lm/service-instance-int 
                         POST:   Submits a service in a mF2C agent
                         PUT:    starts / stops ... a service in a mF2C agent; start-job
 '''
-
-
 try:
     lm_init_config.init()
 
@@ -66,7 +68,7 @@ try:
                        api_spec_url=config.dic['API_DOC_URL'],
                        produces=["application/json", "text/html"],
                        swaggerVersion="1.2",
-                       description='mF2C - Lifecycle Management REST API',
+                       description='mF2C - Lifecycle Management REST API - version ' + config.dic['VERSION'],
                        basePath='http://localhost:' + str(config.dic['SERVER_PORT']),
                        resourcePath='/')
 except ValueError:
@@ -76,13 +78,13 @@ except ValueError:
 ########################################################################################################################
 ### LIFECYCLE MANAGER
 ########################################################################################################################
-'''
- API 'home' Route
-
-    '/api/v2/'
-
-        GET:    get rest api service status
-'''
+#
+# API 'home' Route
+#
+#    '/api/v2/'
+#
+#        GET:    get rest api service status
+#
 @app.route('/api/v2/', methods=['GET'])
 def default_route():
     data = {
@@ -93,13 +95,13 @@ def default_route():
     return resp
 
 
-'''
- Service instance route: status, service events handler
-
-    '/api/v2/lm/agent-config'
-
-        GET:    get agent's lifecycle configuration: docker, docker-swarm, kubernetes, ...
-'''
+#
+# Service instance route: status, service events handler
+#
+#    '/api/v2/lm/agent-config'
+#
+#       GET:    get agent's lifecycle configuration: docker, docker-swarm, kubernetes, ...
+#
 class InstanceConfig(Resource):
     # GET /api/v2/lm/agent-config
     @swagger.operation(
@@ -118,18 +120,19 @@ class InstanceConfig(Resource):
 api.add_resource(InstanceConfig, '/api/v2/lm/agent-config')
 
 
-'''
- Service instance route: status, service events handler
-
-    '/api/v2/lm/agent-info'
-
-        GET:    get agent's lifecycle information: service_instances, ...
-'''
-class InstanceInfo(Resource):
-    # GET /api/v2/lm/agent-info
+#
+# Service instance route: status, service events handler
+#
+#    '/api/v2/lm/agent-um'
+#
+#        GET:    get agent's current user-profile and sharing-model (from 'local' User Management module)
+#        PUT:    updates user-profile current number of applications running
+#
+class AgentUM(Resource):
+    # GET /api/v2/lm/agent-um
     @swagger.operation(
-        summary="get agent's lifecycle information: service_instances, ...",
-        notes="get agent's lifecycle information: service_instances, ...",
+        summary="get agent's current user-profile and sharing-model (from 'local' User Management module)",
+        notes="get agent's current user-profile and sharing-model (from 'local' User Management module)",
         produces=["application/json"],
         authorizations=[],
         parameters=[],
@@ -138,20 +141,41 @@ class InstanceInfo(Resource):
             "message": "Exception processing request"
         }])
     def get(self):
-        return lm.getAgentInfo()
-
-api.add_resource(InstanceInfo, '/api/v2/lm/agent-info')
+        return lm.getAgentUMInfo()
 
 
-'''
- Service instance route:
+    # PUT /api/v2/lm/agent-um
+    @swagger.operation(
+        summary="updates user-profile current number of applications running",
+        notes="updates user-profile current number of applications running",
+        produces=["application/json"],
+        authorizations=[],
+        parameters=[{
+            "name": "body",
+            "description": "Parameters in JSON format.<br/>Example: <br/>"
+                "{\"apps\":1}",
+            "required": True,
+            "paramType": "body",
+            "type": "string"
+        }],
+        responseMessages=[{
+            "code": 500, "message": "Exception processing request"
+        }])
+    def put(self):
+        return lm.putAgentUMInfo(request)
 
-    '/api/v2/lm/service-instances/<string:service_instance_id>'
-    
-        GET:    get service instance / all service instances
-        PUT:    Starts / stops / restarts a service instance  //  starts a job in COMPSs
-        DELETE: Terminate service, Deallocate service's resources
-'''
+api.add_resource(AgentUM, '/api/v2/lm/agent-um')
+
+
+#
+# Service instance route:
+#
+#     '/api/v2/lm/service-instances/<string:service_instance_id>'
+#
+#        GET:    get service instance / all service instances
+#        PUT:    Starts / stops / restarts a service instance  //  starts a job in COMPSs
+#        DELETE: Terminate service, Deallocate service's resources
+#
 class ServiceInstance(Resource):
     # GET: get service instance
     # GET /api/v2/lm/service-instance/<string:service_instance_id>
@@ -255,13 +279,13 @@ class ServiceInstance(Resource):
 api.add_resource(ServiceInstance, '/api/v2/lm/service-instances/<string:service_instance_id>')
 
 
-'''
- Service route (v2): submits a service ==> service instance is created
- 
-    '/api/v2/lm/service'
-    
-        POST:       Submits a service; gets a service instance
-'''
+#
+#  Service route (v2): submits a service ==> service instance is created
+#
+#    '/api/v2/lm/service'
+#
+#        POST:       Submits a service; gets a service instance
+#
 class Service(Resource):
     # POST: Submits a service
     # POST /api/v2/lm/service
@@ -277,10 +301,9 @@ class Service(Resource):
             "name": "body",
             "description": "Parameters in JSON format.<br/>Service example: <br/>"
                            "{<br/>"
-                           "\"service_id\": \"120f1ae12ca\",<br/>"
-                           "\"user_id\": \"rsucasas\",<br/>"
-                           "\"agreement_id\": \"sla_agreement/12932af0ef123\",<br/>"
-                           "\"agents_list\": [{\"agent_ip\": \"192.168.252.41\", \"num_cpus\": 4, \"master_compss\": false}]<br/>}",
+                           "\"service_id\": \"service/74dd7176-111e-412a-98ce-a6409d58b3ca\",<br/>"
+                           "\"user_id\": \"user/testuser\",<br/>"
+                           "\"agreement_id\": \"sla_agreement/12932af0ef123\"<br/>}",
             "required": True,
             "paramType": "body",
             "type": "string"
@@ -298,14 +321,14 @@ class Service(Resource):
 api.add_resource(Service, '/api/v2/lm/service')
 
 
-'''
- Service instance (only calls between LMs - LMs internal communication) route: deploy a service, start, stop, ...
- 
-    '/api/v2/lm/service-instance-int'
-    
-        POST:   Submits a service in a mF2C agent
-        PUT:    starts / stops ... a service in a mF2C agent
-'''
+#
+#  Service instance (only calls between LMs - LMs internal communication) route: deploy a service, start, stop, ...
+#
+#     '/api/v2/lm/service-instance-int'
+#
+#        POST:   Submits a service in a mF2C agent
+#        PUT:    starts / stops ... a service in a mF2C agent
+#
 class ServiceInstanceInt(Resource):
     # POST: Submits a service in an agent
     # POST /api/v2/lm/service-instance-int
@@ -320,13 +343,13 @@ class ServiceInstanceInt(Resource):
 api.add_resource(ServiceInstanceInt, '/api/v2/lm/service-instance-int')
 
 
-'''
- Service instance route: service events handler
-
-    '/api/v2/lm'
-
-        POST:   SLA / UM notifications
-'''
+#
+#  Service instance route: service events handler
+#
+#    '/api/v2/lm'
+#
+#        POST:   SLA / UM notifications
+#
 class LmEvents(Resource):
     # POST: process warnings and notifications
     # POST /api/v2/lm/service-instance/<string:service_instance_id>

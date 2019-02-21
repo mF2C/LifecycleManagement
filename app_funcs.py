@@ -29,10 +29,12 @@ from flask import Response, json
 def getAgentConfig():
     data = {
         'app': "Lifecycle Management REST API",
+        'name': "Lifecycle Management REST API",
         'version': config.dic['VERSION'],
         'host': config.dic['HOST_IP'],
-        'device id': 'not-defined',
-        'user id': 'not-defined',
+        'device-identifier': 'not-defined',
+        'device-ip-address': 'not-defined',
+        'user-identifier': 'not-defined',
         'properties': {
             'swarm-master': config.dic['DOCKER_SWARM'],
             'k8s-master': config.dic['K8S_MASTER'],
@@ -51,15 +53,23 @@ def getAgentConfig():
 
 
 # getAgentInfo
-def getAgentInfo():
-    data = {
-        'app': "Lifecycle",
-        'name': "Lifecycle Management REST API",
-        'version': config.dic['VERSION'],
-        'host': config.dic['HOST_IP'],
-        'device id': 'not-defined',
-        'user id': 'not-defined'
+def getAgentUMInfo():
+    agent_um = {
+        'device-id': 'not-defined',
+        'user-id': 'not-defined',
+        'user-profile': data_adapter.get_um_profile(),
+        'sharing-model': data_adapter.get_um_sharing_model()
     }
+    resp = Response(json.dumps(agent_um), status=200, mimetype='application/json')
+    return resp
+
+
+# getAgentInfo
+def putAgentUMInfo(request):
+    # 1. Parse and check input data
+    data = request.get_json()
+
+    # response
     resp = Response(json.dumps(data), status=200, mimetype='application/json')
     return resp
 
