@@ -37,6 +37,8 @@ OPERATION_START_JOB = "start-job"
 
 # service instance / agent status
 STATUS_ERROR = "error"
+STATUS_ERROR_STARTING = "error-starting"
+STATUS_ERROR_STOPPING = "error-stopping"
 STATUS_UNKNOWN = "??"
 STATUS_NOT_DEPLOYED = "not-deployed"
 STATUS_WAITING = "waiting"

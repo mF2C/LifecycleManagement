@@ -19,7 +19,7 @@ from lifecycle.data.db import SERVICE_INSTANCES_LIST
 from common.logs import LOG
 import config
 from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, \
-    STATUS_ERROR, STATUS_WAITING, STATUS_STARTED, STATUS_STOPPED, \
+    STATUS_ERROR, STATUS_WAITING, STATUS_STARTED, STATUS_STOPPED, STATUS_ERROR_STARTING, STATUS_ERROR_STOPPING, \
     STATUS_TERMINATED, STATUS_UNKNOWN, SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS
 
 
@@ -233,8 +233,10 @@ def operation_service_agent(agent, operation):
         # connect to docker api / check existing connection
         if docker_client.get_client_agent_docker() is not None:
             if operation == OPERATION_START:
-                docker_client.start_container(agent['container_id'])
-                agent['status'] = STATUS_STARTED
+                if docker_client.start_container(agent['container_id']):
+                    agent['status'] = STATUS_STARTED
+                else:
+                    agent['status'] = STATUS_ERROR_STARTING
 
                 if config.dic['NETWORK_COMPSs'] != "not-defined":
                     docker_client.add_container_to_network(agent['container_id'])
@@ -253,11 +255,14 @@ def operation_service_agent(agent, operation):
                     docker_client.stop_container(agent['container_id'])
                     LOG.debug("LIFECYCLE: Docker adapter: operation_service_agent: Stopping 'Docker-compose down' container [" + l_elem['container_2'] + "] ...")
                     docker_client.stop_container(l_elem['container_2'])
+                    agent['status'] = STATUS_STOPPED
                 # 'normal' container
                 else:
                     LOG.debug("LIFECYCLE: Docker adapter: operation_service_agent: Stop container: " + agent['container_id'])
-                    docker_client.stop_container(agent['container_id'])
-                agent['status'] = STATUS_STOPPED
+                    if docker_client.stop_container(agent['container_id']):
+                        agent['status'] = STATUS_STOPPED
+                    else:
+                        agent['status'] = STATUS_ERROR_STOPPING
 
             elif operation == OPERATION_TERMINATE:
                 l_elem = db.get_elem_from_list(agent['container_id'])

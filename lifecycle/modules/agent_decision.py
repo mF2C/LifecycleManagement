@@ -19,28 +19,8 @@ from common.logs import LOG
 from common.common import SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS, SERVICE_KUBERNETES, SERVICE_DOCKER_SWARM
 
 
-'''
-OUTPUT FROM LANDSCAPER/RECOMMENDER:
-"list of hosts ordered by ‘max optimization’ descending (at the moment optimizing by cpu usage)"
- [
-  {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
-   'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'machine-A',
-   'compute utilization': 0.0, 'disk utilization': 0.0},
-  {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
-   'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'machine-B',
-   'compute utilization': 0.0, 'disk utilization': 0.0},
-  {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
-   'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': '192.168.252.41',
-   'compute utilization': 0.0, 'disk utilization': 0.0},
-  {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
-   'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'tango-docker',
-   'compute utilization': 0.0, 'disk utilization': 0.0}
- ]
-    
- ==> [{"agent_ip": "192.168.252.41"}, {"agent_ip": "192.168.252.42"}]
-'''
-
-
+###############################################################################
+# LANDSCAPER / RECOMMENDER
 # get_available_agents_list: Gets a list of available agents
 # IN: service
 # OUT: resources TODO!!
@@ -49,6 +29,26 @@ OUTPUT FROM LANDSCAPER/RECOMMENDER:
 #           "list_of_agents": ["192.168.252.7", "192.168.252.8", "192.168.252.9" ...],   // list urls / docker apis
 #           ...
 #       }
+#
+# OUTPUT FROM LANDSCAPER/RECOMMENDER:
+#
+# "list of hosts ordered by ‘max optimization’ descending (at the moment optimizing by cpu usage)"
+#  [
+#   {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
+#    'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'machine-A',
+#    'compute utilization': 0.0, 'disk utilization': 0.0},
+#   {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
+#    'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'machine-B',
+#    'compute utilization': 0.0, 'disk utilization': 0.0},
+#   {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
+#    'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': '192.168.252.41',
+#    'compute utilization': 0.0, 'disk utilization': 0.0},
+#   {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
+#    'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'tango-docker',
+#    'compute utilization': 0.0, 'disk utilization': 0.0}
+#  ]
+#
+# ==> [{"agent_ip": "192.168.252.41"}, {"agent_ip": "192.168.252.42"}]
 def get_available_agents_resources(service):
     try:
         LOG.debug("LIFECYCLE: agent_decision: get_available_agents_list ################")
@@ -80,63 +80,22 @@ def get_available_agents_resources(service):
                 LOG.debug("LIFECYCLE: agent_decision: get_available_agents_list: total=" + str(len(resources)))
                 return resources
     except:
-        LOG.error('LIFECYCLE: agent_decision: get_available_agents_list: Exception')
+        LOG.exception('LIFECYCLE: agent_decision: get_available_agents_list: Exception')
         return None
 
 
-# qos_providing: call to QoS PROVIDING
-def qos_providing(service_instance):
-    try:
-        LOG.debug("LIFECYCLE: agent_decision: qos_providing ############################")
-        LOG.debug("LIFECYCLE: agent_decision: qos_providing: " + str(service_instance))
-
-        service_instance_1 = mf2c.service_management_qos(service_instance)
-        LOG.debug("LIFECYCLE: agent_decision: qos_providing: service_instance_1: " + str(service_instance_1))
-        if service_instance_1 is not None:
-            try:
-                LOG.debug("LIFECYCLE: agent_decision: qos_providing: processing response...")
-                for agent1 in service_instance_1["agents"]:
-                    LOG.debug("LIFECYCLE: agent_decision: qos_providing: [agent1=" + str(agent1) + "]")
-                    if not agent1['allow']:
-                        LOG.debug("LIFECYCLE: agent_decision: qos_providing: [agent1.allow=FALSE]")
-                        for agent0 in service_instance["agents"]:
-                            if agent0['url'] == agent1['url']:
-                                agent0['allow'] = False
-                                LOG.debug("LIFECYCLE: agent_decision: qos_providing: [agent0=" + str(agent0) + "]")
-                    else:
-                        LOG.debug("LIFECYCLE: agent_decision: qos_providing: [agent1.allow=TRUE]")
-
-            except:
-                LOG.error('LIFECYCLE: agent_decision: qos_providing: Exception while processing response')
-
-        return True
-    except:
-        LOG.error('LIFECYCLE: agent_decision: qos_providing: Exception')
-        return False
-
-
-'''
- SERVICE INSTANCE:
-   {
-       ...
-       "id": "",
-       "user": "testuser",
-       "device_id": "",
-	   "device_ip": "",
-	   "parent_device_id": "",
-	   "parent_device_ip": "",
-       "service": "",
-       "agreement": "",
-       "status": "waiting",
-       "service_type": "swarm",
-       "agents": [
-           {"agent": resource-link, "url": "192.168.1.31", "ports": [8081], "container_id": "10asd673f", "status": "waiting",
-               "num_cpus": 3, "allow": true, "master_compss": true, "app_type": "swarm"},
-           {"agent": resource-link, "url": "192.168.1.34", "ports": [8081], "container_id": "99asd673f", "status": "waiting",
-               "num_cpus": 2, "allow": true, "master_compss": false, "app_type": "swarm"}
-      ]
-   }
-'''
+###############################################################################
+# USER MANAGEMENT
+#
+#  SERVICE INSTANCE:
+#    {
+#        ...
+#        "agents": [
+#            {"agent": resource-link, "url": "192.168.1.31", "ports": [8081], "container_id": "10asd673f", "status": "waiting",
+#                "num_cpus": 3, "allow": true, "master_compss": true, "app_type": "swarm"}, ...
+#       ]
+#    }
+#
 
 
 # check_user_profile:
@@ -208,29 +167,101 @@ def user_management(service_instance):
 
         return service_instance
     except:
-        LOG.error('LIFECYCLE: agent_decision: user_management: Exception')
+        LOG.exception('LIFECYCLE: agent_decision: user_management: Exception')
         return None
 
 
-# service_manager_qos_providing: call to QoS PROVIDING
-def service_manager_qos_providing(service_instance):
+###############################################################################
+## QOS PROVIDING
+#
+#  SERVICE INSTANCE:
+#    {
+#        ...
+#        "agents": [{"agent": resource-link, "url": "192.168.1.31", "ports": [8081], "container_id": "10asd673f", "status": "waiting",
+#                "num_cpus": 3, "allow": true, "master_compss": true, "app_type": "swarm"}, ...]
+#    }
+#
+# OUTPUT FROM LQoS PROVIDING:
+#   {
+#       ...
+#       "agents": [{'allow': False, 'url': '192.168.252.41'}, ...]
+#   }
+
+
+# check_qos:
+def check_qos(agent_resp):
+    if not agent_resp['allow']:
+        return True # TODO return False
+    return True
+
+
+# qos_providing: call to QoS PROVIDING
+def qos_providing(service_instance):
     try:
-        LOG.debug("LIFECYCLE: agent_decision: service_manager_qos_providing ############################")
-        LOG.debug("LIFECYCLE: agent_decision: service_manager_qos_providing: " + str(service_instance))
+        LOG.debug("LIFECYCLE: agent_decision: qos_providing ############################")
+        LOG.debug("LIFECYCLE: agent_decision: qos_providing: (1): " + str(service_instance))
 
-        service_instance_res = mf2c.service_management_qos(service_instance)
-        LOG.debug("LIFECYCLE: agent_decision: service_manager_qos_providing: service_instance_res: " + str(service_instance_res))
-        if service_instance_res is not None:
-            LOG.debug("LIFECYCLE: agent_decision: service_manager_qos_providing: processing response...")
+        service_instance_resp = mf2c.service_management_qos(service_instance)
+        LOG.debug("LIFECYCLE: agent_decision: qos_providing: service_instance_resp: " + str(service_instance_resp))
 
-            service_instance['agents'] = []
+        if service_instance_resp is not None:
+            try:
+                l_filtered_agents = []
+                LOG.debug("LIFECYCLE: agent_decision: qos_providing: processing response...")
+                for agent_resp in service_instance_resp["agents"]:
+                    for agent in service_instance["agents"]:
+                        if agent['url'] == agent_resp['url'] and check_qos(agent_resp):
+                            l_filtered_agents.append(agent)
+            except:
+                LOG.exception('LIFECYCLE: agent_decision: qos_providing: Exception while processing response')
+                return None
+            service_instance['agents'] = l_filtered_agents
 
-            for agent_res in service_instance_res["agents"]:
-                if agent_res['allow']:
-                    service_instance['agents'].append(agent_res)
+
+        #if service_instance_resp is not None:
+        #    try:
+        #        LOG.debug("LIFECYCLE: agent_decision: qos_providing: processing response...")
+        #        for agent_resp in service_instance_resp["agents"]:
+        #            LOG.debug("LIFECYCLE: agent_decision: qos_providing: [agent_resp=" + str(agent_resp) + "]")
+        #            if not agent_resp['allow']:
+        #                LOG.debug("LIFECYCLE: agent_decision: qos_providing: [agent_resp.allow=FALSE]")
+        #                for agent in service_instance["agents"]:
+        #                    if agent['url'] == agent_resp['url']:
+        #                        agent['allow'] = False
+        #                        LOG.debug("LIFECYCLE: agent_decision: qos_providing: [agent=" + str(agent) + "]")
+        #            else:
+        #                LOG.debug("LIFECYCLE: agent_decision: qos_providing: [agent1.allow=TRUE]")
+        #
+        #    except:
+        #        LOG.exception('LIFECYCLE: agent_decision: qos_providing: Exception while processing response')
+
+        LOG.debug("LIFECYCLE: agent_decision: qos_providing: (2): " + str(service_instance))
+        return service_instance
     except:
-        LOG.error('LIFECYCLE: agent_decision: service_manager_qos_providing: Exception')
-    return service_instance
+        LOG.exception('LIFECYCLE: agent_decision: qos_providing: Exception')
+        return None
+
+
+# TODO not used
+# service_manager_qos_providing: call to QoS PROVIDING
+# def service_manager_qos_providing(service_instance):
+#     try:
+#         LOG.debug("LIFECYCLE: agent_decision: service_manager_qos_providing ############################")
+#         LOG.debug("LIFECYCLE: agent_decision: service_manager_qos_providing: " + str(service_instance))
+#
+#         service_instance_res = mf2c.service_management_qos(service_instance)
+#         LOG.debug("LIFECYCLE: agent_decision: service_manager_qos_providing: service_instance_res: " + str(service_instance_res))
+#         if service_instance_res is not None:
+#             LOG.debug("LIFECYCLE: agent_decision: service_manager_qos_providing: processing response...")
+#
+#             service_instance['agents'] = []
+#
+#             for agent_res in service_instance_res["agents"]:
+#                 if agent_res['allow']:
+#                     service_instance['agents'].append(agent_res)
+#     except:
+#         LOG.exception('LIFECYCLE: agent_decision: service_manager_qos_providing: Exception')
+#     return service_instance
 
 
 # select_agents_list: Select from list of available agents
@@ -245,7 +276,9 @@ def select_agents(service_type, service_instance):
             LOG.debug("LIFECYCLE: agent_decision: select_agents: agents INITIAL list: " + str(service_instance['agents']))
 
             # 1. QoS PROVIDING
-            qos_providing(service_instance)
+            service_instance_res = qos_providing(service_instance)
+            if not service_instance_res is None:
+                service_instance = service_instance_res
 
             # 2. USER MANAGEMENT -> profiling and sharing model
             service_instance_res = user_management(service_instance)
@@ -274,5 +307,5 @@ def select_agents(service_type, service_instance):
 
             return service_instance
     except:
-        LOG.error('LIFECYCLE: agent_decision: select_agents: Exception')
+        LOG.exception('LIFECYCLE: agent_decision: select_agents: Exception')
         return None

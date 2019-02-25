@@ -274,6 +274,7 @@ def terminate(service_instance_id):
 # terminate_all
 def terminate_all():
     if data_adapter.del_all_service_instances():
+        # TODO stop and terminate containers
         return common.gen_response_ok('Terminate all services', 'result', 'True')
     else:
         return common.gen_response(500, 'Exception', 'result', 'False')

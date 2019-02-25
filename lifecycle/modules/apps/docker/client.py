@@ -44,7 +44,7 @@ def get_client_agent_docker():
         LOG.debug("LIFECYCLE: Docker client: Connected to DOCKER in [" + DOCKER_SOCKET + "]; version: " + str(client.version()))
         return client
     except:
-        LOG.error("LIFECYCLE: Docker client: get_client_agent_docker: Error when connecting to DOCKER API: " + DOCKER_SOCKET)
+        LOG.exception("LIFECYCLE: Docker client: get_client_agent_docker: Error when connecting to DOCKER API: " + DOCKER_SOCKET)
         return None
 
 
@@ -92,7 +92,7 @@ def create_docker_container(service_image, service_name, service_command, prts):
             LOG.error("LIFECYCLE: Docker adapter: create_docker_container: Could not connect to DOCKER API")
             return None
     except:
-        LOG.error("LIFECYCLE: Docker client: create_docker_container: Exception")
+        LOG.exception("LIFECYCLE: Docker client: create_docker_container: Exception")
         return None
 
 
@@ -139,7 +139,7 @@ def create_docker_compss_container(service_image, ip, prts, master=None):
             LOG.error("LIFECYCLE: Docker adapter: create_docker_compss_container: Could not connect to DOCKER API")
             return None
     except:
-        LOG.error("LIFECYCLE: Docker client: create_docker_compss_container: Exception")
+        LOG.exception("LIFECYCLE: Docker client: create_docker_compss_container: Exception")
         return None
 
 
@@ -178,7 +178,7 @@ def create_docker_compose_container(service_name, service_command):
             LOG.error("LIFECYCLE: Docker client: deploy_docker_compose: Could not connect to DOCKER API")
             return None
     except:
-        LOG.error("LIFECYCLE: Docker client: deploy_docker_compose: Exception")
+        LOG.exception("LIFECYCLE: Docker client: deploy_docker_compose: Exception")
         return None
 
 
@@ -187,8 +187,9 @@ def stop_container(id):
     try:
         lclient = get_client_agent_docker()
         lclient.stop(id)
+        return True
     except:
-        LOG.error("LIFECYCLE: Docker client: stop_container [" + id + "]: Exception")
+        LOG.exception("LIFECYCLE: Docker client: stop_container [" + id + "]: Exception")
         return False
 
 
@@ -197,8 +198,9 @@ def start_container(id):
     try:
         lclient = get_client_agent_docker()
         lclient.start(id)
+        return True
     except:
-        LOG.error("LIFECYCLE: Docker client: start_container [" + id + "]: Exception")
+        LOG.exception("LIFECYCLE: Docker client: start_container [" + id + "]: Exception")
         return False
 
 
@@ -208,7 +210,7 @@ def remove_container_by_id(id):
         lclient = get_client_agent_docker()
         lclient.remove_container(id, force=True)
     except:
-        LOG.error("LIFECYCLE: Docker client: remove_container_by_id [" + id + "]: Exception")
+        LOG.exception("LIFECYCLE: Docker client: remove_container_by_id [" + id + "]: Exception")
         return False
 
 
@@ -221,7 +223,7 @@ def remove_container(agent):
         for p in agent['ports']:
             pmngr.release_port(p)
     except:
-        LOG.error("LIFECYCLE: Docker client: remove_container [" + str(agent) + "]: Exception")
+        LOG.exception("LIFECYCLE: Docker client: remove_container [" + str(agent) + "]: Exception")
         return False
 
 
@@ -234,5 +236,5 @@ def add_container_to_network(id):
         LOG.debug("LIFECYCLE: Docker client: add_container_to_network: resp: " +
                   str(lclient.connect_container_to_network(id, config.dic['NETWORK_COMPSs'])))
     except:
-        LOG.error("LIFECYCLE: Docker client: add_container_to_network [" + id + "]: Exception")
+        LOG.exception("LIFECYCLE: Docker client: add_container_to_network [" + id + "]: Exception")
         return False
