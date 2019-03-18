@@ -48,6 +48,9 @@ REST API
                         PUT:    Starts / stops / restarts a service instance  //  starts a job in COMPSs
                         DELETE: terminates a service instance; deletes service instance (from cimi)
                         
+                /api/v2/lm/service-instances/<string:service_instance_id>/report
+                        GET:    get service instance report
+                        
                 /lm/service
                         POST:   Submits a service and gets a service instance (new version)
 
@@ -280,6 +283,38 @@ api.add_resource(ServiceInstance, '/api/v2/lm/service-instances/<string:service_
 
 
 #
+# Service instance route:
+#
+#     '/api/v2/lm/service-instances/<string:service_instance_id>/report'
+#
+#        GET:    get service instance report
+#
+class ServiceInstanceReport(Resource):
+    # GET: get service instance report
+    # GET /api/v2/lm/service-instance/<string:service_instance_id>/report
+    @swagger.operation(
+        summary="Returns the service instance operation report",
+        notes="Gets the service instance operation report",
+        produces=["application/json"],
+        authorizations=[],
+        parameters=[{
+                "name": "service_instance_id",
+                "description": "Service instance ID or 'all'.<br/>Example: <br/>b08ee389-36c0-45f0-8684-61baf6e03da8",
+                "required": True,
+                "paramType": "path",
+                "type": "string"
+            }],
+        responseMessages=[{
+                "code": 500,
+                "message": "Exception processing request"
+            }])
+    def get(self, service_instance_id):
+        return lm.getServiceInstanceReport(service_instance_id)
+
+api.add_resource(ServiceInstanceReport, '/api/v2/lm/service-instances/<string:service_instance_id>/report')
+
+
+#
 #  Service route (v2): submits a service ==> service instance is created
 #
 #    '/api/v2/lm/service'
@@ -352,19 +387,13 @@ api.add_resource(ServiceInstanceInt, '/api/v2/lm/service-instance-int')
 #
 class LmEvents(Resource):
     # POST: process warnings and notifications
-    # POST /api/v2/lm/service-instance/<string:service_instance_id>
+    # POST /api/v2/lm
     @swagger.operation(
         summary="Process warnings and notifications",
         notes="Process warnings and notifications from other components.",
         produces=["application/json"],
         authorizations=[],
         parameters=[{
-            "name": "service_instance_id",
-            "description": "Service instance ID",
-            "required": True,
-            "paramType": "path",
-            "type": "string"
-        }, {
             "name": "body",
             "description": "Parameters in JSON format.<br/>Example: <br/>"
                 "{\"type\":\"sla_notification/um_warning\", <br/>\"data\":{}}",
@@ -378,8 +407,8 @@ class LmEvents(Resource):
         }, {
             "code": 501, "message": "Operation not defined / implemented"
         }])
-    def post(self, service_instance_id):
-        return lm.postServiceInstanceEvent(request, service_instance_id)
+    def post(self):
+        return lm.postServiceInstanceEvent(request)
 
 
 api.add_resource(LmEvents, '/api/v2/lm')

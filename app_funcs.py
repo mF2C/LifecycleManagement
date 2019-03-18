@@ -77,7 +77,7 @@ def putAgentUMInfo(request):
 # getServiceInstance
 def getServiceInstance(service_instance_id):
     if service_instance_id == "all":
-        LOG.debug("LIFECYCLE: Lifecycle: get_all ")
+        LOG.debug("LIFECYCLE: REST API: getServiceInstance: get all ")
         try:
             obj_response_cimi = common.ResponseCIMI()
             service_instances = data_adapter.get_all_service_instances(obj_response_cimi)
@@ -87,10 +87,10 @@ def getServiceInstance(service_instance_id):
             else:
                 return common.gen_response(500, "Error in 'get_all' function", "Error_Msg", obj_response_cimi.msj)
         except:
-            LOG.error('LIFECYCLE: Lifecycle: get_all: Exception')
+            LOG.exception('LIFECYCLE: REST API: getServiceInstance: Exception')
             return common.gen_response(500, 'Exception', 'get_all', "-")
     else:
-        LOG.debug("LIFECYCLE: Lifecycle: get: " + service_instance_id)
+        LOG.debug("LIFECYCLE: REST API: getServiceInstance: " + service_instance_id)
         try:
             obj_response_cimi = common.ResponseCIMI()
             service_instance = data_adapter.get_service_instance(service_instance_id, obj_response_cimi)
@@ -100,22 +100,36 @@ def getServiceInstance(service_instance_id):
             else:
                 return common.gen_response(500, "Error in 'get' function", "service_instance_id", service_instance_id, "Error_Msg", obj_response_cimi.msj)
         except:
-            LOG.error('LIFECYCLE: Lifecycle: get: Exception')
+            LOG.exception('LIFECYCLE: REST API: getServiceInstance: Exception')
             return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
 
 
-# postServiceInstanceEvent
-def postServiceInstanceEvent(request, service_instance_id):
-    body = request.get_json()
+# getServiceInstanceReport
+def getServiceInstanceReport(service_instance_id):
+    LOG.debug("LIFECYCLE: REST API: getServiceInstanceReport: " + service_instance_id)
+    try:
+        service_instance = data_adapter.get_service_instance_report(service_instance_id)
 
+        if not service_instance is None and service_instance != -1:
+            return common.gen_response_ok('Service instance content', 'service_instance_id', service_instance_id, 'service_instance', service_instance)
+        else:
+            return common.gen_response(500, "Error in 'get' function", "service_instance_id", service_instance_id)
+    except:
+        LOG.exception('LIFECYCLE: REST API: getServiceInstanceReport: Exception')
+        return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
+
+
+# postServiceInstanceEvent
+def postServiceInstanceEvent(request):
+    body = request.get_json()
     if not body or 'type' not in body or 'data' not in body:
         LOG.error('LIFECYCLE: REST API: postServiceInstanceEvent: Exception - parameter not found: type / data')
         return Response(json.dumps({'error': True, 'message': 'parameter not found: type / data'}), status=406, content_type='application/json')
     else:
         if body['type'] == "sla_notification":
-            return handler_sla.handle_sla_notification(service_instance_id, body['data'])
+            return handler_sla.handle_sla_notification(body['data'])
         elif body['type'] == "um_warning":
-            return handler_um.handle_warning(service_instance_id, body['data'])
+            return handler_um.handle_warning(body['data'])
 
     LOG.error("LIFECYCLE: REST API: postServiceInstanceEvent: type [" + body['type'] + "] not defined / implemented")
     return Response(json.dumps({'error': True, 'message': 'type not defined / implemented'}), status=501, content_type='application/json')
@@ -230,5 +244,5 @@ def putServiceInt(request):
     elif data['operation'] == OPERATION_TERMINATE:
         return operations.terminate(data['agent'])
     else:
-        LOG.error('LIFECYCLE: REST API: put: operation not defined / implemented')
+        LOG.error('LIFECYCLE: REST API: putServiceInt: operation not defined / implemented')
         return Response(json.dumps({'error': True, 'message': 'operation not defined / implemented'}), status=501, content_type='application/json')

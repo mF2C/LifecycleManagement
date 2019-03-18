@@ -129,6 +129,12 @@ def get_service_instance(service_instance_id, obj_response_cimi=None):
     return cimi.get_service_instance_by_id(service_instance_id, obj_response_cimi)
 
 
+# get_service_instance: Get service instance
+def get_service_instance_report(service_instance_id):
+    LOG.debug("LIFECYCLE: Data: get_service_instance_report_by_id: " + service_instance_id)
+    return cimi.get_service_instance_report(service_instance_id)
+
+
 # get_all_service_instances: Get all service instances
 def get_all_service_instances(obj_response_cimi=None):
     LOG.debug("LIFECYCLE: Data: get_all_service_instances")
@@ -177,3 +183,14 @@ def update_service_instance(service_instance_id, service_instance):
         LOG.error("LIFECYCLE: Data: update_service_instance: Error during the edition of the service_instance object")
         return None
     return res
+
+
+###############################################################################
+
+
+# Get battery level
+def get_power():
+    # get 'my' device_id
+    device_id = get_current_device_id()
+    LOG.info("LIFECYCLE: Data: get_power: Getting power status from device [" + device_id + "] ...")
+    return cimi.get_power(device_id)

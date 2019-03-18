@@ -34,33 +34,30 @@ import time
 
 
 # thread
-def thr(service_instance_id, notification):
+def thr(notification):
     try:
-        LOG.debug("Lifecycle-Management: SLA Notifications Handler module: thr: service_instance_id: " + service_instance_id + " ...")
+        LOG.debug("LIFECYCLE: SLA Notifications Handler module: thr: Handling SLA violations [" + str(notification) + "] ...")
 
         # TODO
         #...
 
         time.sleep(10)
 
-        # TEST
-        LOG.debug("Lifecycle-Management: SLA Notifications Handler module: thr: " + service_instance_id +
-                   " notification: " + str(notification) + " DONE!")
+        LOG.debug("LIFECYCLE: SLA Notifications Handler module: thr: SLA violations handled")
     except:
-        LOG.error('Lifecycle-Management: SLA Notifications Handler module: thr: Exception')
+        LOG.error('LIFECYCLE: SLA Notifications Handler module: thr: Exception')
 
 
 # Handle SLA violations
-def handle_sla_notification(service_instance_id, notification):
+def handle_sla_notification(notification):
     try:
-        LOG.info("Lifecycle-Management: SLA Notifications Handler module: handle_sla_notification: service_instance_id: " +
-                 service_instance_id + ", notification: " + str(notification))
+        LOG.info("LIFECYCLE: SLA Notifications Handler module: handle_sla_notification: service_instance_id: notification: " + str(notification))
 
         # handle notification
-        t = threading.Thread(target=thr, args=(service_instance_id, notification,))
+        t = threading.Thread(target=thr, args=(notification,))
         t.start()
 
-        return common.gen_response_ok('SLA Notification has been processed', 'service_instance_id', service_instance_id, 'notification', notification)
+        return common.gen_response_ok('SLA Notification has been processed', 'notification', str(notification))
     except:
-        LOG.error('Lifecycle-Management: SLA Notifications Handler module: handle_sla_notification: Exception')
-        return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id, 'notification', notification)
+        LOG.error('LIFECYCLE: SLA Notifications Handler module: handle_sla_notification: Exception')
+        return common.gen_response(500, 'Exception', 'notification', str(notification))

@@ -87,6 +87,12 @@ def get_um_sharing_model():
 
 
 ###############################################################################
+# get_power: Get battery level
+def get_power():
+    return data_mf2c.get_power()
+
+
+###############################################################################
 # SERVICE
 # get_service: Get service
 def get_service(service_id):
@@ -95,22 +101,27 @@ def get_service(service_id):
 
 ###############################################################################
 # SERVICE INSTANCE
-# get_service_instance: Get service instance
+# get_service_instance: Gets the service instance
 def get_service_instance(service_instance_id, obj_response_cimi=None):
     return data_mf2c.get_service_instance(service_instance_id, obj_response_cimi)
 
 
-# get_all_service_instances: Get all service instances
+# get_service_instance_report: Gets the service instance report
+def get_service_instance_report(service_instance_id):
+    return data_mf2c.get_service_instance_report(service_instance_id)
+
+
+# get_all_service_instances: Gets all service instances
 def get_all_service_instances(obj_response_cimi=None):
     return data_mf2c.get_all_service_instances(obj_response_cimi)
 
 
-# del_service_instance: Delete service instance
+# del_service_instance: Deletes service instance
 def del_service_instance(service_instance_id, obj_response_cimi=None):
     return data_mf2c.del_service_instance(service_instance_id, obj_response_cimi)
 
 
-# del_all_service_instances: Delete all service instances
+# del_all_service_instances: Deletes all service instances
 def del_all_service_instances(obj_response_cimi=None):
     return data_mf2c.del_all_service_instances(obj_response_cimi)
 

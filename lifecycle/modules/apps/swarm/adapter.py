@@ -11,17 +11,15 @@ Created on 18 oct. 2018
 @author: Roi Sucasas - ATOS
 """
 
-import docker, uuid, sys, traceback, time
+import docker, uuid
 import common.common as common
 import lifecycle.modules.apps.ports_mngr as pmngr
 from flask import json
 import lifecycle.modules.apps.docker.client as docker_client
-import lifecycle.data.db as db
 from common.logs import LOG
 import config
 from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, \
-    STATUS_ERROR, STATUS_WAITING, STATUS_STARTED, STATUS_STOPPED, \
-    STATUS_TERMINATED, STATUS_UNKNOWN
+    STATUS_ERROR, STATUS_WAITING, STATUS_TERMINATED, STATUS_UNKNOWN
 
 
 '''
@@ -142,7 +140,7 @@ def create_ports_dict(ports):
 
         return l_ports
     except:
-        LOG.error("LIFECYCLE: Docker Swarm: create_ports_dict: Error during the ports dict creation: " + str(ports))
+        LOG.exception("LIFECYCLE: Docker Swarm: create_ports_dict: Error during the ports dict creation: " + str(ports))
         return {ports[0]:ports[0]}
 
 
@@ -159,14 +157,13 @@ def get_client_agent_docker():
                 LOG.debug("LIFECYCLE: Docker Swarm: Returning existing client [" + json.dumps(client) + "] ...")
                 return client
         except:
-            LOG.error("LIFECYCLE: Docker Swarm: docker client gave an error. Trying to reconnect to docker...")
+            LOG.exception("LIFECYCLE: Docker Swarm: docker client gave an error. Trying to reconnect to docker...")
 
         client = docker.APIClient(base_url=DOCKER_SOCKET)
         LOG.debug("LIFECYCLE: Docker Swarm: Connected to DOCKER in [" + DOCKER_SOCKET + "]; version: " + json.dumps(client.version()))
         return client
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error("LIFECYCLE: Docker Swarm: get_client_agent_docker: Error when connecting to DOCKER API: " + DOCKER_SOCKET)
+        LOG.exception("LIFECYCLE: Docker Swarm: get_client_agent_docker: Error when connecting to DOCKER API: " + DOCKER_SOCKET)
         return None
 
 
@@ -244,8 +241,7 @@ def create_docker_service(service_image, service_name, service_command, prts, re
             agent['status'] = STATUS_ERROR
             return common.gen_response(500, 'Error when connecting to DOCKER API', 'agent', str(agent), 'service', str(service))
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: Docker Swarm: create_docker_service: Exception')
+        LOG.exception('LIFECYCLE: Docker Swarm: create_docker_service: Exception')
         return common.gen_response(500, 'Exception: deploy_docker_image()', 'agent', str(agent), 'service', str(service))
 
 
@@ -267,8 +263,7 @@ def deploy_service_agent(service, agent):
         if not service is None and not service['num_agents'] is None:
             replicas = service['num_agents']
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: Docker Swarm: deploy_service_agent: Exception: replicas set to 1')
+        LOG.exception('LIFECYCLE: Docker Swarm: deploy_service_agent: Exception: replicas set to 1')
         replicas = 1
 
     create_docker_service(service_image, service_name, service_command, ports, replicas, service, agent)
@@ -320,8 +315,7 @@ def update_docker_service(service_id, service_image, service_name, replicas, ver
             LOG.error("LIFECYCLE: Docker Swarm: update_docker_service: Could not connect to DOCKER API")
             return None
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error("LIFECYCLE: Docker Swarm: update_docker_service: Exception")
+        LOG.exception("LIFECYCLE: Docker Swarm: update_docker_service: Exception")
         return None
 
 
@@ -343,8 +337,7 @@ def delete_docker_service(service_id):
             LOG.error("LIFECYCLE: Docker Swarm: delete_docker_service: Could not connect to DOCKER API")
             return None
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error("LIFECYCLE: Docker Swarm: delete_docker_service: Exception")
+        LOG.exception("LIFECYCLE: Docker Swarm: delete_docker_service: Exception")
         return None
 
 
@@ -371,8 +364,7 @@ def operation_service_agent(agent, operation):
         return agent['status']
     except:
         agent['status'] = STATUS_ERROR
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: Docker Swarm: operation_service_agent: Exception')
+        LOG.exception('LIFECYCLE: Docker Swarm: operation_service_agent: Exception')
         return STATUS_ERROR
 
 

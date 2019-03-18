@@ -28,39 +28,47 @@ import time
 #               "device_id": "",
 #               "user_profile": {},
 #               "sharing_model": {},
-#               "result": {'battery_limit_violation': true, 'max_apps_violation': true}
+#               "result": {'battery_limit_violation': true, 'max_apps_violation': true, 'resource_contributor_violation': true}
 #           }
 #   }
 
 
 # thread
-def thr(service_instance_id, warning):
+# warning = body['data']
+def thr(warning):
     try:
-        LOG.debug("Lifecycle-Management: UM Warnings Handler module: thr: service_instance_id: " + service_instance_id + " ...")
+        LOG.debug("LIFECYCLE: UM Warnings Handler module: thr: Handling UM notifications [" + str(warning) + "] ...")
 
-        # TODO
-        #...
+        # battery_limit_violation
+        if warning['result']['battery_limit_violation']:
+            LOG.warning("LIFECYCLE: UM Warnings Handler module: thr: battery_limit_violation")
+            # TODO
 
-        time.sleep(5)
+        # resource_contributor_violation
+        elif warning['result']['resource_contributor_violation']:
+            LOG.warning("LIFECYCLE: UM Warnings Handler module: thr: resource_contributor_violation")
+            # TODO
 
-        # TEST
-        LOG.debug("Lifecycle-Management: UM Warnings Handler module: thr: " + service_instance_id +
-                   " warning: " + str(warning) + " DONE!")
+        # max_apps_violation
+        elif warning['result']['max_apps_violation']:
+            LOG.warning("LIFECYCLE: UM Warnings Handler module: thr: max_apps_violation")
+            # TODO
+
+        LOG.debug("LIFECYCLE: UM Warnings Handler module: thr: UM Notification handled")
     except:
-        LOG.error('Lifecycle-Management: UM Warnings Handler module: thr: Exception')
+        LOG.exception('LIFECYCLE: UM Warnings Handler module: thr: Exception')
 
 
 # Handle UM warnings
-def handle_warning(service_instance_id, warning):
+def handle_warning(warning):
     try:
-        LOG.info("Lifecycle-Management: UM Warnings Handler module: handle_warning: service_instance_id: " +
-                 service_instance_id + ", warning: " + str(warning))
+        LOG.info("LIFECYCLE: UM Warnings Handler module: handle_warning: warning: " + str(warning))
 
         # handle notification
-        t = threading.Thread(target=thr, args=(service_instance_id, warning,))
+        t = threading.Thread(target=thr, args=(warning,))
         t.start()
 
-        return common.gen_response_ok('UM Warning is being processed...', 'service_instance_id', service_instance_id, 'warning', warning)
+        return common.gen_response_ok('UM Warning is being processed...', 'warning', str(warning))
     except:
-        LOG.error('Lifecycle-Management: UM Warnings Handler module: handle_warning: Exception')
-        return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id, 'warning', warning)
+        LOG.exception('LIFECYCLE: UM Warnings Handler module: handle_warning: Exception')
+        return common.gen_response(500, 'Exception', 'warning', str(warning))

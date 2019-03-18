@@ -12,7 +12,6 @@ Created on 09 feb. 2018
 """
 
 import requests
-import sys, traceback
 from common.logs import LOG
 import common
 from common.common import STATUS_STARTED
@@ -131,7 +130,7 @@ def find_master(service_instance):
                 LOG.debug("Lifecycle-Management: common: find_master: agent: " + str(agent))
                 return agent
     except:
-        LOG.error("Lifecycle-Management: common: find_master: Exception")
+        LOG.exception("Lifecycle-Management: common: find_master: Exception")
 
     LOG.warning("Lifecycle-Management: common: find_master: return service_instance['agents'][0]: " + str(service_instance['agents'][0]))
     return service_instance['agents'][0]
@@ -175,7 +174,7 @@ def gen_resource(url, ports):
               "</resource>"
         return xml
     except:
-        LOG.error('Lifecycle-Management: COMPSs adapter: gen_resource: Exception')
+        LOG.exception('Lifecycle-Management: COMPSs adapter: gen_resource: Exception')
         return False
 
 
@@ -201,8 +200,7 @@ def start_job(service_instance_id, agent, parameters):
         LOG.debug("Lifecycle-Management: COMPSs adapter: start_job: [res=" + str(res) + "]")
         return True
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('Lifecycle-Management: COMPSs adapter: start_job: Exception')
+        LOG.exception('Lifecycle-Management: COMPSs adapter: start_job: Exception')
         return False
 
 
@@ -237,6 +235,5 @@ def start_job_in_agents(service_instance, parameters):
         LOG.debug("Lifecycle-Management: COMPSs adapter: start_job_in_agents: [res=" + str(res) + "]")
         return True
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('Lifecycle-Management: COMPSs adapter: start_job_in_agents: Exception')
+        LOG.exception('Lifecycle-Management: COMPSs adapter: start_job_in_agents: Exception')
         return False

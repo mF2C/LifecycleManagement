@@ -22,6 +22,8 @@ from common.logs import LOG
 RSRC_SERVICE_INSTANCE = "service-instance"
 # SERVICE CIMI RESOURCE
 RSRC_SERVICE = "service"
+# RSRC_SERVICE_INSTANCE_REPORT CIMI RESOURCE
+RSRC_SERVICE_INSTANCE_REPORT = "service-operation-report"
 
 # ACL
 ACL = {"owner":
@@ -239,6 +241,24 @@ def get_service_instance_by_id(id, obj_response_cimi=None):
         return None
 
 
+# get_service_instance_report: get service instance report
+def get_service_instance_report(id):
+    try:
+        LOG.debug("LIFECYCLE: cimi: get_service_instance_report: Getting service instance report from [" + id + "] ... ")
+
+        res = requests.get(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE_REPORT + '/' + id, headers=CIMI_HEADER, verify=False)
+        if res.status_code == 200:
+            return res.json()
+
+        LOG.error("LIFECYCLE: cimi: get_service_instance_report: Request failed: " + res.status_code)
+        LOG.error("LIFECYCLE: cimi: get_service_instance_report: Response: " + str(res.json()))
+        return None
+    except:
+        traceback.print_exc(file=sys.stdout)
+        LOG.error('LIFECYCLE: cimi: get_service_instance_report: Exception')
+        return None
+
+
 # get_all_service_instances: get all service instances
 def get_all_service_instances(obj_response_cimi=None):
     try:
@@ -354,4 +374,19 @@ def update_service_instance(resource_id, content):
         return None
 
 
+# get_power
+def get_power(device_id):
+    try:
+        device_id = device_id.replace('device/', '')
+        res = requests.get(config.dic['CIMI_URL'] + "/device-dynamic?$filter=device/href='device/" + device_id + "'",
+                           headers=CIMI_HEADER,
+                           verify=False)
 
+        if res.status_code == 200 and res.json()['count'] > 0:
+            return res.json()['deviceDynamics'][0]
+        else:
+            LOG.warning("LIFECYCLE: cimi: 'device-dynamic' not found [device_id=" + device_id + "]")
+            return -1
+    except:
+        LOG.exception('LIFECYCLE: cimi: get_power: Exception')
+        return None
