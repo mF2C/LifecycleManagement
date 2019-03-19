@@ -216,7 +216,12 @@ def forward_submit_request_to_leader(service, user_id, agreement_id, service_ins
     if leader_ip is not None and mf2c.lifecycle_parent_deploy(leader_ip, service['id'], user_id, agreement_id, service_instance_id):
         return common.gen_response_ok('Request forwarded to Leader. Service deployment operation is being processed...', 'service_instance', service_instance)
     else:
-        return common.gen_response(500, 'Error when forwarding request to Leader!', 'service_instance', str(service_instance))
+        # TODO delete service_instance
+
+        # send error
+        return common.gen_response(500, 'Error when forwarding request to Leader!',
+                                   'service_instance', service_instance,
+                                   "Actions:", "1) Service instance deleted, 2) Request not completed")
 
 
 # submit_service_in_agents: Submits a service (no access to external docker APIs; calls to other agent's lifecycle components)
