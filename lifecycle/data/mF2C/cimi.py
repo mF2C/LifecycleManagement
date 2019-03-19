@@ -374,6 +374,8 @@ def update_service_instance(resource_id, content):
         return None
 
 
+###############################################################################
+
 # get_power
 def get_power(device_id):
     try:
@@ -389,4 +391,23 @@ def get_power(device_id):
             return -1
     except:
         LOG.exception('LIFECYCLE: cimi: get_power: Exception')
+        return None
+
+
+# TODO get this information from new RESOURCE: AGENT
+# get_parent
+def get_parent(device_id):
+    try:
+        device_id = device_id.replace('device/', '')
+        res = requests.get(config.dic['CIMI_URL'] + "/device-dynamic?$filter=myLeaderID/href='device/" + device_id + "'",
+                           headers=CIMI_HEADER,
+                           verify=False)
+
+        if res.status_code == 200:
+            return res.json()['deviceDynamics'][0]
+        else:
+            LOG.warning("USRMNGT: cimi: get_parent: 'device-dynamic' not found [device_id=" + device_id + "]")
+            return -1
+    except:
+        LOG.exception('USRMNGT: cimi: get_parent: Exception')
         return None

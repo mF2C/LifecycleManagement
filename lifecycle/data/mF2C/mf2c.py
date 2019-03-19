@@ -25,13 +25,16 @@ from common.logs import LOG
 
 # FORWARD REQUEST TO LEADER
 # lifecycle_deploy: call to parent's lifceycle; forwards a "submit service" request
-def lifecycle_parent_deploy(parent, service_id, user_id, agreement_id):
-    LOG.debug("LIFECYCLE: MF2C: lifecycle_parent_deploy: forward request to parent: " + str(parent) + ", service_id: " + str(service_id) +
-              ", user_id: " + str(user_id) + ", agreement_id: " + agreement_id)
+def lifecycle_parent_deploy(leader_ip, service_id, user_id, agreement_id, service_instance_id):
+    LOG.debug("LIFECYCLE: MF2C: lifecycle_parent_deploy: forward request to leader: " + leader_ip + ", service_id: " + str(service_id) +
+              ", user_id: " + str(user_id) + ", agreement_id: " + agreement_id + ", service_instance_id: " + service_instance_id)
     try:
-        LOG.info("LIFECYCLE: MF2C: lifecycle_parent_deploy: HTTP POST: http://" + parent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/service")
-        r = requests.post("http://" + parent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/service",
-                          json={"service_id": service_id, "user_id": user_id, "agreement_id": agreement_id},
+        LOG.info("LIFECYCLE: MF2C: lifecycle_parent_deploy: HTTP POST: http://" + leader_ip + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/service")
+        r = requests.post("http://" + leader_ip + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/service",
+                          json={"service_id": service_id,
+                                "user_id": user_id,
+                                "agreement_id": agreement_id,
+                                "service_instance_id": service_instance_id},
                           verify=config.dic['VERIFY_SSL'])
         LOG.debug("LIFECYCLE: MF2C: lifecycle_parent_deploy: response: " + str(r))
 

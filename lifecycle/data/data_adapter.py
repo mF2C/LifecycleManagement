@@ -85,6 +85,11 @@ def get_um_sharing_model():
 # def set_um_profile(apps=0):
 #     return data_mf2c.get_um_profile()
 
+###############################################################################
+# get_leader_ip: Get IP address from Leader
+def get_leader_ip():
+    return data_mf2c.get_leader_ip()
+
 
 ###############################################################################
 # get_power: Get battery level

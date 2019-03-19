@@ -202,6 +202,23 @@ def thr_submit_service_in_agents(service, service_instance, agreement_id):
         LOG.error("LIFECYCLE: Lifecycle_Deployment: thr_submit_service_in_agents: thr: Exception")
 
 
+# forward_submit_request_to_leader
+def forward_submit_request_to_leader(service, user_id, agreement_id, service_instance_id):
+    LOG.debug("LIFECYCLE: Lifecycle_Deployment: forward_submit_request_to_leader: " + str(service) +
+              ", user_id: " + user_id + ", agreement_id: " + agreement_id + ", service_instance_id: " + service_instance_id)
+
+    if not service_instance_id:
+        service_instance = data_adapter.create_service_instance(service, [], user_id, agreement_id)
+        service_instance_id = service_instance['id']
+
+    leader_ip = data_adapter.get_leader_ip()
+
+    if leader_ip is not None and mf2c.lifecycle_parent_deploy(leader_ip, service['id'], user_id, agreement_id, service_instance_id):
+        return common.gen_response_ok('Request forwarded to Leader. Service deployment operation is being processed...', 'service_instance', service_instance)
+    else:
+        return common.gen_response(500, 'Error when forwarding request to Leader!', 'service_instance', str(service_instance))
+
+
 # submit_service_in_agents: Submits a service (no access to external docker APIs; calls to other agent's lifecycle components)
 # IN: service, user_id, agreement_id, agents_list
 # OUT: service_instance
@@ -225,6 +242,11 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
         r = agent_decision.select_agents(service['exec_type'], service_instance)
         if not r is None:
             service_instance = r
+        elif len(r['agents']) == 0:
+            # error
+            LOG.warning("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: agents list is empty. Forwarding to Leader...")
+            # forward to parent
+            return forward_submit_request_to_leader(service, user_id, agreement_id, service_instance['id'])
 
         LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: service_instance: " + str(service_instance))
 
@@ -255,17 +277,17 @@ def submit(service, user_id, agreement_id):
         # Call to landscaper/recommender
         available_agents_list = agent_decision.get_available_agents_resources(service)
         if not available_agents_list:
-            # TODO forward to parent
+            # warning
+            LOG.error("LIFECYCLE: Lifecycle_Deployment: submit: available_agents_list is None. Forwarding to Leader...")
+            # forward to parent
+            return forward_submit_request_to_leader(service, user_id, agreement_id, "")
 
-            # error
-            LOG.error("LIFECYCLE: Lifecycle_Deployment: submit: available_agents_list is None")
-            return common.gen_response(500, 'available_agents_list is None', 'service', str(service))
         elif len(available_agents_list) == 0:
-            # TODO forward to parent
-
             # no resurces / agents found
-            LOG.error("LIFECYCLE: Lifecycle_Deployment: submit: available_agents_list is empty")
-            return common.gen_response(500, 'available_agents_list is empty', 'service', str(service))
+            LOG.warning("LIFECYCLE: Lifecycle_Deployment: submit: available_agents_list is empty. Forwarding to Leader...")
+            # forward to parent
+            return forward_submit_request_to_leader(service, user_id, agreement_id, "")
+
         else:
             # 3. Create new service instance & allocate service / call other agents when needed
             return submit_service_in_agents(service, user_id, agreement_id, available_agents_list)

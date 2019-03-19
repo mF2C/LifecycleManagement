@@ -178,6 +178,9 @@ def postService(request):
         LOG.error('LIFECYCLE: REST API: postService: Exception - parameter not found: service / service_id')
         return Response(json.dumps({'error': True, 'message': 'parameter not found: service /  service_id'}), status=406, content_type='application/json')
 
+    if 'service_instance_id' in data:
+        LOG.info("LIFECYCLE: REST API: postService: FORWARD REQUEST from child agent!")
+
     # check if user exists
     if not data_adapter.exist_user(data['user_id']):
         return common.gen_response(404, "Error", "user_id", data['user_id'], "message", "User ID not found")

@@ -73,46 +73,45 @@ def new_service_instance(service, agents_list, user_id, agreement_id):
     return new_service_instance
 
 
-def new_service_instance_old(service, agents_list, user_id, agreement_id):
-    LOG.debug("LIFECYCLE: Data: Service Instance: new_service_instance: " + str(service) + ", " + str(agents_list) + ", " + str(user_id) + ", " + str(agreement_id))
-
-    # create list of agents
-    list_of_agents = []
-
-    # ports:
-    ports_l = []
-    try:
-        ports_l = service['exec_ports']
-    except:
-        LOG.warning("LIFECYCLE: Data: Service Instance: new_service_instance: No ports values found in service definition")
-
-    # AGENTs:
-    i = 0
-    for agent in agents_list:
-        if len(agents_list) == 1 or i == 0:
-            master_compss = True
-        else:
-            master_compss = False
-        # Add new AGENT to list
-        list_of_agents.append({"agent":         {"href": "agent/default-value"},
-                               "ports":         ports_l,
-                               "url":           agent['agent_ip'],
-                               "status":        STATUS_CREATED_NOT_INITIALIZED,
-                               "num_cpus":      1,
-                               "allow":         True,
-                               "container_id":  "-",
-                               "master_compss": master_compss,  # TODO master_compss is not needed anymore
-                               "agent_param":   "not-defined"})
-        i += 1
+# new_empty_service_instance: Creates a new service instance object without agents
+def new_empty_service_instance(service, user_id, agreement_id):
+    LOG.debug("LIFECYCLE: Data: Service Instance: new_empty_service_instance: " + str(service) + ", " + str(user_id) + ", " + str(agreement_id))
 
     # SERVICE_INSTANCE:
     new_service_instance = {"service":          service['id'],
                             "agreement":        agreement_id,
                             "user":             user_id,
-                            "agents":           list_of_agents,
+                            "device_id":        "not-defined",
+                            "device_ip":        "not-defined",
+                            "parent_device_id": "not-defined",
+                            "parent_device_ip": "not-defined",
+                            "agents":           [],
+                            "service_type":     service['exec_type'],
                             "status":           STATUS_CREATED_NOT_INITIALIZED}
 
-    LOG.debug("LIFECYCLE: Data: Service Instance: new_service_instance: create_service_instance: adding service_intance to CIMI ...")
-    LOG.debug("LIFECYCLE: Data: Service Instance: new_service_instance: create_service_instance: " + str(new_service_instance))
+    LOG.debug("LIFECYCLE: Data: Service Instance: new_empty_service_instance: create_service_instance: adding service_intance to CIMI ...")
+    LOG.debug("LIFECYCLE: Data: Service Instance: new_empty_service_instance: create_service_instance: " + str(new_service_instance))
+
+    return new_service_instance
+
+
+# add_agents_to_empty_service_instance: Adds a list of agents to the service instance
+def add_agents_to_empty_service_instance(service, user_id, agreement_id, agents_list):
+    LOG.debug("LIFECYCLE: Data: Service Instance: add_agents_to_empty_service_instance: " + str(service) + ", " + str(user_id) + ", " + str(agreement_id))
+
+    # SERVICE_INSTANCE:
+    new_service_instance = {"service":          service['id'],
+                            "agreement":        agreement_id,
+                            "user":             user_id,
+                            "device_id":        "not-defined",
+                            "device_ip":        "not-defined",
+                            "parent_device_id": "not-defined",
+                            "parent_device_ip": "not-defined",
+                            "agents":           [],
+                            "service_type":     service['exec_type'],
+                            "status":           STATUS_CREATED_NOT_INITIALIZED}
+
+    LOG.debug("LIFECYCLE: Data: Service Instance: add_agents_to_empty_service_instance: create_service_instance: adding service_intance to CIMI ...")
+    LOG.debug("LIFECYCLE: Data: Service Instance: add_agents_to_empty_service_instance: create_service_instance: " + str(new_service_instance))
 
     return new_service_instance

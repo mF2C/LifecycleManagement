@@ -163,7 +163,10 @@ def del_all_service_instances(obj_response_cimi=None):
 def create_service_instance(service, agents_list, user_id, agreement_id):
     LOG.debug("LIFECYCLE: Data: create_service_instance: " + str(service) + ", " + str(agents_list) + ", " + str(user_id) + ", " + str(agreement_id))
 
-    new_service_instance = service_instance.new_service_instance(service, agents_list, user_id, agreement_id)
+    if len(agents_list) == 0:
+        new_service_instance = service_instance.new_empty_service_instance(service, user_id, agreement_id)
+    else:
+        new_service_instance = service_instance.new_service_instance(service, agents_list, user_id, agreement_id)
 
     res = cimi.add_service_instance(new_service_instance)
 
@@ -194,3 +197,22 @@ def get_power():
     device_id = get_current_device_id()
     LOG.info("LIFECYCLE: Data: get_power: Getting power status from device [" + device_id + "] ...")
     return cimi.get_power(device_id)
+
+
+# Get parent
+def get_parent():
+    # get 'my' device_id
+    device_id = get_current_device_id()
+    LOG.info("LIFECYCLE: Data: get_parent: Getting LEADER ID from device [" + device_id + "] ...")
+    return cimi.get_parent(device_id)
+
+
+# Get leader ip address
+def get_leader_ip():
+    parent = get_parent()
+    if parent is not None and parent != -1:
+        LOG.info("LIFECYCLE: Data: get_parent: LEADER IP from current device = " + parent['ethernetAddress'])
+        return parent['ethernetAddress']
+    else:
+        LOG.error("LIFECYCLE: Data: get_parent: Error retrieving LEADER IP from device ...")
+        return None
