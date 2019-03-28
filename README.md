@@ -1,5 +1,5 @@
 # LifecycleManagement
-Platform Controller - Lifecycle Management module
+Platform Controller - Lifecycle Management module (microagent version)
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
@@ -31,6 +31,8 @@ The Lifecycle Management component is responsible for managing the lifecycle of 
 This includes the initialization, the submission and the termination of these applications, among other operations.
 
 The Lifecycle Manager can deploy services in agents with Docker, Docker Swarm and Kubernetes. Services deployed in Docker engines can be normal docker images or _docker-compose_ files.
+
+This version is specific for mF2C microagents, and some of the funcionalities of the LM have been removed or disabled.
 
 -----------------------
 
