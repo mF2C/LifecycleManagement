@@ -7,47 +7,39 @@ Service definition:
 ```json
 {
 		"id": "service/9fbfd7cd-4154-450e-aeab-7a6b84153206",
-		"name": "app_compss_test",
-		"description": "app-compss Service",
-		"exec": "mf2c/compss-test:latest",
-		"resourceURI": "/app-compss",
-		"category": {
-			"cpu": "low",
-			"memory": "low",
-			"storage": "low",
-			"inclinometer": false,
-			"temperature": false,
-			"jammer": false,
-			"location": false,
-			"accelerometer": false,
-			"humidity": false,
-			"battery_level": false,
-			"door_sensor": false,
-			"pump_sensor": false,
-			"air_pressure": false,
-			"ir_motion": false
-		},
+		"name": "compss-test",
+		"description": "compss app",
 		"exec_type": "compss",
 		"exec_ports": [
 			46100,
 			46101,
 			46102,
 			46103
-		]
+		],
+		"num_agents": 2,
+		"os": "linux",
+		"disk": 100,
+		"category": 0,
+		"agent_type": "normal",
+		"cpu_arch": "x86-64",
+		"memory_min": 1000,
+		"storage_min": 100,
+		"req_resource": [],
+		"opt_resource": []
 	}
 ```
 
 --------------------------------------------------------------------------
 
-### Launch Lifecycle Management module (STANDALONE MODE)
+### Launch mF2C Agent in a device
 
 ```bash
-sudo docker run --env CIMI_URL=https://cimi_url/api --env STANDALONE_MODE=True --env CIMI_USER="user" --env --env HOST_IP="192.168.111.111" --env WORKING_DIR_VOLUME=/home/atos/mF2C/compose_examples -v /var/run/docker.sock:/var/run/docker.sock -v /home/user/mF2C/compose_examples:/home/user/mF2C/compose_examples -p 46000:46000 mf2c/lifecycle
+sudo docker-compose -p mf2c up
 ```
 
-Application URL: https://192.168.111.111:46000/api/v1/lifecycle.html
+Lifecycle URL: https://_HOST_:46000/api/v2/lm.html
 
-The lifecycle offers a Swagger UI that allows anyone to visualize and interact with the API’s resources without having any of the implementation logic in place.
+The Lifecycle offers a Swagger UI that allows anyone to visualize and interact with the API’s resources without having any of the implementation logic in place.
 
 ### Download docker images
 
@@ -95,7 +87,7 @@ In order to submit (and start) a service, use the following method:
 REQUEST:
 
 ```
-POST /api/v1/lifecycle
+POST /api/v2/lm/service
 ```
 
 REQUEST BODY:
@@ -104,20 +96,17 @@ When working with other components of the mF2C platform, the request body should
 
 ```json
 {
-	"service_id": "service/c6aeb25c-ab2f-4207-8304-1eaf8ebcda6e",
-	"user_id": "rsucasas",
-	"agreement_id": "ea0d7739-4d65-4d38-b42b-aa2704ccd598",
-	"operation": "not-defined",
+	"service_id": "service/6d1ba52b-4ce7-4333-914f-e434ddeeb591",
+	"user_id": "user/testuser1",
+	"agreement_id": "agreement/a7a30e2b-2ba1-4370-a1d4-af85c30d8713",
 	"agents_list": [{
-			"agent_ip": "192.168.252.41",
-			"num_cpus": 7,
-			"master_compss": true
+			"agent_ip": "192.168.252.41"
 		}
 	]
 }
 ```
 
-If the service id is not included in the request body, then this body requires a `service` object. Apart from that the `user` (user_id) that launches this service, and the list of `agents` (agents_list) where this service will be deployed, are also needed. For COMPSs applications the service definition has to include the following properties:
+If the `service id` is not included in the request body, then this body requires a `service` object. Apart from that, the `user` (user_id) that launches this service, and the `agreement_id` are also needed. As an alternative you can specify the list of `agents` (agents_list) where this service will be deployed. For COMPSs applications the service definition has to include the following properties:
 
   - `exec` _mf2c/compss-agent:latest_ or any other docker COMPSs image from a public docker hub
   - `exec_type`_compss_
@@ -127,27 +116,28 @@ Or
 ```json
 {
 	"service": {
-		"id": "app_compss_test_01",
-		"name": "app-compss-0001",
-		"description": "app-compss Service",
-		"resourceURI": "/app-compss",
-		"exec": "mf2c/compss-test:latest",
+		"name": "compss-test",
+		"description": "compss app",
 		"exec_type": "compss",
-		"exec_ports": [46100],
-		"category": {
-			"cpu": "low",
-			"memory": "low",
-			"storage": "low",
-			"inclinometer": false,
-			"temperature": false,
-			"jammer": false,
-			"location": false
-		}
+		"exec_ports": [
+			46100,
+			46101,
+			46102,
+			46103
+		],
+		"num_agents": 2,
+		"os": "linux",
+		"disk": 100,
+		"category": 0,
+		"agent_type": "normal",
+		"cpu_arch": "x86-64",
+		"memory_min": 1000,
+		"storage_min": 100,
+		"req_resource": [],
+		"opt_resource": []
 	},
-	"service_id": "app_compss_test_01",
-	"user_id": "user",
-	"agreement_id": "not-defined",
-	"operation": "not-defined",
+	"user_id": "user/testuser1",
+	"agreement_id": "agreement/a7a30e2b-2ba1-4370-a1d4-af85c30d8713",
 	"agents_list": [
 		{"agent_ip": "192.168.252.41", "num_cpus": 4}, {"agent_ip": "192.168.252.42", "num_cpus": 4}]
 }
@@ -227,6 +217,8 @@ If deployment was successful, the response includes the id of the new service in
 }
 ```
 
+Service instance ID is needed for the following steps: `2f6da0d0-e1e9-44fb-b03f-4259ce55a8f7`
+
 --------------------------------------------------------------------------
 
 ### 3. Start a job in COMPSs
@@ -236,14 +228,13 @@ To start a job in COMPSs (1 master, 1 worker)...
 REQUEST:
 
 ```
-PUT /api/v1/lifecycle
+PUT /api/v2/service-instance/2f6da0d0-e1e9-44fb-b03f-4259ce55a8f7
 ```
 
 REQUEST BODY:
 
 ```json
 {
-	"service_instance_id":"b2b05670-36bc-40a1-bdc4-57132be91cbe",
 	"operation":"start-job",
 	"parameters":"<ceiClass>es.bsc.compss.test.TestItf</ceiClass><className>es.bsc.compss.test.Test</className><methodName>main</methodName><parameters><params paramId='0'><direction>IN</direction><type>OBJECT_T</type><array paramId='0'><componentClassname>java.lang.String</componentClassname><values><element paramId='0'><className>java.lang.String</className><value xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:xs='http://www.w3.org/2001/XMLSchema' xsi:type='xs:string'>3</value></element></values></array></params></parameters>"
 }
@@ -350,14 +341,13 @@ The following method stops the service.
 REQUEST:
 
 ```
-PUT /api/v1/lifecycle
+PUT /api/v2/service-instance/2f6da0d0-e1e9-44fb-b03f-4259ce55a8f7
 ```
 
 REQUEST BODY:
 
 ```json
-{"service_instance_id":"2f6da0d0-e1e9-44fb-b03f-4259ce55a8f7",
-"operation":"stop"}
+{"operation":"stop"}
 ```
 
 RESPONSE:
@@ -380,13 +370,8 @@ After stopping the service, the service instance can be terminated and removed f
 REQUEST:
 
 ```
-DELETE /api/v1/lifecycle
+DELETE /api/v2/service-instance/2f6da0d0-e1e9-44fb-b03f-4259ce55a8f7
 ```
-
-REQUEST BODY:
-
-```json
-{"service_instance_id":"2f6da0d0-e1e9-44fb-b03f-4259ce55a8f7"}
 
 RESPONSE:
 
@@ -408,7 +393,7 @@ After stopping the service, the service instance should be removed from `cimi`.
 REQUEST:
 
 ```
-GET /api/v1/lifecycle/service-instance/all
+GET /api/v2/service-instance/all
 ```
 
 RESPONSE:
