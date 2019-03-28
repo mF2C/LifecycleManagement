@@ -120,7 +120,7 @@ sudo docker run -p 46000:46000 lm-app
 1. Start the Lifecycle Management module with access to the docker socket ('-v /var/run/docker.sock:/var/run/docker.sock')
 
 ```bash
-sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:46000 mf2c/lifecycle
+sudo docker run -v /var/run/docker.sock:/var/run/docker.sock -p 46000:46000 mf2c/lifecycle
 ```
   - Available environment variables:
     - **STANDALONE_MODE** `False` if working in an agent with other mF2C components; `True` if working without external dependencies (except docker)
@@ -137,6 +137,14 @@ sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:4600
     - **K8S_NAMESPACE**
     - **DOCKER_SOCKET**
     - **DOCKER_SWARM**
+
+Example:
+
+```bash
+sudo docker run -v /var/run/docker.sock:/var/run/docker.sock --env HOST_IP=192.192.192.192 -p 46000:46000 mf2c/lifecycle
+```
+
+2. Methods exposed by the REST API
 
   - List of methods:
     - **/api/v2**
@@ -162,15 +170,15 @@ sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:4600
 
 
 
-2. After launching the Lifecycle Management module, the REST API services can be accessed at port 46000:
+3. After launching the Lifecycle Management module, the REST API services can be accessed at port 46000:
     - List of services (json): _https://localhost:46000/api/v2/lm
     - List of services (swagger ui): _https://localhost:46000/api/v2/lm.html_
 
-3. View the following examples:
+4. View the following examples:
    - [COMPSs application](resources/LifecycleExample_01.md): Complete lifecycle of a service based on COMPSs
    - [GitLab application](resources/LifecycleExample_02.md): Deployment of a service based on a docker-compose file
 
-4. See also the user guide that can be found in https://github.com/mF2C/Documentation/blob/master/documentation/user_guide/api.rst
+5. See also the user guide that can be found in https://github.com/mF2C/Documentation/blob/master/documentation/user_guide/api.rst
 
 -----------------------
 
