@@ -138,6 +138,30 @@ sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:4600
     - **DOCKER_SOCKET**
     - **DOCKER_SWARM**
 
+  - List of methods:
+    - **/api/v2**
+      - GET _get rest api service status_
+    - **/api/v2/lm**
+      - POST _QoS Enforcement / UM notifications_
+    - **/api/v2/lm/agent-config**
+      - GET _get agent's lifecycle configuration: docker, docker-swarm, kubernetes, ..._
+    - **/api/v2/lm/agent-um**
+      - GET _get agent's current user-profile and sharing-model (from 'local' User Management module)_
+      - PUT _updates user-profile current number of applications running_
+    - **/api/v2/lm/service-instance/<string:service_instance_id>**
+      - GET _get service instance / all service instances (from cimi)_
+      - PUT _Starts / stops / restarts a service instance  //  starts a job in COMPSs_
+      - DELETE _terminates a service instance; deletes service instance (from cimi)_
+    - **/api/v2/lm/service-instances/<string:service_instance_id>/report**
+      - GET _get service instance report_
+    - **/api/v2/lm/service**
+      - POST _Submits a service and gets a service instance (new version)_
+    - **/api/v2/lm/service-instance-int** (_internal calls_)
+      - POST _Submits a service in a mF2C agent_
+      - PUT _starts / stops ... a service in a mF2C agent; start-job_
+
+
+
 2. After launching the Lifecycle Management module, the REST API services can be accessed at port 46000:
     - List of services (json): _https://localhost:46000/api/v2/lm
     - List of services (swagger ui): _https://localhost:46000/api/v2/lm.html_
@@ -199,7 +223,7 @@ The **Lifecycle** Management module is connected with the following mF2C compone
 }
 ```
 
-Service launched in a set of mF2C agents. **SERVICE**'s properties:
+**Service_instance**'s properties:
 - **user** : user that launches the service
 - **device_id** : device that launches the service
 - **device_ip** : device's IP address
@@ -207,15 +231,14 @@ Service launched in a set of mF2C agents. **SERVICE**'s properties:
 - **agreement** : agreement identifier
 - **status** : status of the service
 - **service_type** : type of service: docker, docker-compose, docker-swarm, kubernetes
-
-Agents that are running this service. **AGENT**'s properties:
-- **url** : agent IP address
-- **status** : status of the container or docker swarm service
-- **ports** : ports used / exposed by the container or docker swarm service
-- **container_id** : id from docker container or docker swarm service
-- **allow** : agent is allowed to deploy the container / service (set by the _service manager_ component)
-- **master_compss** : true if this agent is master (COMPSs)
-- **app_type** : type of service: docker, docker-compose, docker-swarm, kubernetes
+- Agents that are running this service:
+  - **url** : agent IP address
+  - **status** : status of the container or docker swarm service
+  - **ports** : ports used / exposed by the container or docker swarm service
+  - **container_id** : id from docker container or docker swarm service
+  - **allow** : agent is allowed to deploy the container / service (set by the _service manager_ component)
+  - **master_compss** : true if this agent is master (COMPSs)
+  - **app_type** : type of service: docker, docker-compose, docker-swarm, kubernetes
 
 -----------------------
 
