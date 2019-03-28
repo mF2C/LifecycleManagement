@@ -53,12 +53,14 @@ This component can be installed as a standalone component, or as part of mF2C. T
 **Dockerfile** content:
 
 ```
-FROM python:3.4-alpine
-ADD . /code
+FROM armhf/python:3.4-alpine
+
+ADD ./Lifecycle/ /code
 WORKDIR /code
 RUN pip install -r requirements.txt
 EXPOSE 46000
 CMD ["python", "app.py"]
+
 ```
 
 To install as part of mF2C see **mF2C/mF2C** [repository](https://github.com/mF2C/mF2C)
