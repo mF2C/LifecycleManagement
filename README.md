@@ -102,13 +102,13 @@ cd LifecycleManagement
 3. Build application:
 
 ```bash
-sudo docker build -t lm-app .
+sudo docker build -t lm-arm .
 ```
 
 4. Run application and expose port `46000`:
 
 ```bash
-sudo docker run -p 46000:46000 lm-app
+sudo docker run -p 46000:46000 lm-arm
 ```
 
 <p style="color:red; font-weight: bold">NOTE: Read next section to see how to properly start the component.</p>
@@ -120,7 +120,7 @@ sudo docker run -p 46000:46000 lm-app
 1. Start the Lifecycle Management module with access to the docker socket ('-v /var/run/docker.sock:/var/run/docker.sock')
 
 ```bash
-sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:46000 mf2c/lifecycle
+sudo docker run -v /var/run/docker.sock:/var/run/docker.sock -p 46000:46000 lm-arm
 ```
   - Available environment variables:
     - **STANDALONE_MODE** `False` if working in an agent with other mF2C components; `True` if working without external dependencies (except docker)

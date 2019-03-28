@@ -22,8 +22,8 @@ from flask import Response, json
 # getAgentConfig
 def getAgentConfig():
     data = {
-        'app': "Lifecycle Management REST API",
-        'name': "Lifecycle Management REST API",
+        'app': "(micro)Lifecycle Management REST API",
+        'name': "(micro)Lifecycle Management REST API",
         'version': config.dic['VERSION'],
         'host': config.dic['HOST_IP'],
         'device-identifier': 'not-defined',
@@ -31,15 +31,7 @@ def getAgentConfig():
         'user-identifier': 'not-defined',
         'properties': {
             'swarm-master': config.dic['DOCKER_SWARM'],
-            'k8s-master': config.dic['K8S_MASTER'],
-            'cimi-url': config.dic['CIMI_URL'],
-            'mf2c': {
-                'LIFECYCLE MANAGER': config.dic['URL_PM_LIFECYCLE'],
-                'USER MANAGEMENT MODULE': config.dic['URL_AC_USER_MANAGEMENT'],
-                'RECOMENDER_LANDSCAPER': config.dic['URL_PM_RECOM_LANDSCAPER'],
-                'SERVICE MANAGER': config.dic['URL_AC_SERVICE_MNGMT'],
-                'SLA MANAGER': config.dic['URL_PM_SLA_MANAGER']
-            }
+            'k8s-master': config.dic['K8S_MASTER']
         }
     }
     resp = Response(json.dumps(data), status=200, mimetype='application/json')
@@ -58,19 +50,19 @@ def postServiceInt(request):
 # putServiceInt
 def putServiceInt(request):
     data = request.get_json()
-    if 'operation' not in data or 'agent' not in data:
-        LOG.error('LIFECYCLE: REST API: putServiceInt: Exception - parameter not found: agent / operation')
-        return Response(json.dumps({'error': True, 'message': 'parameter not found: agent / operation'}), status=406, content_type='application/json')
+    if 'service' not in data or 'operation' not in data or 'agent' not in data:
+        LOG.error('LIFECYCLE: REST API: putServiceInt: Exception - parameter not found: service / agent / operation')
+        return Response(json.dumps({'error': True, 'message': 'parameter not found: service / agent / operation'}), status=406, content_type='application/json')
 
     # operations
     if data['operation'] == OPERATION_START:
-        return operations.start(data['agent'])
+        return operations.start(data['service'], data['agent'])
     elif data['operation'] == OPERATION_STOP:
-        return operations.stop(data['agent'])
+        return operations.stop(data['service'], data['agent'])
     elif data['operation'] == OPERATION_RESTART:
-        return operations.start(data['agent'])
+        return operations.start(data['service'], data['agent'])
     elif data['operation'] == OPERATION_TERMINATE:
-        return operations.terminate(data['agent'])
+        return operations.terminate(data['service'], data['agent'])
     else:
         LOG.error('LIFECYCLE: REST API: putServiceInt: operation not defined / implemented')
         return Response(json.dumps({'error': True, 'message': 'operation not defined / implemented'}), status=501, content_type='application/json')

@@ -117,11 +117,53 @@ api.add_resource(InstanceConfig, '/api/v2/lm/agent-config')
 class ServiceInstanceInt(Resource):
     # POST: Submits a service in an agent
     # POST /api/v2/lm/service-instance-int
+    @swagger.operation(summary="Submits a <b>service</b> in an (micro)agent</b>",
+                       notes="Submits a service and returns a json with the content of the agent<br/>"
+                            "<b>'exec_type'</b>='docker' ... deploy a docker image<br/>"
+                            "<b>'exec_type'</b>='docker-compose' ... deploy a docker compose service<br/>"
+                            "<b>'exec_type'</b>='compss' ... deploy a docker COMPSs image<br/>",
+                       produces=["application/json"],
+                       authorizations=[],
+                       parameters=[{
+                            "name": "body", "description": "Parameters in JSON format.<br/>Service example: <br/>"
+                                                           "{<br/>"
+                                                           "\"service\": {},<br/>"
+                                                           "\"agent\": {}<br/>}",
+                            "required": True,
+                            "paramType": "body",
+                            "type": "string"
+                       }],
+                       responseMessages=[{
+                            "code": 406, "message": "'service' / 'agent' parameter not found"
+                        }, {
+                            "code": 500, "message": "Error processing request"
+                       }])
     def post(self):
         return lm.postServiceInt(request)
 
     # PUT: Starts / stops / restarts ... a service in an agent, and returns a JSON object with the result / status of the operation.
     # PUT /api/v2/lm/service-instance-int
+    @swagger.operation(summary="start, stop, restart a <b>service instance</b> // start a <b>job</b> in a (micro)agent",
+                       notes="Available operations:<br/>"
+                              "<b>'start / stop / restart / terminate'</b> ... service instance operations<br/>"
+                              "<b>'start-job'</b> ... starts a job<br/><br/>",
+                       produces=["application/json"],
+                       authorizations=[],
+                       parameters=[{
+                            "name": "body", "description": "Parameters in JSON format.<br/>Service example: <br/>"
+                                                           "{<br/>"
+                                                           "\"service\": {},<br/>"
+                                                           "\"agent\": {},<br/>}"
+                                                           "\"operation\": \"start\"<br/>}",
+                            "required": True,
+                            "paramType": "body",
+                            "type": "string"
+                       }],
+                       responseMessages=[{
+                            "code": 406, "message": "'service' / 'operation' parameter not found"
+                       }, {
+                            "code": 500, "message": "Error processing request"
+                       }])
     def put(self):
         return lm.putServiceInt(request)
 

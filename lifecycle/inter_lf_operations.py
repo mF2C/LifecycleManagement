@@ -25,33 +25,33 @@ def deploy(service, agent):
 
 
 # Service Operation: start
-def start(agent):
-    LOG.info("LIFECYCLE: Operations: start service: " + str(agent))
+def start(service, agent):
+    LOG.info("LIFECYCLE: Operations: start service: " + str(service) + ", agent: " + str(agent))
     try:
-        status = apps_adapter.start_service_agent(None, agent)
+        status = apps_adapter.start_service_agent(service, agent)
         return common.gen_response_ok('Start service', 'agent', str(agent), 'status', status)
     except:
-        LOG.error('LIFECYCLE: Operations: start: Exception')
+        LOG.exception('LIFECYCLE: Operations: start: Exception')
         return common.gen_response(500, 'Exception', 'agent', str(agent))
 
 
 # Service Operation: stop
-def stop(agent):
-    LOG.info("LIFECYCLE: Operations: stop: " + str(agent))
+def stop(service, agent):
+    LOG.info("LIFECYCLE: Operations: stop: " + str(service) + ", agent: " + str(agent))
     try:
-        status = apps_adapter.stop_service_agent(None, agent)
+        status = apps_adapter.stop_service_agent(service, agent)
         return common.gen_response_ok('Stop service', 'agent', str(agent), 'status', status)
     except:
-        LOG.error('LIFECYCLE: Operations: stop: Exception')
+        LOG.exception('LIFECYCLE: Operations: stop: Exception')
         return common.gen_response(500, 'Exception', 'agent', str(agent))
 
 
 # Service Operation: terminate
-def terminate(agent):
-    LOG.info("LIFECYCLE: Operations: terminate: " + str(agent))
+def terminate(service, agent):
+    LOG.info("LIFECYCLE: Operations: terminate: " + str(service) + ", agent: " + str(agent))
     try:
-        status = apps_adapter.terminate_service_agent(None, agent)
+        status = apps_adapter.terminate_service_agent(service, agent)
         return common.gen_response_ok('Terminate service', 'agent', str(agent), 'status', status)
     except:
-        LOG.error('LIFECYCLE: Operations: terminate: Exception')
+        LOG.exception('LIFECYCLE: Operations: terminate: Exception')
         return common.gen_response(500, 'Exception', 'agent', str(agent))
