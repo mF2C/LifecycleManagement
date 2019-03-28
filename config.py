@@ -13,7 +13,7 @@ Created on 18 oct. 2018
 
 #!/usr/bin/python
 
-dic = { "VERSION":                      "1.0.6",
+dic = { "VERSION":                      "1.0.7-arm",
 
         # SERVER - REST API:
         "SERVER_PORT":                  46000,
@@ -21,14 +21,11 @@ dic = { "VERSION":                      "1.0.6",
         "API_DOC_URL":                  "/api/v2/lm",
         "CERT_CRT":                     "cert/ia.crt",
         "CERT_KEY":                     "cert/ia.key",
-        "STANDALONE_MODE":              False,
 
         # DOCKER / SWARM / K8s:
         "DOCKER_SOCKET":                "unix://var/run/docker.sock",
         "DOCKER_SWARM":                 False,
         "K8S_MASTER":                   False,
-        "K8S_PROXY":                    "http://127.0.0.1:8001",
-        "K8S_NAMESPACE":                "default",
 
         # VERIFY_SSL controls whether we verify the server's TLS certificate or not
         "VERIFY_SSL":                   False,
@@ -49,10 +46,6 @@ dic = { "VERSION":                      "1.0.6",
         "DB_DOCKER_PORTS":              "./docker_ports_db",
 
         # URLs / ports from other mF2C components:
-        # PM-SLA MANAGER
-        "URL_PM_SLA_MANAGER":           "http://slalite:46030",
-        # AC-QoS PROVIDING
-        "URL_AC_SERVICE_MNGMT":         "http://service-manager:46200/api/service-management",
         # TIMEOUT ANALYTICS ENGINE
         "TIMEOUT_ANALYTICSENGINE":      25,
         # PORT_COMPSs
@@ -61,12 +54,4 @@ dic = { "VERSION":                      "1.0.6",
         "NETWORK_COMPSs":               "not-defined",
         # COMPSs - dataclay
         "DATACLAY_EP":                  "dataclay",
-        # URL_PM_RECOM_LANDSCAPER:
-        "URL_PM_RECOM_LANDSCAPER":      "http://analytics_engine:46020/mf2c",
-
-        # TODO fix/remove dependencies
-        # PM-Lifecycle: /api/v1/lifecycle/<string:service_id>
-        "URL_PM_LIFECYCLE":             "http://lm-um:46000/api/v2/lm",
-        # AC-USER MANAGEMENT
-        "URL_AC_USER_MANAGEMENT":       "http://lm-um:46300/api/v2/um"
 }

@@ -137,13 +137,13 @@ sudo docker run --env -v /var/run/docker.sock:/var/run/docker.sock -p 46000:4600
 
   2. Methods exposed by the REST API
 
-    - List of methods:
-      - **/api/v2**
-        - GET _get rest api service status_
-      - **/api/v2/lm/agent-config**
-        - GET _get agent's lifecycle configuration: docker, docker-swarm, kubernetes, ..._
-      - **/api/v2/lm/service-instance-int** (_internal calls_)
-        - POST _Submits a service in a mF2C agent_
+  - List of methods:
+    - **/api/v2**
+      - GET _get rest api service status_
+    - **/api/v2/lm/agent-config**
+      - GET _get agent's lifecycle configuration: docker, docker-swarm, kubernetes, ..._
+    - **/api/v2/lm/service-instance-int** (_internal calls_)
+      - POST _Submits a service in a mF2C agent_
         - PUT _starts / stops ... a service in a mF2C agent; start-job_
 
 3. After launching the Lifecycle Management module, the REST API services can be accessed at port 46000:
