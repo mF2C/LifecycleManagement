@@ -244,8 +244,12 @@ def get_service_instance_report(id):
         res = requests.get(config.dic['CIMI_URL'] + "/" + RSRC_SERVICE_INSTANCE_REPORT + "?$filter=requesting_application_id/href='service-instance/" + id + "'",
                            headers=CIMI_HEADER,
                            verify=False)
-        if res.status_code == 200:
-            return res.json()
+
+        if res.status_code == 200 and len(res.json()['serviceOperationReports']) > 0:
+            return res.json()['serviceOperationReports'][0]
+        elif res.status_code == 200:
+            LOG.warning("LIFECYCLE: cimi: get_service_instance_report: Report not found [service-instance=" + id + "]")
+            return {}
 
         LOG.error("LIFECYCLE: cimi: get_service_instance_report: Request failed: " + res.status_code)
         LOG.error("LIFECYCLE: cimi: get_service_instance_report: Response: " + str(res.json()))

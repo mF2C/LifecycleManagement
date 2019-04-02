@@ -126,6 +126,30 @@ def lifecycle_um_info(agent):
         return None
 
 
+# lifecycle_um_info: call to lifceycle from other agent in order to get sharing model and user profile
+def lifecycle_um_check_avialability(agent):
+    LOG.debug("LIFECYCLE: MF2C: lifecycle_um_check_avialability: " + str(agent))
+    try:
+        LOG.info("LIFECYCLE: MF2C: lifecycle_um_check_avialability: HTTP GET: http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/check-agent-um")
+        r = requests.get("http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/check-agent-um",
+                         verify=config.dic['VERIFY_SSL'])
+        LOG.debug("LIFECYCLE: MF2C: lifecycle_um_check_avialability: response:" + str(r))
+
+        json_data = json.loads(r.text)
+        agent_um = json_data['agent_um']
+        LOG.debug("LIFECYCLE: MF2C: lifecycle_um_check_avialability: agent_um: " + str(agent_um))
+
+        if r.status_code == 200:
+            LOG.debug('LIFECYCLE: MF2C: lifecycle_um_check_avialability: status_code=' +  str(r.status_code) + '; response: ' + str(json_data))
+            return ast.literal_eval(agent_um)
+
+        LOG.error('LIFECYCLE: MF2C: lifecycle_um_check_avialability: Error: status_code=' +  str(r.status_code))
+        return None
+    except:
+        LOG.exception('LIFECYCLE: MF2C: lifecycle_um_check_avialability: Exception')
+        return None
+
+
 ###############################################################################
 # USER MANAGEMENT
 #   Calls to local User Management
@@ -169,7 +193,7 @@ def user_management_check_avialability():
         json_data = json.loads(r.text)
         LOG.debug("LIFECYCLE: MF2C: user_management_check_avialability: response: " + str(r) + ", json_data: " + str(json_data))
 
-        if r.status_code == 200:
+        if r.status_code == 200 and not json_data['result'] is None:
             LOG.debug('LIFECYCLE: MF2C: user_management_check_avialability: status_code=' + str(r.status_code))
             return json_data
 

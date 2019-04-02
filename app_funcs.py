@@ -67,11 +67,22 @@ def getAgentUMInfo():
 
 # getCheckAgentUMInfo
 def getCheckAgentUMInfo():
-    check_agent_um = {
-        'device-id': 'not-defined',
-        'user-id': 'not-defined',
-        'check-um': data_adapter.get_check_um()
-    }
+    result = data_adapter.get_check_um()
+
+    if not result is None:
+        check_agent_um = {
+            'device-id': 'not-defined',
+            'user-id': 'not-defined',
+            'message': result['message'],
+            'result': result['result']
+        }
+    else:
+        check_agent_um = {
+            'device-id': 'not-defined',
+            'user-id': 'not-defined',
+            'message': 'not-defined',
+            'result': False
+        }
     resp = Response(json.dumps(check_agent_um), status=200, mimetype='application/json')
     return resp
 
@@ -120,10 +131,10 @@ def getServiceInstance(service_instance_id):
 def getServiceInstanceReport(service_instance_id):
     LOG.debug("LIFECYCLE: REST API: getServiceInstanceReport: " + service_instance_id)
     try:
-        service_instance = data_adapter.get_service_instance_report(service_instance_id)
+        service_instance_report = data_adapter.get_service_instance_report(service_instance_id)
 
-        if not service_instance is None and service_instance != -1:
-            return common.gen_response_ok('Service instance content', 'service_instance_id', service_instance_id, 'service_instance', service_instance)
+        if not service_instance_report is None and service_instance_report != -1:
+            return common.gen_response_ok('Service Operation Report content', 'service_instance_id', service_instance_id, 'report', service_instance_report)
         else:
             return common.gen_response(500, "Error in 'get' function", "service_instance_id", service_instance_id)
     except:
