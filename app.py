@@ -51,6 +51,9 @@ REST API
                         PUT:    Starts / stops / restarts a service instance  //  starts a job in COMPSs
                         DELETE: terminates a service instance; deletes service instance (from cimi)
                         
+                /lm/service-instance/<string:service_instance_id>/compss
+                        PUT:    starts a job in COMPSs
+                        
                 /api/v2/lm/service-instances/<string:service_instance_id>/report
                         GET:    get service instance report
                         
@@ -234,11 +237,9 @@ class ServiceInstance(Resource):
     #      start-job ... starts a job in COMPSs
     # PUT /api/v2/lm/service-instance/<string:service_instance_id>
     @swagger.operation(
-        summary="start, stop, restart a <b>service instance</b> // start a <b>job</b>",
+        summary="start, stop, restart a <b>service instance</b>",
         notes="Available operations:<br/>"
-              "<b>'start / stop / restart'</b> ... service instance operations<br/>"
-              "<b>'start-job'</b> ... starts a job<br/><br/>"
-              "Field 'parameters' is used only for starting a job in an agent.",
+              "<b>'start / stop / restart'</b> ... service instance operations<br/>",
         produces=["application/json"],
         authorizations=[],
         parameters=[{
@@ -249,32 +250,15 @@ class ServiceInstance(Resource):
                 "type": "string"
             }, {
             "name": "body",
-            "description": "Parameters in JSON format.<br/>Example 1: <br/>"
-                           "{<br/><font color='blue'>\"operation\":</font>\"start/restart/stop\"<br/>}"
-                           "<br/><br/>Example 2: <br/>"
-                           "{<br/><font color='blue'>\"operation\":</font>\"start-job\",<br/>"
-                           "<font color='blue'>\"parameters\":</font>\"&lt;ceiClass&gt;es.bsc.compss.test.TestItf&lt;/ceiClass&gt; "
-                           "  &lt;className&gt;es.bsc.compss.test.Test&lt;/className&gt;"
-                           "  &lt;methodName&gt;main&lt;/methodName&gt;"
-                           "  &lt;parameters&gt;"
-                           "    &lt;array paramId=\"0\"&gt;"
-                           "      &lt;componentClassname&gt;java.lang.String&lt;/componentClassname&gt;"
-                           "      &lt;values&gt;"
-                           "        &lt;element paramId=\"0\"&gt;"
-                           "          &lt;className&gt;java.lang.String&lt;/className&gt;"
-                           "          &lt;value xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
-                           "             xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"xs:string\"&gt;3&lt;/value&gt;"
-                           "        &lt;/element&gt;"
-                           "      &lt;/values&gt;"
-                           "    &lt;/array&gt;"
-                           "  &lt;/parameters&gt;\" <br/>}",
+            "description": "Parameters in JSON format.<br/>"
+                           "{<br/><font color='blue'>\"operation\":</font>\"start/restart/stop\"<br/>}",
             "required": True,
             "paramType": "body",
             "type": "string"
         }],
         responseMessages=[{
             "code": 406,
-            "message": "('service_instance_id' / 'operation' / 'parameters') Parameter not found"
+            "message": "('operation') Parameter not found"
         }, {
             "code": 500,
             "message": "Exception processing request"
@@ -308,6 +292,67 @@ class ServiceInstance(Resource):
         return lm.deleteServiceInstance(service_instance_id)
 
 api.add_resource(ServiceInstance, '/api/v2/lm/service-instances/<string:service_instance_id>')
+
+
+#
+# Service instance COMPSs route:
+#
+#                 /lm/service-instance/<string:service_instance_id>/compss
+#                        PUT:    starts a job in COMPSs
+#
+class ServiceInstanceCOMPSs(Resource):
+    # PUT: Starts / stops / restarts ... a service and returns a JSON object with the result / status of the operation.
+    #      start-job ... starts a job in COMPSs
+    # PUT /api/v2/lm/service-instance/<string:service_instance_id>
+    @swagger.operation(
+        summary="start a <b>COMPSs job</b>",
+        notes="Available operations:<br/>"
+             "<b>'start-job'</b> ... starts a job<br/><br/>"
+             "Field 'parameters' is used only for starting a job in an agent.",
+        produces=["application/json"],
+        authorizations=[],
+        parameters=[{
+            "name": "service_instance_id", "description": "Service instance ID or 'all'.<br/>Example: <br/>b08ee389-36c0-45f0-8684-61baf6e03da8",
+            "required": True,
+            "paramType": "path",
+            "type": "string"
+        }, {
+            "name": "body",
+            "description": "Parameters in JSON format.<br/>Example:<br/>"
+                           "{<br/><font color='blue'>\"operation\":</font>\"start-job\",<br/>"
+                           "<font color='blue'>\"ceiClass\":</font>\"es.bsc.compss.agent.test.TestItf\",<br/>"
+                           "<font color='blue'>\"className\":</font>\"es.bsc.compss.agent.test.Test\",<br/>"
+                           "<font color='blue'>\"hasResult\":</font>false,<br/>"
+                           "<font color='blue'>\"methodName\":</font>\"main\",<br/>"
+                           "<font color='blue'>\"parameters\":</font>\""
+                           "    &lt;params paramId=\"0\"&gt;"
+                           "      &lt;direction&gt;IN&lt;/direction&gt;"
+                           "      &lt;stream&gt;UNSPECIFIED&lt;/stream&gt;"
+                           "      &lt;type&gt;OBJECT_T&lt;/type&gt;"
+                           "      &lt;array paramId=\"0\"&gt;"
+                           "        &lt;componentClassname&gt;java.lang.String&lt;/componentClassname&gt;"           
+                           "        &lt;values&gt;"
+                           "          &lt;element paramId=\"0\"&gt;"
+                           "            &lt;className&gt;java.lang.String&lt;/className&gt;"
+                           "            &lt;value xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
+                           "                 xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"xs:string\"&gt;3&lt;/value&gt;"
+                           "          &lt;/element&gt;"
+                           "        &lt;/values&gt;"
+                           "      &lt;/array&gt;"
+                           "    &lt;/params&gt;\" <br/>}",
+            "required": True,
+            "paramType": "body",
+            "type": "string"
+        }], responseMessages=[{
+            "code": 406, "message": "('operation' / 'parameters') Parameter not found"
+        }, {
+            "code": 500, "message": "Exception processing request"
+        }])
+    def put(self, service_instance_id):
+        return lm.putServiceInstanceCOMPSs(request, service_instance_id)
+
+
+api.add_resource(ServiceInstanceCOMPSs, '/api/v2/lm/service-instances/<string:service_instance_id>/compss')
 
 
 #

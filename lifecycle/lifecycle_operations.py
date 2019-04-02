@@ -291,9 +291,9 @@ def start_job(body, service_instance_id):
 
         # start job in agent(s)
         if len(service_instance['agents']) == 1:
-            res = apps_adapter.start_job_compss(body['service_instance_id'], service_instance['agents'][0], body['parameters'])
+            res = apps_adapter.start_job_compss(service_instance_id, body, service_instance['agents'][0])
         elif len(service_instance['agents']) >= 2:
-            res = apps_adapter.start_job_compss_multiple_agents(service_instance, body['parameters'])
+            res = apps_adapter.start_job_compss_multiple_agents(service_instance, body)
         else:
             LOG.warning("LIFECYCLE: Lifecycle: start_job: Execution supported in only 1 or more agents! agents size=" + str(len(service_instance['agents'])))
             res = None

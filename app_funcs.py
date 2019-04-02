@@ -160,7 +160,7 @@ def postServiceInstanceEvent(request):
     return Response(json.dumps({'error': True, 'message': 'type not defined / implemented'}), status=501, content_type='application/json')
 
 
-#
+# putServiceInstance: start / stop a service instance
 def putServiceInstance(request, service_instance_id):
     data = request.get_json()
     if 'operation' not in data:
@@ -174,13 +174,27 @@ def putServiceInstance(request, service_instance_id):
         return lifecycle_ops.stop(service_instance_id)
     elif data['operation'] == OPERATION_RESTART:
         return lifecycle_ops.start(service_instance_id)
-    elif data['operation'] == OPERATION_START_JOB:
+    else:
+        LOG.error('LIFECYCLE: REST API: putServiceInstance: operation not defined / implemented')
+        return Response(json.dumps({'error': True, 'message': 'operation not defined / implemented'}), status=501, content_type='application/json')
+
+
+# putServiceInstanceCOMPSs: start a COMPSs job
+def putServiceInstanceCOMPSs(request, service_instance_id):
+    data = request.get_json()
+    if 'operation' not in data or 'ceiClass' not in data or 'className' not in data or 'hasResult' not in data or 'methodName' not in data or 'parameters' not in data:
+        LOG.error('LIFECYCLE: REST API: putServiceInstanceCOMPSs: Parameter not found: operation / ceiClass / className / hasResult / methodName / parameters')
+        return Response(json.dumps({'error': True, 'message': 'Parameter not found: operation / ceiClass / className / hasResult / methodName / parameters'}),
+                        status=406,
+                        content_type='application/json')
+    # operations
+    if data['operation'] == OPERATION_START_JOB:
         if 'parameters' not in data:
-            LOG.error('LIFECYCLE: REST API: putServiceInstance: Parameter not found: parameters')
+            LOG.error('LIFECYCLE: REST API: putServiceInstanceCOMPSs: Parameter not found: parameters')
             return Response(json.dumps({'error': True, 'message': 'parameter not found: parameters'}), status=406, content_type='application/json')
         return lifecycle_ops.start_job(data, service_instance_id)
     else:
-        LOG.error('LIFECYCLE: REST API: putServiceInstance: operation not defined / implemented')
+        LOG.error('LIFECYCLE: REST API: putServiceInstanceCOMPSs: operation not defined / implemented')
         return Response(json.dumps({'error': True, 'message': 'operation not defined / implemented'}), status=501, content_type='application/json')
 
 
