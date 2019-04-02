@@ -156,6 +156,29 @@ def user_management_set_um_properties(apps=0):
         return None
 
 
+# CHECK AVIALABILITY
+# user_management_check_avialability: call to local UM to check if it's possible to deploy a service
+def user_management_check_avialability():
+    LOG.debug("LIFECYCLE: MF2C: user_management_check_avialability: localhost - local UM ")
+    try:
+        LOG.debug("LIFECYCLE: MF2C: user_management_check_avialability: Checking avialability ...")
+        LOG.info("LIFECYCLE: MF2C: user_management_check_avialability: HTTP GET: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/check")
+        r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/check",
+                         verify=config.dic['VERIFY_SSL'])
+
+        json_data = json.loads(r.text)
+        LOG.debug("LIFECYCLE: MF2C: user_management_check_avialability: response: " + str(r) + ", json_data: " + str(json_data))
+
+        if r.status_code == 200:
+            LOG.debug('LIFECYCLE: MF2C: user_management_check_avialability: status_code=' + str(r.status_code))
+            return json_data
+
+        LOG.error('LIFECYCLE: MF2C: user_management_check_avialability: Error: status_code=' + str(r.status_code))
+    except:
+        LOG.exception('LIFECYCLE: MF2C: user_management_check_avialability: Exception')
+        return None
+
+
 ###############################################################################
 # Interactions with other mF2C components:
 

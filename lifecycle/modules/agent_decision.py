@@ -60,25 +60,25 @@ def get_available_agents_resources(service):
             return None
         else:
             # Call to ANALYTICS ENGINE (RECOMMENDER & LANDSCAPER)
-            # The Lifecycle Management module calls the Recommender in order to get the optimal deployment configuration
-            #   to run the service.
-            # Based on this optimal configuration returned by the Recommender, the Lifecycle module asks the Landscaper
-            #   for a list of resources that match this recommendation.
+            # The Lifecycle Management module calls the Recommender in order to get the optimal deployment configuration to run the service.
+            # Based on this optimal configuration returned by the Recommender, the Lifecycle module asks the Landscaper for a list of resources that match this recommendation.
             resources = mf2c.recommender_get_optimal_resources(service)
 
+            # TODO release version - uncomment
+            # if not resources:
+            #     LOG.debug("LIFECYCLE: agent_decision: get_available_agents_list: total=None")
+            # else:
+            #     LOG.debug("LIFECYCLE: agent_decision: get_available_agents_list: total=" + str(len(resources)))
+            # return resources
+
+            # TODO temporal version - until analytics engine works - remove
             # If no resources were found, then the Lifecycle Management forwards the request (submit a service) upwards
             if not resources or len(resources) == 0:
-                # forwards the request upwards
-                # TODO: not implemented
-                LOG.warning("LIFECYCLE: agent_decision: get_available_agents_list: forwards the request upwards: not implemented")
-
-                # TODO remove
+                LOG.warning("LIFECYCLE: agent_decision: get_available_agents_list: temporal fix")
                 LOG.warning("LIFECYCLE: agent_decision: get_available_agents_list: returning localhost")
                 return [{"agent_ip": config.dic['HOST_IP']}]
-
             else:
-                LOG.debug("LIFECYCLE: agent_decision: get_available_agents_list: total=" + str(len(resources)))
-                return resources
+                LOG.debug("LIFECYCLE: agent_decision: get_available_agents_list: total=" + str(len(resources)))  #    return resources
     except:
         LOG.exception('LIFECYCLE: agent_decision: get_available_agents_list: Exception')
         return None
@@ -96,7 +96,6 @@ def get_available_agents_resources(service):
 #       ]
 #    }
 #
-
 
 # check_user_profile:
 def check_user_profile(user_profiling):
@@ -252,10 +251,11 @@ def select_agents(service_type, service_instance):
 
             LOG.debug("LIFECYCLE: agent_decision: select_agents: agents FILTERED list: " + str(service_instance['agents']))
 
-            # compss (docker)
-            if service_type == SERVICE_COMPSS:
+            # compss (docker) ==> deploy in all agents
+            if service_type == SERVICE_COMPSS and len(service_instance['agents']) > 0:
                 LOG.debug("LIFECYCLE: agent_decision: select_agents: [SERVICE_COMPSS] service will be deployed in all selected agents")
-            else:
+            # other ==> deploy in one agent
+            elif len(service_instance['agents']) > 0:
                 list_of_agents = []
                 list_of_agents.append(service_instance['agents'][0])
                 LOG.debug("LIFECYCLE: agent_decision: select_agents: [" + service_type + "] first agent: " + str(list_of_agents))
@@ -269,7 +269,6 @@ def select_agents(service_type, service_instance):
                     LOG.warning("LIFECYCLE: agent_decision: select_agents: [" + service_type + "] not defined")
 
             LOG.debug("LIFECYCLE: agent_decision: select_agents: agents FINAL list: " + str(service_instance['agents']))
-
             return service_instance
     except:
         LOG.exception('LIFECYCLE: agent_decision: select_agents: Exception')

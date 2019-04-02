@@ -245,22 +245,23 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
         # 3. select from agents list
         LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Selecting agents ... ")
         r = agent_decision.select_agents(service['exec_type'], service_instance)
-        if not r is None:
-            service_instance = r
-        elif len(r['agents']) == 0:
-            # error
+
+        if r is None or len(r['agents']) == 0:
+            # error / warning
             LOG.warning("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: agents list is empty. Forwarding to Leader...")
+
             # forward to parent
             return forward_submit_request_to_leader(service, user_id, agreement_id, service_instance['id'])
+        else:
+            service_instance = r
+            LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: service_instance: " + str(service_instance))
 
-        LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: service_instance: " + str(service_instance))
+            # submit service thread
+            service_instance['status'] = STATUS_DEPLOYING
+            t = threading.Thread(target=thr_submit_service_in_agents, args=(service, service_instance, agreement_id,))
+            t.start()
 
-        # submit service thread
-        service_instance['status'] = STATUS_DEPLOYING
-        t = threading.Thread(target=thr_submit_service_in_agents, args=(service, service_instance, agreement_id,))
-        t.start()
-
-        return common.gen_response_ok('Service deployment operation is being processed...', 'service_instance', service_instance)
+            return common.gen_response_ok('Service deployment operation is being processed...', 'service_instance', service_instance)
     except:
         traceback.print_exc(file=sys.stdout)
         LOG.error('LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Exception')

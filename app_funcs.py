@@ -17,6 +17,7 @@ import lifecycle.lifecycle_operations as lifecycle_ops
 import lifecycle.lifecycle_deployment as lifecycle_depl
 import lifecycle.data.mF2C.handler_um as handler_um
 import lifecycle.data.mF2C.handler_sla as handler_sla
+import lifecycle.data.mF2C.handler_qos as handler_qos
 import lifecycle.inter_lf_operations as operations
 import lifecycle.data.data_adapter as data_adapter
 import common.common as common
@@ -61,6 +62,17 @@ def getAgentUMInfo():
         'sharing-model': data_adapter.get_um_sharing_model()
     }
     resp = Response(json.dumps(agent_um), status=200, mimetype='application/json')
+    return resp
+
+
+# getCheckAgentUMInfo
+def getCheckAgentUMInfo():
+    check_agent_um = {
+        'device-id': 'not-defined',
+        'user-id': 'not-defined',
+        'check-um': data_adapter.get_check_um()
+    }
+    resp = Response(json.dumps(check_agent_um), status=200, mimetype='application/json')
     return resp
 
 
@@ -130,6 +142,8 @@ def postServiceInstanceEvent(request):
             return handler_sla.handle_sla_notification(body['data'])
         elif body['type'] == "um_warning":
             return handler_um.handle_warning(body['data'])
+        elif body['type'] == "qos_enforcement":
+            return handler_qos.handle_qos_notification(body['data'])
 
     LOG.error("LIFECYCLE: REST API: postServiceInstanceEvent: type [" + body['type'] + "] not defined / implemented")
     return Response(json.dumps({'error': True, 'message': 'type not defined / implemented'}), status=501, content_type='application/json')

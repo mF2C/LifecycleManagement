@@ -171,14 +171,14 @@ sudo docker run -v /var/run/docker.sock:/var/run/docker.sock --env HOST_IP=192.1
 
 
 3. After launching the Lifecycle Management module, the REST API services can be accessed at port 46000:
-    - List of services (json): _https://localhost:46000/api/v2/lm
+    - List of services (json): _https://localhost:46000/api/v2/lm_
     - List of services (swagger ui): _https://localhost:46000/api/v2/lm.html_
 
 4. View the following examples:
    - [COMPSs application](resources/LifecycleExample_01.md): Complete lifecycle of a service based on COMPSs
    - [GitLab application](resources/LifecycleExample_02.md): Deployment of a service based on a docker-compose file
 
-5. See also the user guide that can be found in https://github.com/mF2C/Documentation/blob/master/documentation/user_guide/api.rst
+5. See also the user guide that can be found in _https://github.com/mF2C/Documentation/blob/master/documentation/user_guide/api.rst_
 
 -----------------------
 

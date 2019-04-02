@@ -13,7 +13,7 @@ Created on 09 feb. 2018
 
 
 import lifecycle.data.mF2C.data as data_mf2c
-#import lifecycle.data.mF2C.mf2c as mf2c
+import lifecycle.data.mF2C.mf2c as mf2c
 #import lifecycle.data.standalone.data as data_standalone
 
 
@@ -79,6 +79,11 @@ def get_um_profile():
 # get_um_sharing_model: Get sharing_model
 def get_um_sharing_model():
     return data_mf2c.get_um_sharing_model()
+
+
+# get_check_um: checks if device can run more apps - UP & SM policies
+def get_check_um():
+    return mf2c.user_management_check_avialability()
 
 
 # set_um_profile:

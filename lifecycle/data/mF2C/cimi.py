@@ -12,7 +12,6 @@ Created on 09 feb. 2018
 """
 
 import requests
-import sys, traceback
 import datetime
 import config
 from common.logs import LOG
@@ -129,7 +128,6 @@ def exist_user(user_id):
         if res.status_code == 200 and not res.json()['id'] is None:
             return True
     except:
-        traceback.print_exc(file=sys.stdout)
         LOG.warning("LIFECYCLE: cimi: exist_user: controlled exception")
     LOG.warning("LIFECYCLE: cimi: exist_user: 'user' not found / error getting user")
     return False
@@ -146,7 +144,6 @@ def exist_device(device_id):
         if res.status_code == 200 and not res.json()['id'] is None:
             return True
     except:
-        traceback.print_exc(file=sys.stdout)
         LOG.warning("LIFECYCLE: cimi: exist_user: controlled exception")
     LOG.warning("LIFECYCLE: cimi: exist_device: 'device' not found / error getting device")
     return False
@@ -218,8 +215,7 @@ def get_service_by_id(id):
         LOG.error("LIFECYCLE: cimi: get_service_by_id: Response: " + str(res.json()))
         return None
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: cimi: get_service_by_id: Exception')
+        LOG.exception('LIFECYCLE: cimi: get_service_by_id: Exception')
         return None
 
 
@@ -236,8 +232,7 @@ def get_service_instance_by_id(id, obj_response_cimi=None):
         LOG.error("LIFECYCLE: cimi: get_service_instance_by_id: Response: " + str(res.json()))
         return None
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: cimi: get_service_instance_by_id: Exception')
+        LOG.exception('LIFECYCLE: cimi: get_service_instance_by_id: Exception')
         return None
 
 
@@ -246,7 +241,9 @@ def get_service_instance_report(id):
     try:
         LOG.debug("LIFECYCLE: cimi: get_service_instance_report: Getting service instance report from [" + id + "] ... ")
 
-        res = requests.get(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE_REPORT + '/' + id, headers=CIMI_HEADER, verify=False)
+        res = requests.get(config.dic['CIMI_URL'] + "/" + RSRC_SERVICE_INSTANCE_REPORT + "?$filter=requesting_application_id/href='service-instance/" + id + "'",
+                           headers=CIMI_HEADER,
+                           verify=False)
         if res.status_code == 200:
             return res.json()
 
@@ -254,8 +251,7 @@ def get_service_instance_report(id):
         LOG.error("LIFECYCLE: cimi: get_service_instance_report: Response: " + str(res.json()))
         return None
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: cimi: get_service_instance_report: Exception')
+        LOG.exception('LIFECYCLE: cimi: get_service_instance_report: Exception')
         return None
 
 
@@ -272,8 +268,7 @@ def get_all_service_instances(obj_response_cimi=None):
         LOG.error("LIFECYCLE: cimi: get_all_service_instances: Response: " + str(res.json()))
         return None
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: cimi: get_all_service_instances: Exception')
+        LOG.exception('LIFECYCLE: cimi: get_all_service_instances: Exception')
         return None
 
 
@@ -289,8 +284,7 @@ def del_service_instance_by_id(resource_id, obj_response_cimi=None):
 
         return None
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: cimi: del_service_instance_by_id: Exception')
+        LOG.exception('LIFECYCLE: cimi: del_service_instance_by_id: Exception')
         return None
 
 
@@ -306,8 +300,7 @@ def del_all_service_instances(obj_response_cimi=None):
             requests.delete(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE + '/' + resource_id, headers=CIMI_HEADER, verify=False)
         return True
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: cimi: del_all_service_instances: Exception')
+        LOG.exception('LIFECYCLE: cimi: del_all_service_instances: Exception')
         return False
 
 
@@ -337,8 +330,7 @@ def add_service_instance(content):
         LOG.error("LIFECYCLE: cimi: add_service_instance: Response: " + str(res.json()))
         return None
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: cimi: add_service_instance: Exception while adding new resource to service instances!')
+        LOG.exception('LIFECYCLE: cimi: add_service_instance: Exception while adding new resource to service instances!')
         return None
 
 
@@ -369,8 +361,7 @@ def update_service_instance(resource_id, content):
         LOG.error("LIFECYCLE: cimi: update_service_instance: Response: " + str(res.json()))
         return None
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: cimi: update_service_instance: Exception')
+        LOG.exception('LIFECYCLE: cimi: update_service_instance: Exception')
         return None
 
 
@@ -403,11 +394,14 @@ def get_parent(device_id):
                            headers=CIMI_HEADER,
                            verify=False)
 
+        LOG.debug("LIFECYCLE: cimi: get_parent: [res=" + str(res) + "]")
+        LOG.debug("LIFECYCLE: cimi: get_parent: [res.json()=" + str(res.json()) + "]")
+
         if res.status_code == 200:
             return res.json()['deviceDynamics'][0]
         else:
-            LOG.warning("USRMNGT: cimi: get_parent: 'device-dynamic' not found [device_id=" + device_id + "]")
+            LOG.warning("LIFECYCLE: cimi: get_parent: 'device-dynamic' not found [device_id=" + device_id + "]")
             return -1
     except:
-        LOG.exception('USRMNGT: cimi: get_parent: Exception')
+        LOG.exception('LIFECYCLE: cimi: get_parent: Exception')
         return None

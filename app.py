@@ -34,10 +34,13 @@ REST API
                         GET:    get rest api service status
             Lifecycle:
                 /lm
-                        POST:   SLA / UM notifications
+                        POST:   SLA / UM / QoS notifications
                         
                 /lm/agent-config
-                        GET:    get agent's lifecycle configuration: docker, docker-swarm, kubernetes, ...        
+                        GET:    get agent's lifecycle configuration: docker, docker-swarm, kubernetes, ...  
+                        
+                /lm/check-agent-um
+                        GET:    checks if device can run more apps - UP & SM policies (from 'local' User Management module)      
                          
                 /lm/agent-um
                         GET:    get agent's current user-profile and sharing-model (from 'local' User Management module)
@@ -121,6 +124,31 @@ class InstanceConfig(Resource):
         return lm.getAgentConfig()
 
 api.add_resource(InstanceConfig, '/api/v2/lm/agent-config')
+
+
+#
+# Service instance route: status, service events handler
+#
+#    '/api/v2/lm/check-agent-um'
+#
+#         GET:    checks if device can run more apps - UP & SM policies (from 'local' User Management module)
+#
+class CheckAgentUM(Resource):
+    # GET /api/v2/lm/check-agent-um
+    @swagger.operation(
+        summary="checks if device can run more apps - UP & SM policies (from 'local' User Management module)",
+        notes="checks if device can run more apps - UP & SM policies (from 'local' User Management module)",
+        produces=["application/json"],
+        authorizations=[],
+        parameters=[],
+        responseMessages=[{
+            "code": 500,
+            "message": "Exception processing request"
+        }])
+    def get(self):
+        return lm.getCheckAgentUMInfo()
+
+api.add_resource(CheckAgentUM, '/api/v2/lm/check-agent-um')
 
 
 #
@@ -396,7 +424,7 @@ class LmEvents(Resource):
         parameters=[{
             "name": "body",
             "description": "Parameters in JSON format.<br/>Example: <br/>"
-                "{\"type\":\"sla_notification/um_warning\", <br/>\"data\":{}}",
+                "{\"type\":\"sla_notification / um_warning / qos_enforcement\", <br/>\"data\":{}}",
             "required": True,
             "paramType": "body",
             "type": "string"
