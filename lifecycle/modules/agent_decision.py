@@ -200,13 +200,14 @@ def qos_providing(service_instance):
 
 
 # select_agents_list: Select from list of available agents
-def select_agents(service_type, service_instance):
+#   the initial list of agents can be found in 'service_instance' object
+def select_agents(service_type, num_agents, service_instance):
     try:
         LOG.debug("LIFECYCLE: agent_decision: select_agents: [service_type=" + service_type + "], [agents=" + str(service_instance) + "]")
 
         if common.is_standalone_mode():
             LOG.warning("LIFECYCLE: agent_decision: select_agents: STANDALONE_MODE enabled")
-            return service_instance
+            return service_instance, "ok"
         else:
             LOG.debug("LIFECYCLE: agent_decision: select_agents: agents INITIAL list: " + str(service_instance['agents']))
 
@@ -223,9 +224,25 @@ def select_agents(service_type, service_instance):
             LOG.debug("LIFECYCLE: agent_decision: select_agents: agents FILTERED list: " + str(service_instance['agents']))
 
             # compss (docker) ==> deploy in all agents
-            if service_type == SERVICE_COMPSS and len(service_instance['agents']) > 0:
+            if service_type == SERVICE_COMPSS and len(service_instance['agents']) > 0 and num_agents == -1:
                 LOG.debug("LIFECYCLE: agent_decision: select_agents: [SERVICE_COMPSS] service will be deployed in all selected agents")
-            # other ==> deploy in one agent
+
+            # compss (docker) ==> deploy in 'num_agents'
+            if service_type == SERVICE_COMPSS and len(service_instance['agents']) > 0:
+                if len(service_instance['agents']) >= num_agents:
+                    LOG.debug("LIFECYCLE: agent_decision: select_agents: [SERVICE_COMPSS] service will be deployed in " + str(num_agents) + " agents")
+                    list_of_agents = []
+                    i = 0
+                    while i < len(service_instance['agents']):
+                        list_of_agents.append(service_instance['agents'][i])
+                        i += 1
+                    service_instance['agents'] = list_of_agents
+                else:
+                    LOG.warning("LIFECYCLE: agent_decision: select_agents: [SERVICE_COMPSS] service should be deployed in " + str(num_agents) +
+                                " agents, but only " + len(service_instance['agents']) + " are available")
+                    return service_instance, "not-enough-resources-found"
+
+            # other options ==> deploy in one agent
             elif len(service_instance['agents']) > 0:
                 list_of_agents = []
                 list_of_agents.append(service_instance['agents'][0])
@@ -240,7 +257,10 @@ def select_agents(service_type, service_instance):
                     LOG.warning("LIFECYCLE: agent_decision: select_agents: [" + service_type + "] not defined")
 
             LOG.debug("LIFECYCLE: agent_decision: select_agents: agents FINAL list: " + str(service_instance['agents']))
-            return service_instance
+
+            if len(service_instance['agents']) > 0:
+                return service_instance, "ok"
+            return service_instance, "not-enough-resources-found"
     except:
         LOG.exception('LIFECYCLE: agent_decision: select_agents: Exception')
-        return None
+        return None, "error"

@@ -243,15 +243,22 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
             return common.gen_response(500, 'error creating service_instance', 'service', str(service))
 
         # 3. select from agents list
+        num_agents = service['num_agents']
+        if not num_agents:
+            num_agents = -1
         LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Selecting agents ... ")
-        r = agent_decision.select_agents(service['exec_type'], service_instance)
+        r, m = agent_decision.select_agents(service['exec_type'], num_agents, service_instance)
 
-        if r is None or len(r['agents']) == 0:
-            # error / warning
-            LOG.warning("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: agents list is empty. Forwarding to Leader...")
-
+        if m == "error" or r is None:
+            LOG.error("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: error when selecting agents. Forwarding to Leader...")
             # forward to parent
             return forward_submit_request_to_leader(service, user_id, agreement_id, service_instance['id'])
+
+        elif m == "not-enough-resources-found" or len(r['agents']) == 0:
+            LOG.warning("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Not enough resources (number of agents) found. Forwarding to Leader...")
+            # forward to parent
+            return forward_submit_request_to_leader(service, user_id, agreement_id, service_instance['id'])
+
         else:
             service_instance = r
             LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: service_instance: " + str(service_instance))

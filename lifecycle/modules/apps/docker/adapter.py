@@ -14,7 +14,7 @@ Created on 09 feb. 2018
 import lifecycle.modules.apps.docker.client as docker_client
 import common.common as common
 import lifecycle.data.db as db
-import sys, traceback, uuid, os, time
+import uuid, os, time
 import urllib.request as urequest
 from lifecycle.data.db import SERVICE_INSTANCES_LIST
 from common.logs import LOG
@@ -83,8 +83,7 @@ def deploy_docker_image(service, agent):
             agent['status'] = STATUS_ERROR
             return common.gen_response(500, 'Error when connecting to DOCKER API', 'agent', str(agent), 'service', str(service))
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: Docker adapter: deploy_docker_image: Exception')
+        LOG.exception('LIFECYCLE: Docker adapter: deploy_docker_image: Exception')
         return common.gen_response(500, 'Exception: deploy_docker_image()', 'agent', str(agent), 'service', str(service))
 
 
@@ -125,8 +124,7 @@ def deploy_docker_compss(service, agent):
             agent['status'] = STATUS_ERROR
             return common.gen_response(500, 'Error when connecting to DOCKER API', 'agent', str(agent), 'service', str(service))
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: Docker adapter: deploy_docker_compss: Exception')
+        LOG.exception('LIFECYCLE: Docker adapter: deploy_docker_compss: Exception')
         return common.gen_response(500, 'Exception: deploy_docker_compss()', 'agent', str(agent), 'service', str(service))
 
 
@@ -150,7 +148,7 @@ def deploy_docker_compose(service, agent):
             res, _ = urequest.urlretrieve(location, config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
             LOG.debug("LIFECYCLE:  > download result: " + str(res))
         except:
-            LOG.error("LIFECYCLE:Error when downloading file to: " + config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
+            LOG.exception("LIFECYCLE:Error when downloading file to: " + config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
             return common.gen_response(500, "Exception: deploy_docker_compose(): Error when downloading file to WORKING_DIR_VOLUME",
                                        "agent", str(agent),
                                        "WORKING_DIR_VOLUME", config.dic['WORKING_DIR_VOLUME'])
@@ -193,8 +191,7 @@ def deploy_docker_compose(service, agent):
             return common.gen_response(500, 'Error when connecting to DOCKER API', 'agent', str(agent), 'service',
                                        str(service))
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: Docker adapter: deploy_docker_compose: Exception')
+        LOG.exception('LIFECYCLE: Docker adapter: deploy_docker_compose: Exception')
         return common.gen_response(500, 'Exception: deploy_docker_compose()', 'agent', str(agent), 'service', str(service))
 
 
@@ -219,8 +216,7 @@ def deploy_service_agent(service, agent):
             return common.gen_response(500, 'Exception: type not defined: deploy_service_agent()', 'agent', str(agent),
                                        'service', str(service))
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE:: Docker adapter: deploy_service_agent: Exception')
+        LOG.exception('LIFECYCLE:: Docker adapter: deploy_service_agent: Exception')
         return common.gen_response(500, 'Exception: deploy_service_agent()', 'agent', str(agent), 'service', str(service))
 
 
@@ -289,8 +285,7 @@ def operation_service_agent(agent, operation):
         return agent['status']
     except:
         agent['status'] = STATUS_ERROR
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: Docker adapter: operation_service_agent: Exception')
+        LOG.exception('LIFECYCLE: Docker adapter: operation_service_agent: Exception')
         return STATUS_ERROR
 
 

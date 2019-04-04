@@ -13,7 +13,6 @@ Created on 18 oct. 2018
 
 import config
 import common.common as common
-import sys, traceback
 import lifecycle.modules.apps.kubernetes.schemas as shemas
 from common.logs import LOG
 from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, STATUS_ERROR, STATUS_WAITING, STATUS_TERMINATED
@@ -84,8 +83,7 @@ def deploy_service(service, agent):
         agent['status'] = STATUS_WAITING
 
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('Lifecycle-Management: K8s adapter: deploy_service: Exception')
+        LOG.exception('Lifecycle-Management: K8s adapter: deploy_service: Exception')
         return common.gen_response(500, 'Exception: deploy_service()', 'agent', str(agent), 'service', str(service))
 
 
@@ -117,8 +115,7 @@ def operation_service(agent, operation):
         return agent['status']
     except:
         agent['status'] = STATUS_ERROR
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('Lifecycle-Management: K8s adapter: operation_service: Exception')
+        LOG.exception('Lifecycle-Management: K8s adapter: operation_service: Exception')
         return STATUS_ERROR
 
 
