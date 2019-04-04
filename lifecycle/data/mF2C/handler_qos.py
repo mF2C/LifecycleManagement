@@ -16,10 +16,12 @@ from common.logs import LOG
 import common.common as common
 import threading
 import time
+import lifecycle.modules.agent_decision as agent_decision
+import lifecycle.data.mF2C.data as data_mf2c
 
 
 ###############################################################################
-# SLA Notifications: handles warnings coming from User Management Assessment
+# QoS Notifications: handles qos enforcement notifications
 #   {
 #       "type": "qos_enforcement",
 #       "data"
@@ -27,19 +29,31 @@ import time
 #               "user_id": "",
 #               "device_id": "",
 #               "service_instance_id": "",
-#               "warning_id": "",
-#               "warning_txt": ""
+#               "message": "",
+#               "num_agents": ""
 #           }
 #   }
 
 
 # thread
+# notification = body['data']
 def thr(notification):
     try:
         LOG.debug("LIFECYCLE: QoS Notifications Handler module: thr: Handling QoS notifications [" + str(notification) + "] ...")
 
         # TODO
-        #...
+        # get notification values
+        service_instance_id = notification['service_instance_id']
+        service_instance = data_mf2c.get_service_instance(service_instance_id)
+        service = data_mf2c.get_service(service_instance['id'])
+
+        # Call to landscaper/recommender
+        available_agents_list = agent_decision.get_available_agents_resources(service)
+        if len(available_agents_list) > 0:
+            LOG.debug("LIFECYCLE: QoS Notifications Handler module: thr: Reconfiguring service instance")
+
+        else:
+            LOG.error("LIFECYCLE: QoS Notifications Handler module: thr: Handling QoS notifications: available_agents_list is None or is empty ")
 
         time.sleep(10)
 
