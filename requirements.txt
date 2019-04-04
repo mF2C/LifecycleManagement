@@ -33,11 +33,6 @@ docker==3.0.1
 #   BSD licence; http://www.pydblite.net/en/licence.html
 pydblite==3.0.4
 
-# wget
-#   https://bitbucket.org/techtonik/python-wget/src
-#   UNLICENSE; https://bitbucket.org/techtonik/python-wget/src/3001fd1b30aca7e5fe162c9193ccbb951dabb4ea/UNLICENSE
-wget==3.2
-
 # kubernetes
 #
 #
