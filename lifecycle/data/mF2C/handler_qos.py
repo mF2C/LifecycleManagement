@@ -18,6 +18,7 @@ import threading
 import time
 import lifecycle.modules.agent_decision as agent_decision
 import lifecycle.data.mF2C.data as data_mf2c
+import lifecycle.modules.apps.compss.adapter as compss_adpt
 
 
 ###############################################################################
@@ -46,16 +47,28 @@ def thr(notification):
         service_instance_id = notification['service_instance_id']
         service_instance = data_mf2c.get_service_instance(service_instance_id)
         service = data_mf2c.get_service(service_instance['id'])
+        new_num_agents = notification['num_agents']
 
-        # Call to landscaper/recommender
-        available_agents_list = agent_decision.get_available_agents_resources(service)
-        if len(available_agents_list) > 0:
-            LOG.debug("LIFECYCLE: QoS Notifications Handler module: thr: Reconfiguring service instance")
+        # ADD NEW RESOURCES TO COMPSs MASTER
+        if new_num_agents > len(service_instance['agents']):
+            LOG.debug("LIFECYCLE: QoS Notifications Handler module: thr: Reconfiguring service instance. Adding more resources to service instance (COMPSs) ...")
 
-        else:
-            LOG.error("LIFECYCLE: QoS Notifications Handler module: thr: Handling QoS notifications: available_agents_list is None or is empty ")
+            # Call to landscaper/recommender
+            available_agents_list = agent_decision.get_available_agents_resources(service)
+            if len(available_agents_list) > 0:
+                LOG.debug("LIFECYCLE: QoS Notifications Handler module: thr: Reconfiguring service instance. Checking available resources ...")
+                # TODO
+                # ...
+                compss_adpt.add_resources_to_job(service_instance)
+            else:
+                LOG.error("LIFECYCLE: QoS Notifications Handler module: thr: Handling QoS notifications: available_agents_list is None or is empty ")
 
-        time.sleep(10)
+        # REMOVE RESOURCES FROM COMPSs MASTER
+        elif new_num_agents < len(service_instance['agents']):
+            LOG.debug("LIFECYCLE: QoS Notifications Handler module: thr: Reconfiguring service instance. Removing resources from service instance (COMPSs) ...")
+            # TODO
+            # ...
+            compss_adpt.rem_resources_from_job(service_instance)
 
         LOG.debug("LIFECYCLE: QoS Notifications Handler module: thr: QoS notifications handled")
     except:

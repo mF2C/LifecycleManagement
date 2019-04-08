@@ -59,6 +59,11 @@ import lifecycle.data.mF2C.mf2c as mf2c
 ###############################################################################
 # COMMON
 
+# get_my_ip: Get IP address from local
+def get_my_ip():
+    return data_mf2c.get_my_ip()
+
+
 # exist_user: check if 'user id' exists
 def exist_user(user_id):
     return data_mf2c.exist_user(user_id)

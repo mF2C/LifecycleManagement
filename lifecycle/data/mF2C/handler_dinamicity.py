@@ -16,6 +16,7 @@ from common.logs import LOG
 import common.common as common
 import threading
 import time
+import lifecycle.modules.apps.compss.adapter as compss_adpt
 
 
 ###############################################################################
@@ -30,7 +31,18 @@ def thr(notification):
         LOG.debug("LIFECYCLE: Dinamicity Handler module: thr: Handling event / notification [" + str(notification) + "] ...")
 
         # TODO
+        # Get agent information
+
+        # Get service instances running in lost agent
         # ...
+
+        # Iterate resulting service instances
+        # 1. if service_instance is running COMPSs ...
+        compss_adpt.notify_job_resource_lost(None)
+
+        # 2. if service_instance is running other app ...
+        # redeploy
+
         time.sleep(10)
 
         LOG.debug("LIFECYCLE: Dinamicity Handler module: thr: Event / notification handled")

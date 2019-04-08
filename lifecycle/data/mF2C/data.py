@@ -78,6 +78,17 @@ def get_current_device_id():
         return -1
 
 
+# Get 'my' ip address
+def get_my_ip():
+    my_device = get_current_device_id()
+    if my_device is not None and my_device != -1:
+        LOG.info("LIFECYCLE: Data: get_my_ip: IP from current device = " + my_device['ethernetAddress'])
+        return my_device['ethernetAddress']
+    else:
+        LOG.error("LIFECYCLE: Data: get_my_ip: Error retrieving IP from device ...")
+        return None
+
+
 # exist_user: check if 'user id' exists
 def exist_user(user_id):
     return cimi.exist_user(user_id)
