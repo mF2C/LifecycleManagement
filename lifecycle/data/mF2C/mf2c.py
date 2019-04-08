@@ -211,8 +211,8 @@ def user_management_check_avialability():
 #   =>  POST http://192.168.252.41:46020/mf2c/optimal
 # 	    BODY: service json
 def recommender_get_optimal_resources(service):
-    LOG.debug("LIFECYCLE: MF2C: get_available_resources: service: " + str(service))
-    LOG.info("LIFECYCLE: MF2C: get_available_resources: HTTP POST: " + str(config.dic['URL_PM_RECOM_LANDSCAPER']) + "/optimal")
+    LOG.debug("LIFECYCLE: MF2C: recommender_get_optimal_resources: service: " + str(service))
+    LOG.info("LIFECYCLE: MF2C: recommender_get_optimal_resources: HTTP POST: " + str(config.dic['URL_PM_RECOM_LANDSCAPER']) + "/optimal")
     try:
         # 'http://localhost:46020/mf2c/optimal'
         r = requests.post(str(config.dic['URL_PM_RECOM_LANDSCAPER']) + "/optimal",
@@ -220,10 +220,10 @@ def recommender_get_optimal_resources(service):
                           headers={"Accept": "text/json", "Content-Type": "application/json"},
                           verify=config.dic['VERIFY_SSL'],
                           timeout=config.dic['TIMEOUT_ANALYTICSENGINE'])
-        LOG.debug("LIFECYCLE: MF2C: get_available_resources: response: " + str(r))
+        LOG.debug("LIFECYCLE: MF2C: recommender_get_optimal_resources: response: " + str(r))
 
         json_data = json.loads(r.text)
-        LOG.debug("LIFECYCLE: MF2C: get_available_resources: json_data: " + str(json_data))
+        LOG.debug("LIFECYCLE: MF2C: recommender_get_optimal_resources: json_data: " + str(json_data))
 
         # EXAMPLE
         # json_data:
@@ -244,20 +244,20 @@ def recommender_get_optimal_resources(service):
         # ==> [{"agent_ip": "192.168.252.41"}, {"agent_ip": "192.168.252.42"}]
 
         if r.ok: #status_code == 200:
-            LOG.debug('LIFECYCLE: MF2C: get_available_resources: status_code=' +  str(r.ok)) #r.status_code))
+            LOG.debug('LIFECYCLE: MF2C: recommender_get_optimal_resources: status_code=' +  str(r.ok)) #r.status_code))
 
             # create list of agents
             list_of_agents = []
             for elem in json_data:
                 list_of_agents.append({"agent_ip": elem['node_name']})
 
-            LOG.debug("LIFECYCLE: MF2C: get_available_resources: list_of_agents:" + str(list_of_agents))
+            LOG.debug("LIFECYCLE: MF2C: recommender_get_optimal_resources: list_of_agents:" + str(list_of_agents))
             return list_of_agents
 
         LOG.error('LIFECYCLE: MF2C: get_available_resources: Error: status_code=' +  str(r.status_code))
         return None
     except:
-        LOG.exception('LIFECYCLE: MF2C: get_available_resources: Exception')
+        LOG.exception('LIFECYCLE: MF2C: recommender_get_optimal_resources: Exception')
         return None
 
 ###############################################################################

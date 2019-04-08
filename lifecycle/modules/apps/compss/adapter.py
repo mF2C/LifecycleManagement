@@ -13,7 +13,7 @@ Created on 09 feb. 2018
 
 import requests
 from common.logs import LOG
-import common
+import common.common as common
 from common.common import STATUS_STARTED
 import lifecycle.data.db as db
 import lifecycle.data.data_adapter as data_adapter
@@ -253,7 +253,7 @@ def gen_resource_OLD(url, ports):
 # gen_resource:
 def gen_resource(url, ports):
     try:
-        if url == common.get_local_ip():
+        if url == common.get_ip_address():
             LOG.debug("LIFECYCLE: COMPSs adapter: gen_resource: (local) get_COMPSs_port_DB_DOCKER_PORTS ...")
             compss_port = db.get_COMPSs_port_DB_DOCKER_PORTS(ports)
         else:
@@ -343,12 +343,12 @@ def start_job(service_instance_id, body, agent): #service_instance_id, agent, pa
         # TODO ??? "  <serviceInstanceId>" + service_instance_id + "</serviceInstanceId>" \   ????
         xml = "<?xml version='1.0' encoding='utf-8'?>" \
               "<startApplication>" \
-              "  <ceiClass>" + ceiClass + "  </ceiClass>" \
-              "  <className>" + className + "  </className>" \
-              "  <hasResult>" + str(hasResult) + "  </hasResult>" \
-              "  <methodName>" + methodName + "  </methodName>" \
-              "  <parameters>" + parameters + "  </parameters>" \
-              "  <resources>" + xml_resource + "  </resources>" \
+              "<ceiClass>" + ceiClass + "</ceiClass>" \
+              "<className>" + className + "</className>" \
+              "<hasResult>" + str(hasResult) + "</hasResult>" \
+              "<methodName>" + methodName + "</methodName>" \
+              "<parameters>" + parameters + "</parameters>" \
+              "<resources>" + xml_resource + "</resources>" \
               "</startApplication>"
         LOG.debug("LIFECYCLE: COMPSs adapter: start_job: [xml=" + xml + "]")
 

@@ -11,7 +11,6 @@ Created on 04 dic. 2018
 @author: Roi Sucasas - ATOS
 """
 
-import sys, traceback
 import threading
 import lifecycle.modules.applications_adapter as apps_adapter
 import lifecycle.modules.sla_adapter as sla_adapter
@@ -119,7 +118,7 @@ def thr_operation_service_local(operation, service, agent):
             apps_adapter.terminate_service_agent(service, agent)
 
     except:
-        LOG.error("LIFECYCLE: Lifecycle_Operations: thr_operation_service_local: thr: Exception")
+        LOG.exception("LIFECYCLE: Lifecycle_Operations: thr_operation_service_local: thr: Exception")
 
 
 # thr_operation_service_remote: operation_service remote
@@ -158,7 +157,7 @@ def thr_operation_service_remote(operation, service, agent):
                 LOG.error("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: result (terminate service): ERROR")
 
     except:
-        LOG.error("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: thr: Exception")
+        LOG.exception("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: thr: Exception")
 
 
 # thr_operation_service: start/stop/terminate service instance in agents
@@ -209,8 +208,7 @@ def thr_operation_service(service_instance, operation):
             data_adapter.del_service_instance(service_instance['id'])                               # cimi / db
             sla_adapter.terminate_sla_agreement(service_instance, service_instance['agreement'])    # sla
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: Lifecycle_Operations: thr_operation_service: thr: Exception')
+        LOG.exception('LIFECYCLE: Lifecycle_Operations: thr_operation_service: thr: Exception')
 
 
 # operation_service: start/stop/terminate service instance in agents
@@ -236,8 +234,7 @@ def operation_service(service_instance_id, operation):
         # response
         return common.gen_response_ok("Service " + operation + " operation is being processed ...", "service_instance", service_instance)
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: Lifecycle_Operations: operation_service: Exception')
+        LOG.exception('LIFECYCLE: Lifecycle_Operations: operation_service: Exception')
         return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
 
 
@@ -267,7 +264,7 @@ def terminate(service_instance_id):
         # 3. terminate
         return operation_service(service_instance_id, OPERATION_TERMINATE)
     except:
-        LOG.error('LIFECYCLE: Lifecycle: terminate: Exception')
+        LOG.exception('LIFECYCLE: Lifecycle: terminate: Exception')
         return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
 
 
@@ -299,9 +296,9 @@ def start_job(body, service_instance_id):
             res = None
 
         if res:
-            return common.gen_response_ok('Start job', 'service_id', body['service_instance_id'], 'res', res)
+            return common.gen_response_ok('Start job', 'service_id', service_instance_id, 'res', res)
         else:
             return common.gen_response(500, 'Error when starting job', 'service_instance', str(service_instance))
     except:
-        LOG.error('LIFECYCLE: Lifecycle: start_job: Exception')
+        LOG.exception('LIFECYCLE: Lifecycle: start_job: Exception')
         return common.gen_response(500, 'Exception', 'data', str(body))
