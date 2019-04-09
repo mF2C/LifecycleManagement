@@ -40,22 +40,22 @@ REST API
                         GET:    get agent's lifecycle configuration: docker, docker-swarm, kubernetes, ...  
                         
                 /lm/check-agent-um
-                        GET:    checks if device can run more apps - UP & SM policies (from 'local' User Management module)      
+                   (*)  GET:    checks if device can run more apps - UP & SM policies (from 'local' User Management module)      
                          
                 /lm/agent-um
                         GET:    get agent's current user-profile and sharing-model (from 'local' User Management module)
                         PUT:    updates user-profile current number of applications running
                         
                 /lm/service-instance/<string:service_instance_id>
-                        GET:    get service instance / all service instances (from cimi)
-                        PUT:    Starts / stops / restarts a service instance  //  starts a job in COMPSs
-                        DELETE: terminates a service instance; deletes service instance (from cimi)
+                   (*)  GET:    get service instance / all service instances (from cimi)
+                   (*)  PUT:    Starts / stops / restarts a service instance  //  starts a job in COMPSs
+                   (*)  DELETE: terminates a service instance; deletes service instance (from cimi)
                         
                 /lm/service-instance/<string:service_instance_id>/compss
-                        PUT:    starts a job in COMPSs
+                   (*)  PUT:    starts a job in COMPSs
                         
                 /api/v2/lm/service-instances/<string:service_instance_id>/report
-                        GET:    get service instance report
+                   (*)  GET:    get service instance report
                         
                 /lm/service
                         POST:   Submits a service and gets a service instance (new version)
