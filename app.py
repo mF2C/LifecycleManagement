@@ -400,9 +400,11 @@ class Service(Resource):
     @swagger.operation(
         summary="Submits a <b>service</b> (deployment phase)</b>",
         notes="Submits a service and returns a json with the content of a service instance:<br/>"
-              "<b>'exec_type'</b>='docker' ... deploy a docker image<br/>"
-              "<b>'exec_type'</b>='docker-compose' ... deploy a docker compose service<br/>"
-              "<b>'exec_type'</b>='compss' ... deploy a docker COMPSs image<br/>",
+              "<i>'exec_type'</i>=<b>'docker'</b> ... deploy a docker image<br/>"
+              "<i>'exec_type'</i>=<b>'docker-compose'</b> ... deploy a docker compose service<br/>" 
+              "<i>'exec_type'</i>=<b>'docker-swarm'</b> ... deploy a docker swarm service<br/>"
+              "<i>'exec_type'</i>=<b>'K8s'</b> ... deploy a Kubernetes service<br/>"
+              "<i>'exec_type'</i>=<b>'compss'</b> ... deploy a docker COMPSs image<br/>",
         produces=["application/json"],
         authorizations=[],
         parameters=[{
