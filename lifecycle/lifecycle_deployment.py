@@ -285,7 +285,9 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
             t = threading.Thread(target=thr_submit_service_in_agents, args=(service, service_instance, agreement_id,))
             t.start()
 
-            return common.gen_response_ok('Service deployment operation is being processed...', 'service_instance', service_instance)
+            return common.gen_response_ok("Service deployment operation is being processed [" + service_instance['id'] + "]...",
+                                          "service_instance",
+                                          service_instance)
     except:
         traceback.print_exc(file=sys.stdout)
         LOG.error('LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Exception')
