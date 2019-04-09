@@ -16,6 +16,7 @@ import docker, uuid
 import lifecycle.modules.apps.ports_mngr as pmngr
 import config
 from common.logs import LOG
+import lifecycle.data.db as db
 
 
 # docker socket connection
@@ -122,11 +123,18 @@ def create_docker_compss_container(service_image, ip, prts, master=None):
             LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: ports_dict: " + str(ports_dict))
             LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: prts_list: " + str(prts_list))
 
+            LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: AGENT_HOST: " + config.dic['HOST_IP'])
+            LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: AGENT_PORT: " + str(db.get_COMPSs_port_DB_DOCKER_PORTS(prts)))
+            LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: DATACLAY_EP: " + config.dic['DATACLAY_EP'])
+            LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: REPORT_ADDRESS: " + config.dic['REPORT_ADDRESS'])
+
             # "docker run --rm -it --env MF2C_HOST=172.17.0.3 -p46100:46100 --env DEBUG=debug --name compss3123 mf2c/compss-test:latest"
             container = lclient.create_container(service_image,
                                                  name="compss-" + str(uuid.uuid4()),
                                                  environment={"MF2C_HOST": ip,
                                                               "DEBUG": "debug",
+                                                              "AGENT_HOST": config.dic['HOST_IP'],
+                                                              "AGENT_PORT": db.get_COMPSs_port_DB_DOCKER_PORTS(prts),
                                                               "DATACLAY_EP": config.dic['DATACLAY_EP'],
                                                               "REPORT_ADDRESS": config.dic['CIMI_URL']},
                                                  tty=True,
