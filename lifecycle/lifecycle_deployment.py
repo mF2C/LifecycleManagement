@@ -145,7 +145,7 @@ def thr_submit_remote(service, agent):
             LOG.debug("LIFECYCLE: Lifecycle_Deployment: thr_submit_remote: allocate service in remote agent: "
                       "[agent=" + str(agent) + "]")
             # executes / starts service
-            resp_start = mf2c.lifecycle_operation(agent, "start")
+            resp_start = mf2c.lifecycle_operation(service, agent, "start")
             if resp_start is not None:
                 agent['status'] = resp_start['status']
                 LOG.debug("LIFECYCLE: Lifecycle_Deployment: thr_submit_remote: execute service in remote agent: "

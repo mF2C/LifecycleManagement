@@ -77,12 +77,12 @@ def lifecycle_deploy(service, agent):
 
 # START / STOP SERVICE INSTANCE
 # lifecycle_operation: call to lifceycle from other agent in order to start/stop... a service
-def lifecycle_operation(agent, operation):
-    LOG.debug("LIFECYCLE: MF2C: lifecycle_operation: " + str(agent) + ", " + operation)
+def lifecycle_operation(service, agent, operation):
+    LOG.debug("LIFECYCLE: MF2C: lifecycle_operation: " + str(service) + ", " + str(agent) + ", " + operation)
     try:
         LOG.info("LIFECYCLE: MF2C: lifecycle_operation: HTTP PUT: http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/service-instance-int")
         r = requests.put("http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/service-instance-int",
-                         json={"operation": operation, "agent": agent},
+                         json={"service": service, "operation": operation, "agent": agent},
                          verify=config.dic['VERIFY_SSL'])
         LOG.debug("LIFECYCLE: MF2C: lifecycle_operation: response:" + str(r))
 

@@ -60,7 +60,7 @@ REST API
                 /lm/service
                         POST:   Submits a service and gets a service instance (new version)
 
-                 
+                /api/v2/lm/service-instance-int
                         POST:   Submits /lm/service-instance-inta service in a mF2C agent
                         PUT:    starts / stops ... a service in a mF2C agent; start-job
 '''

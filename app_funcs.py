@@ -272,19 +272,19 @@ def postServiceInt(request):
 # putServiceInt
 def putServiceInt(request):
     data = request.get_json()
-    if 'operation' not in data or 'agent' not in data:
+    if 'service' not in data or 'operation' not in data or 'agent' not in data:
         LOG.error('LIFECYCLE: REST API: putServiceInt: Exception - parameter not found: agent / operation')
         return Response(json.dumps({'error': True, 'message': 'parameter not found: agent / operation'}), status=406, content_type='application/json')
 
     # operations
     if data['operation'] == OPERATION_START:
-        return operations.start(data['agent'])
+        return operations.start(data['service'], data['agent'])
     elif data['operation'] == OPERATION_STOP:
-        return operations.stop(data['agent'])
+        return operations.stop(data['service'], data['agent'])
     elif data['operation'] == OPERATION_RESTART:
-        return operations.start(data['agent'])
+        return operations.start(data['service'], data['agent'])
     elif data['operation'] == OPERATION_TERMINATE:
-        return operations.terminate(data['agent'])
+        return operations.terminate(data['service'], data['agent'])
     else:
         LOG.error('LIFECYCLE: REST API: putServiceInt: operation not defined / implemented')
         return Response(json.dumps({'error': True, 'message': 'operation not defined / implemented'}), status=501, content_type='application/json')

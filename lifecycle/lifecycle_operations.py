@@ -128,7 +128,7 @@ def thr_operation_service_remote(operation, service, agent):
 
         if operation == OPERATION_START:
             LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: start service in remote agent")
-            resp_start = mf2c.lifecycle_operation(agent, OPERATION_START)
+            resp_start = mf2c.lifecycle_operation(service, agent, OPERATION_START)
             if resp_start is not None:
                 agent['status'] = resp_start['status']
                 LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: result (start service): [agent=" + str(agent) + "]")
@@ -138,7 +138,7 @@ def thr_operation_service_remote(operation, service, agent):
 
         elif operation == OPERATION_STOP:
             LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: stop service in remote agent")
-            resp_stop = mf2c.lifecycle_operation(agent, OPERATION_STOP)
+            resp_stop = mf2c.lifecycle_operation(service, agent, OPERATION_STOP)
             if resp_stop is not None:
                 agent['status'] = resp_stop['status']
                 LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: result (stop service): [agent=" + str(agent) + "]")
@@ -148,7 +148,7 @@ def thr_operation_service_remote(operation, service, agent):
 
         elif operation == OPERATION_TERMINATE:
             LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: terminate service in remote agent")
-            resp_terminate = mf2c.lifecycle_operation(agent, OPERATION_TERMINATE)
+            resp_terminate = mf2c.lifecycle_operation(service, agent, OPERATION_TERMINATE)
             if resp_terminate is not None:
                 agent['status'] = resp_terminate['status']
                 LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: result (terminate service): [agent=" + str(agent) + "]")
