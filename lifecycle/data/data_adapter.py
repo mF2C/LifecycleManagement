@@ -91,9 +91,9 @@ def get_check_um():
     return mf2c.user_management_check_avialability()
 
 
-# set_um_profile:
-# def set_um_profile(apps=0):
-#     return data_mf2c.get_um_profile()
+# get_um_current:
+def get_um_current(val):
+    return mf2c.user_management_get_current(val)
 
 ###############################################################################
 # get_leader_ip: Get IP address from Leader

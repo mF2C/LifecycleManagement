@@ -215,7 +215,10 @@ def postService(request):
     if 'user_id' not in data:
         LOG.debug("LIFECYCLE: REST API: postService: Parameter not found: 'user_id'")
         LOG.debug("LIFECYCLE: REST API: postService: Retrieving 'user_id' value from agent ...")
-        user_id = "USER_ID" # TODO
+        res = data_adapter.get_um_current("user")
+        user_id = ""
+        if not res:
+            user_id = res['user']
     else:
         user_id = data['user_id']
     # check if user exists

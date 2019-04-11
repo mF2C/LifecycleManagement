@@ -101,31 +101,6 @@ def lifecycle_operation(service, agent, operation):
         return None
 
 
-# GET UM INFORMATION
-# lifecycle_um_info: call to lifceycle from other agent in order to get sharing model and user profile
-def lifecycle_um_info(agent):
-    LOG.debug("LIFECYCLE: MF2C: lifecycle_um_info: " + str(agent))
-    try:
-        LOG.info("LIFECYCLE: MF2C: lifecycle_um_info: HTTP GET: http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/agent-um")
-        r = requests.get("http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/agent-um",
-                         verify=config.dic['VERIFY_SSL'])
-        LOG.debug("LIFECYCLE: MF2C: lifecycle_um_info: response:" + str(r))
-
-        json_data = json.loads(r.text)
-        agent_um = json_data['agent_um']
-        LOG.debug("LIFECYCLE: MF2C: lifecycle_um_info: agent_um: " + str(agent_um))
-
-        if r.status_code == 200:
-            LOG.debug('LIFECYCLE: MF2C: lifecycle_um_info: status_code=' +  str(r.status_code) + '; response: ' + str(json_data))
-            return ast.literal_eval(agent_um)
-
-        LOG.error('LIFECYCLE: MF2C: lifecycle_um_info: Error: status_code=' +  str(r.status_code))
-        return None
-    except:
-        LOG.exception('LIFECYCLE: MF2C: lifecycle_um_info: Exception')
-        return None
-
-
 # lifecycle_um_info: call to lifceycle from other agent in order to get sharing model and user profile
 def lifecycle_um_check_avialability(agent):
     LOG.debug("LIFECYCLE: MF2C: lifecycle_um_check_avialability: " + str(agent))
@@ -203,6 +178,29 @@ def user_management_check_avialability():
     except:
         LOG.exception('LIFECYCLE: MF2C: user_management_check_avialability: Exception')
         return None
+
+
+# GET CURRENT USER / DEVICE
+# user_management_get_current: call to local UM to get current values (user, device)
+def user_management_get_current(val):
+    LOG.debug("LIFECYCLE: MF2C: user_management_get_current: Getting current " + val + " from localhost - UM ")
+    try:
+        LOG.debug("LIFECYCLE: MF2C: user_management_get_current: Checking avialability ...")
+        LOG.info("LIFECYCLE: MF2C: user_management_get_current: HTTP GET: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/current/" + val)
+        r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/current/" + val,
+                         verify=config.dic['VERIFY_SSL'])
+
+        json_data = json.loads(r.text)
+        LOG.debug("LIFECYCLE: MF2C: user_management_get_current: response: " + str(r) + ", json_data: " + str(json_data))
+
+        if r.status_code == 200 and not json_data['result'] is None:
+            LOG.debug('LIFECYCLE: MF2C: user_management_get_current: status_code=' + str(r.status_code))
+            return json_data
+
+        LOG.error('LIFECYCLE: MF2C: user_management_get_current: Error: status_code=' + str(r.status_code))
+    except:
+        LOG.exception('LIFECYCLE: MF2C: user_management_get_current: Exception')
+    return None
 
 
 ###############################################################################

@@ -22,13 +22,15 @@ PORT_INDEX = 50001
 
 
 def tryPort(port):
+    LOG.debug("LIFECYCLE: Trying Port " + str(port) + " ...")
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     result = False
     try:
         sock.bind(("0.0.0.0", port))
         result = True
+        LOG.debug("LIFECYCLE: Port " + str(port) + " is FREE")
     except:
-        print("LIFECYCLE: Port " + str(port) + " is in use")
+        LOG.debug("LIFECYCLE: Port " + str(port) + " is in use")
     sock.close()
     return result
 
@@ -41,7 +43,7 @@ def is_port_free(port):
             LOG.warning("LIFECYCLE: ports_mngr: is_port_free: Port [" + str(port) + "] is < 25000")
             return False
 
-        if db.get_from_DB_DOCKER_PORTS(port) is None:
+        if db.get_from_DB_DOCKER_PORTS(port) is None and tryPort(port):
             LOG.debug("LIFECYCLE: ports_mngr: is_port_free: [" + str(port) + "] is free")
             return True
 

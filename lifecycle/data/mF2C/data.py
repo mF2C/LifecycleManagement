@@ -78,10 +78,24 @@ def get_current_device_id():
         return -1
 
 
+# get_current_device
+def get_current_device():
+    LOG.info("LIFECYCLE: Data: get_current_device: Getting 'my' device ID ...")
+
+    device = cimi.get_current_device_info()
+    LOG.debug("LIFECYCLE: Data: get_current_device: device = " + str(device))
+
+    if not device is None and device != -1:
+        LOG.info("LIFECYCLE: Data: get_current_device: Returning 'my' device = " + str(device))
+        return device
+    else:
+        return None
+
+
 # Get 'my' ip address
 def get_my_ip():
-    my_device = get_current_device_id()
-    if my_device is not None and my_device != -1:
+    my_device = get_current_device()
+    if my_device is not None:
         LOG.info("LIFECYCLE: Data: get_my_ip: IP from current device = " + my_device['ethernetAddress'])
         return my_device['ethernetAddress']
     else:
