@@ -70,20 +70,20 @@ def getCheckAgentUMInfo():
     result = data_adapter.get_check_um()
 
     if not result is None:
-        check_agent_um = {
+        agent_um = {
             'device-id': 'not-defined',
             'user-id': 'not-defined',
             'message': result['message'],
             'result': result['result']
         }
     else:
-        check_agent_um = {
+        agent_um = {
             'device-id': 'not-defined',
             'user-id': 'not-defined',
             'message': 'not-defined',
             'result': False
         }
-    resp = Response(json.dumps(check_agent_um), status=200, mimetype='application/json')
+    resp = Response(json.dumps(agent_um), status=200, mimetype='application/json')
     return resp
 
 

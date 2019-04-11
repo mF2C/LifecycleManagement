@@ -136,12 +136,14 @@ def lifecycle_um_check_avialability(agent):
         LOG.debug("LIFECYCLE: MF2C: lifecycle_um_check_avialability: response:" + str(r))
 
         json_data = json.loads(r.text)
-        agent_um = json_data['agent_um']
-        LOG.debug("LIFECYCLE: MF2C: lifecycle_um_check_avialability: agent_um: " + str(agent_um))
+        LOG.debug("LIFECYCLE: MF2C: lifecycle_um_check_avialability: response:" + str(json_data))
+
+        #agent_um = json_data['agent_um']
+        #LOG.debug("LIFECYCLE: MF2C: lifecycle_um_check_avialability: agent_um: " + str(agent_um))
 
         if r.status_code == 200:
             LOG.debug('LIFECYCLE: MF2C: lifecycle_um_check_avialability: status_code=' +  str(r.status_code) + '; response: ' + str(json_data))
-            return ast.literal_eval(agent_um)
+            return json_data #ast.literal_eval(agent_um)
 
         LOG.error('LIFECYCLE: MF2C: lifecycle_um_check_avialability: Error: status_code=' +  str(r.status_code))
         return None
