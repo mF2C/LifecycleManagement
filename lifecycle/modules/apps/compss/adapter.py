@@ -207,49 +207,6 @@ def find_master(service_instance):
     return service_instance['agents'][0]
 
 
-# TODO remove
-# gen_resource:
-def gen_resource_OLD(url, ports):
-    try:
-        if url == common.get_local_ip():
-            LOG.debug("LIFECYCLE: COMPSs adapter: gen_resource: (local) get_COMPSs_port_DB_DOCKER_PORTS ...")
-            compss_port = db.get_COMPSs_port_DB_DOCKER_PORTS(ports)
-        else:
-            LOG.debug("LIFECYCLE: COMPSs adapter: gen_resource: (remote agent) first element from list ...")
-            compss_port = ports[0]
-        LOG.debug("LIFECYCLE: COMPSs adapter: gen_resource: compss_port: " + str(compss_port))
-
-        xml = "<resource name=\"" + url + ":" + str(compss_port) + "\">" \
-              "  <description>" \
-              "    <memorySize>4.0</memorySize>" \
-              "    <memoryType>[unassigned]</memoryType>" \
-              "    <operatingSystemDistribution>[unassigned]</operatingSystemDistribution>" \
-              "    <operatingSystemType>[unassigned]</operatingSystemType>" \
-              "    <operatingSystemVersion>[unassigned]</operatingSystemVersion>" \
-              "    <pricePerUnit>-1.0</pricePerUnit>" \
-              "    <priceTimeUnit>-1</priceTimeUnit>" \
-              "    <processors>" \
-              "      <architecture>[unassigned]</architecture>" \
-              "      <computingUnits>2</computingUnits>" \
-              "      <internalMemory>-1.0</internalMemory>" \
-              "      <name>[unassigned]</name>" \
-              "      <propName>[unassigned]</propName>" \
-              "      <propValue>[unassigned]</propValue>" \
-              "      <speed>-1.0</speed>" \
-              "      <type>CPU</type>" \
-              "    </processors>" \
-              "    <storageSize>-1.0</storageSize>" \
-              "    <storageType>[unassigned]</storageType>" \
-              "    <value>0.0</value>" \
-              "    <wallClockLimit>-1</wallClockLimit>" \
-              "  </description>" \
-              "</resource>"
-        return xml
-    except:
-        LOG.exception('LIFECYCLE: COMPSs adapter: gen_resource: Exception')
-        return False
-
-
 # gen_resource:
 def gen_resource(url, ports):
     try:
@@ -300,33 +257,6 @@ def gen_resource(url, ports):
         return False
 
 
-# TODO remove
-# start_job: Start app in COMPSs container
-def start_job_OLD(service_instance_id, agent, parameters):
-    LOG.debug("LIFECYCLE: COMPSs adapter: start_job: [agent=" + str(agent) + "], [parameters=" + str(parameters) + "]")
-    try:
-        # create (1) resource xml
-        xml_resource = gen_resource(agent['url'], agent['ports'])
-
-        # create xml
-        xml = "<?xml version='1.0' encoding='utf-8'?>" \
-              "<startApplication>" + parameters + \
-              "  <resources>" + xml_resource + "  </resources>" \
-              "  <serviceInstanceId>" + service_instance_id + "</serviceInstanceId>" \
-              "</startApplication>"
-        LOG.debug("LIFECYCLE: COMPSs adapter: start_job: [xml=" + xml + "]")
-
-        compss_port = db.get_COMPSs_port_DB_DOCKER_PORTS(agent['ports'])
-        res = requests.put("http://" + agent['url'] + ":" + str(compss_port) + "/COMPSs/startApplication",
-                           data=xml,
-                           headers={'Content-Type': 'application/xml'})
-        LOG.debug("LIFECYCLE: COMPSs adapter: start_job: [res=" + str(res) + "]")
-        return True
-    except:
-        LOG.exception('LIFECYCLE: COMPSs adapter: start_job: Exception')
-        return False
-
-
 # start_job: Start app in COMPSs container
 def start_job(service_instance_id, body, agent): #service_instance_id, agent, parameters):
     ceiClass = body['ceiClass']
@@ -363,41 +293,6 @@ def start_job(service_instance_id, body, agent): #service_instance_id, agent, pa
         return False
 
 
-# TODO remove
-# start_job_in_agents: Start app in multiple COMPSs containers
-def start_job_in_agents_OLD(service_instance, parameters):
-    LOG.debug("LIFECYCLE: COMPSs adapter: start_job_in_agents: [service_instance=" + str(service_instance) + "], [parameters=" + str(parameters) + "]")
-    try:
-        # create resource xml
-        xml_resources_content = ""
-        for agent in service_instance['agents']:
-            if agent['status'] == STATUS_STARTED:
-                xml_resources_content += gen_resource(agent['url'], agent['ports'])
-
-        if not xml_resources_content:
-            LOG.error('LIFECYCLE: COMPSs adapter: start_job_in_agents: xml_resources_content is empty: agents status != STATUS_STARTED')
-            return False
-
-        xml = "<?xml version='1.0' encoding='utf-8'?>" \
-              "<startApplication>" + parameters + \
-              "  <resources>" + xml_resources_content + "</resources>" \
-              "  <serviceInstanceId>" + service_instance['id'].replace('service-instance/', '') + "</serviceInstanceId>" \
-              "</startApplication>"
-        LOG.debug("LIFECYCLE: COMPSs adapter: start_job_in_agents: [xml=" + xml + "]")
-
-        master_agent = find_master(service_instance)
-        compss_port = db.get_COMPSs_port_DB_DOCKER_PORTS(master_agent['ports'])
-
-        res = requests.put("http://" + master_agent['url'] + ":" + str(compss_port) + "/COMPSs/startApplication",
-                           data=xml,
-                           headers={'Content-Type': 'application/xml'})
-        LOG.debug("LIFECYCLE: COMPSs adapter: start_job_in_agents: [res=" + str(res) + "]")
-        return True
-    except:
-        LOG.exception('LIFECYCLE: COMPSs adapter: start_job_in_agents: Exception')
-        return False
-
-
 # start_job_in_agents: Start app in multiple COMPSs containers
 def start_job_in_agents(service_instance, body):
     ceiClass = body['ceiClass']
@@ -417,22 +312,15 @@ def start_job_in_agents(service_instance, body):
             LOG.error('LIFECYCLE: COMPSs adapter: start_job_in_agents: xml_resources_content is empty: agents status != STATUS_STARTED')
             return False
 
-        xml = "<?xml version='1.0' encoding='utf-8'?>" \
-              "<startApplication>" + parameters + \
-              "  <resources>" + xml_resources_content + "</resources>" \
-              "  <serviceInstanceId>" + service_instance['id'].replace('service-instance/', '') + "</serviceInstanceId>" \
-              "</startApplication>"
-        LOG.debug("LIFECYCLE: COMPSs adapter: start_job_in_agents: [xml=" + xml + "]")
-
         # TODO ??? "  <serviceInstanceId>" + service_instance_id + "</serviceInstanceId>" \   ????
         xml = "<?xml version='1.0' encoding='utf-8'?>" \
               "<startApplication>" \
-              "  <ceiClass>" + ceiClass + "  </ceiClass>" \
-              "  <className>" + className + "  </className>" \
-              "  <hasResult>" + str(hasResult) + "  </hasResult>" \
-              "  <methodName>" + methodName + "  </methodName>" \
-              "  <parameters>" + parameters + "  </parameters>" \
-              "  <resources>" + xml_resources_content + "  </resources>" \
+              "  <ceiClass>" + ceiClass + "</ceiClass>" \
+              "  <className>" + className + "</className>" \
+              "  <hasResult>" + str(hasResult) + "</hasResult>" \
+              "  <methodName>" + methodName + "</methodName>" \
+              "  <parameters>" + parameters + "</parameters>" \
+              "  <resources>" + xml_resources_content + "</resources>" \
               "</startApplication>"
         LOG.debug("LIFECYCLE: COMPSs adapter: start_job: [xml=" + xml + "]")
 

@@ -210,19 +210,39 @@ def deleteServiceInstance(service_instance_id):
 def postService(request):
     # 1. Parse and check input data
     data = request.get_json()
-    if 'user_id' not in data or 'agreement_id' not in data:
-        LOG.error('LIFECYCLE: REST API: postService: Exception - parameter not found: user_id / agreement_id')
-        return Response(json.dumps({'error': True, 'message': 'parameter not found: user_id / agreement_id'}), status=406, content_type='application/json')
-    elif 'service' not in data and 'service_id' not in data:
-        LOG.error('LIFECYCLE: REST API: postService: Exception - parameter not found: service / service_id')
-        return Response(json.dumps({'error': True, 'message': 'parameter not found: service /  service_id'}), status=406, content_type='application/json')
 
-    if 'service_instance_id' in data:
-        LOG.info("LIFECYCLE: REST API: postService: FORWARD REQUEST from child agent!")
-
+    # USER_ID:
+    if 'user_id' not in data:
+        LOG.debug("LIFECYCLE: REST API: postService: Parameter not found: 'user_id'")
+        LOG.debug("LIFECYCLE: REST API: postService: Retrieving 'user_id' value from agent ...")
+        user_id = "USER_ID" # TODO
+    else:
+        user_id = data['user_id']
     # check if user exists
-    if not data_adapter.exist_user(data['user_id']):
-        return common.gen_response(404, "Error", "user_id", data['user_id'], "message", "User ID not found")
+    if not data_adapter.exist_user(user_id):
+        return common.gen_response(404, "Error", "user_id", user_id, "message", "User ID not found")
+
+    # AGREEMENT_ID:
+    if 'agreement_id' not in data:
+        LOG.debug("LIFECYCLE: REST API: postService: Parameter not found: 'agreement_id'")
+        LOG.debug("LIFECYCLE: REST API: postService: Retrieving 'agreement_id' value ...")
+        agreement_id = "AGREEMENT_ID" # TODO
+    else:
+        agreement_id = data['agreement_id']
+
+    # SERVICE:
+    if 'service' not in data and 'service_id' not in data:
+        LOG.error('LIFECYCLE: REST API: postService: Exception - parameter not found: service / service_id')
+        return Response(json.dumps({'error': True, 'message': 'parameter not found: service /  service_id'}),
+                        status=406,
+                        content_type='application/json')
+
+    # SERVICE_INSTANCE_ID:
+    if 'service_instance_id' in data:
+        LOG.info("LIFECYCLE: REST API: postService: This is a 'FORWARD REQUEST' from one child agent!")
+        service_instance_id = data['service_instance_id']
+    else:
+        service_instance_id = None
 
     # 2. Get service
     # OPTION: full service defined in the request
@@ -231,30 +251,36 @@ def postService(request):
     # OPTION: standalone mode (no mF2C)
     elif common.is_standalone_mode():
         LOG.error("LIFECYCLE: REST API: postService: Exception - STANDALONE_MODE enabled: parameters are not valid: ")
-        return Response(json.dumps({'error': True, 'message': 'STANDALONE_MODE enabled: parameters are not valid'}), status=500, content_type='application/json')
+        return Response(json.dumps({'error': True, 'message': 'STANDALONE_MODE enabled: parameters are not valid'}),
+                        status=500,
+                        content_type='application/json')
     # OPTION: id service defined in the request
     else:
         service = data_adapter.get_service(data['service_id'])
         if service is None:
             LOG.error("LIFECYCLE: REST API: postService: Exception - service not found!")
-            return Response(json.dumps({"error": True, "message": "service not found; [id=" + data['service_id'] + "]"}), status=500, content_type='application/json')
+            return Response(json.dumps({"error": True, "message": "service not found; [id=" + data['service_id'] + "]"}),
+                            status=500,
+                            content_type='application/json')
 
     # 3. Submits the service
-    # OPTION: list of agents are defined in the request:
-    # submit function returns a json with the content of the 'service_instance'
+    # OPTION A: list of agents are defined in the request:
+    #         submit function returns a json with the content of the 'service_instance'
     if 'agents_list' in data:
         # using a predefined list of agents:
         return lifecycle_depl.submit_service_in_agents(service,
-                                                       data['user_id'],
-                                                       data['agreement_id'],
+                                                       user_id,
+                                                       agreement_id,
+                                                       service_instance_id,
                                                        data['agents_list'],
                                                        check_service=True)
-    # OPTION: submits the service with the help of the other mF2C components (landscaper, recommender ...)
+    # OPTION B: submits the service with the help of the other mF2C components (landscaper, recommender ...)
     else:
         # using agent_decision module (landscaper, recommender...):
         return lifecycle_depl.submit(service,
-                                     data['user_id'],
-                                     data['agreement_id'])
+                                     user_id,
+                                     agreement_id,
+                                     service_instance_id)
 
 
 ####################################################################################################################
@@ -263,19 +289,25 @@ def postService(request):
 # postServiceInt: deploy a service instance in the device / agent
 def postServiceInt(request):
     data = request.get_json()
+    # check input parameters
     if 'service' not in data or 'agent' not in data:
         LOG.error('LIFECYCLE: REST API: postServiceInt: Exception - parameter not found: service / agent')
-        return Response(json.dumps({'error': True, 'message': 'parameter not found: service /  agent'}), status=406, content_type='application/json')
+        return Response(json.dumps({'error': True, 'message': 'parameter not found: service /  agent'}),
+                        status=406,
+                        content_type='application/json')
+    # deploy operation (for internal calls - between LMs -)
     return operations.deploy(data['service'], data['agent'])
 
 
 # putServiceInt
 def putServiceInt(request):
     data = request.get_json()
+    # check input parameters
     if 'service' not in data or 'operation' not in data or 'agent' not in data:
         LOG.error('LIFECYCLE: REST API: putServiceInt: Exception - parameter not found: agent / operation')
-        return Response(json.dumps({'error': True, 'message': 'parameter not found: agent / operation'}), status=406, content_type='application/json')
-
+        return Response(json.dumps({'error': True, 'message': 'parameter not found: agent / operation'}),
+                        status=406,
+                        content_type='application/json')
     # operations
     if data['operation'] == OPERATION_START:
         return operations.start(data['service'], data['agent'])
@@ -287,4 +319,6 @@ def putServiceInt(request):
         return operations.terminate(data['service'], data['agent'])
     else:
         LOG.error('LIFECYCLE: REST API: putServiceInt: operation not defined / implemented')
-        return Response(json.dumps({'error': True, 'message': 'operation not defined / implemented'}), status=501, content_type='application/json')
+        return Response(json.dumps({'error': True, 'message': 'operation not defined / implemented'}),
+                        status=501,
+                        content_type='application/json')

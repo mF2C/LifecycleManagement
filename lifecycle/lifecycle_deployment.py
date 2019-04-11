@@ -11,7 +11,6 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-import sys, traceback
 import threading
 import lifecycle.modules.agent_decision as agent_decision
 import lifecycle.modules.applications_adapter as apps_adapter
@@ -130,7 +129,7 @@ def thr_submit_local(service, agent):
             agent['status'] = "not-deployed"
 
     except:
-        LOG.error("LIFECYCLE: Lifecycle_Deployment: thr_submit_local: thr: Exception")
+        LOG.exception("LIFECYCLE: Lifecycle_Deployment: thr_submit_local: thr: Exception")
 
 
 # thr_submit_remote: deploy in a remote agent
@@ -155,7 +154,7 @@ def thr_submit_remote(service, agent):
             agent['status'] = "not-deployed"
 
     except:
-        LOG.error("LIFECYCLE: Lifecycle_Deployment: thr_submit_remote: thr: Exception")
+        LOG.exception("LIFECYCLE: Lifecycle_Deployment: thr_submit_remote: thr: Exception")
 
 
 # thr_submit_service_in_agents: deploy agents (parallel process)
@@ -199,7 +198,7 @@ def thr_submit_service_in_agents(service, service_instance, agreement_id):
 
         LOG.debug("LIFECYCLE: Lifecycle_Deployment: thr_submit_service_in_agents: service instance deployed: service_instance: " + str(service_instance))
     except:
-        LOG.error("LIFECYCLE: Lifecycle_Deployment: thr_submit_service_in_agents: thr: Exception")
+        LOG.exception("LIFECYCLE: Lifecycle_Deployment: thr_submit_service_in_agents: thr: Exception")
 
 
 # forward_submit_request_to_leader
@@ -207,6 +206,7 @@ def forward_submit_request_to_leader(service, user_id, agreement_id, service_ins
     LOG.debug("LIFECYCLE: Lifecycle_Deployment: forward_submit_request_to_leader: " + str(service) +
               ", user_id: " + user_id + ", agreement_id: " + agreement_id + ", service_instance_id: " + service_instance_id)
 
+    service_instance = None
     if not service_instance_id:
         service_instance = data_adapter.create_service_instance(service, [], user_id, agreement_id)
         service_instance_id = service_instance['id']
@@ -244,7 +244,7 @@ def forward_submit_request_to_leader(service, user_id, agreement_id, service_ins
 # submit_service_in_agents: Submits a service (no access to external docker APIs; calls to other agent's lifecycle components)
 # IN: service, user_id, agreement_id, agents_list
 # OUT: service_instance
-def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_service=False):
+def submit_service_in_agents(service, user_id, agreement_id, service_instance_id, agents_list, check_service=False):
     LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: " + str(service) +
               ", user_id: " + user_id + ", agreement_id: " + agreement_id + ", agents_list: " + str(agents_list))
     try:
@@ -253,11 +253,16 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
             return common.gen_response(500, 'field(s) category/exec/exec_type not found', 'service', str(service))
 
         # 2. create new service instance
-        LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Creating service instance ... ")
-        service_instance = data_adapter.create_service_instance(service, agents_list, user_id, agreement_id)
-        if not service_instance:
-            LOG.error("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: error creating service_instance")
+        if service_instance_id is not None:
+            # TODO
+            LOG.warning("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: service_instance_id is not None - not implemented -")
             return common.gen_response(500, 'error creating service_instance', 'service', str(service))
+        else:
+            LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Creating service instance ... ")
+            service_instance = data_adapter.create_service_instance(service, agents_list, user_id, agreement_id)
+            if not service_instance:
+                LOG.error("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: error creating service_instance")
+                return common.gen_response(500, 'error creating service_instance', 'service', str(service))
 
         # 3. select from agents list
         num_agents = service['num_agents']
@@ -289,23 +294,21 @@ def submit_service_in_agents(service, user_id, agreement_id, agents_list, check_
                                           "service_instance",
                                           service_instance)
     except:
-        traceback.print_exc(file=sys.stdout)
-        LOG.error('LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Exception')
+        LOG.exception('LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Exception')
         return common.gen_response(500, 'Exception', 'service', str(service))
 
 
 # submit: Submits a service (gets list of agents from mF2C components - recommender, landscaper - or from config)
-# IN: service, user_id, agreement_id
+# IN: service, user_id, agreement_id, service_instance_id (FORWARD REQUEST)
 # OUT: service_instance
-def submit(service, user_id, agreement_id):
+def submit(service, user_id, agreement_id, service_instance_id):
     LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit: " + str(service) + ", user_id: " + user_id)
     try:
         # 1. check parameters content
         if not check_service_content(service):
             return common.gen_response(500, 'field(s) category/exec/exec_type not found', 'service', str(service))
 
-        # 2. get list of available agents / resources / VMs. Example:
-        #   [{"agent_ip": "192.168.252.41", "num_cpus": 4, "master_compss": false}, {...}]
+        # 2. get list of available agents / resources / VMs. Example: [{"agent_ip": "192.168.252.41"}, {...}]
         # Call to landscaper/recommender
         available_agents_list = agent_decision.get_available_agents_resources(service)
         if not available_agents_list:
@@ -322,9 +325,9 @@ def submit(service, user_id, agreement_id):
 
         else:
             # 3. Create new service instance & allocate service / call other agents when needed
-            return submit_service_in_agents(service, user_id, agreement_id, available_agents_list)
+            return submit_service_in_agents(service, user_id, agreement_id, service_instance_id, available_agents_list)
     except:
-        LOG.error('LIFECYCLE: Lifecycle_Deployment: submit: Exception')
+        LOG.exception('LIFECYCLE: Lifecycle_Deployment: submit: Exception')
         return common.gen_response(500, 'Exception', 'service', str(service))
 
 

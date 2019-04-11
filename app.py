@@ -420,7 +420,7 @@ class Service(Resource):
         }],
         responseMessages=[{
             "code": 406,
-            "message": "'service_id' / 'service' / 'user_id' / agreement_id parameter not found"
+            "message": "'service_id' parameter not found"
         }, {
             "code": 500,
             "message": "Error processing request"

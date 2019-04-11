@@ -115,6 +115,7 @@ def check_ip(ip_adress):
     return False
 
 
+# TODO get from agent resource
 # get_ip_address: get IP
 def get_ip_address():
     ipaddr = ''
