@@ -235,7 +235,7 @@ def postService(request):
 
     # AGREEMENT TEMPLATE
     # TODO
-    if 'agreement_template' not in data:
+    if 'sla_template' not in data:
         LOG.debug("LIFECYCLE: REST API: postService: Parameter not found: 'agreement_template'")
     else:
         LOG.debug("LIFECYCLE: REST API: postService: Parameter found: 'agreement_template': " + data['agreement_template'])

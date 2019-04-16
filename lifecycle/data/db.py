@@ -86,11 +86,9 @@ def save_to_DB_DOCKER_PORTS(port, mapped_to):
 
 # get_from_DB_DOCKER_PORTS
 def get_from_DB_DOCKER_PORTS(port):
-    LOG.debug('LIFECYCLE: db: get_from_DB_DOCKER_PORTS: Getting record ...')
     try:
         # debug DB
-        print_records(DB_DOCKER_PORTS)
-
+        # print_records(DB_DOCKER_PORTS)
         records = [r for r in DB_DOCKER_PORTS if r['port'] == port]
         LOG.debug("LIFECYCLE: db: get_from_DB_DOCKER_PORTS: records: " + str(records))
 
@@ -106,11 +104,9 @@ def get_from_DB_DOCKER_PORTS(port):
 
 # get_from_DB_DOCKER_PORTS
 def get_COMPSs_port_DB_DOCKER_PORTS(lports):
-    LOG.debug('LIFECYCLE: db: get_from_DB_DOCKER_PORTS: Getting record ...')
     try:
         # debug DB
-        print_records(DB_DOCKER_PORTS)
-
+        # print_records(DB_DOCKER_PORTS)
         for p in lports:
             records = [r for r in DB_DOCKER_PORTS if r['port'] == p]
             LOG.debug("LIFECYCLE: db: get_COMPSs_port_DB_DOCKER_PORTS: records: " + str(records))
@@ -128,7 +124,6 @@ def get_COMPSs_port_DB_DOCKER_PORTS(lports):
 
 # del_from_DB_DOCKER_PORTS
 def del_from_DB_DOCKER_PORTS(port):
-    LOG.debug('LIFECYCLE: db: get_from_DB_DOCKER_PORTS: Deleting record ...')
     try:
         record = get_from_DB_DOCKER_PORTS(port)
         if record is not None:
@@ -137,7 +132,7 @@ def del_from_DB_DOCKER_PORTS(port):
             DB_DOCKER_PORTS.commit()
             return True
         else:
-            LOG.warning('LIFECYCLE: db: save_to_DB_DOCKER_PORTS: Port was not found in DB')
+            LOG.warning('LIFECYCLE: db: del_from_DB_DOCKER_PORTS: Port was not found in DB')
             return False
     except:
         LOG.error('LIFECYCLE: db: del_from_DB_DOCKER_PORTS: Exception')

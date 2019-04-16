@@ -44,7 +44,8 @@ ENV VARIABLES (lifecycle):
 def init():
     try:
         # CONFIGURATION / ENVIRONMENT VALUES
-        LOG.debug('LIFECYCLE: Reading values from ENVIRONMENT...')
+        LOG.info('LIFECYCLE: Reading values from ENVIRONMENT...')
+
         # STANDALONE_MODE
         common.set_value_env('STANDALONE_MODE')
         # docker
@@ -73,6 +74,8 @@ def init():
         common.set_value_env('URL_PM_RECOM_LANDSCAPER')
         common.set_value_env('CIMI_URL')
 
+        LOG.info('LIFECYCLE: Checking configuration...')
+
         # CIMI URL
         if "/api" not in config.dic['CIMI_URL'] and not config.dic['CIMI_URL'].endswith("/api"):
             LOG.debug("LIFECYCLE: Adding '/api' to CIMI_URL ...")
@@ -84,7 +87,6 @@ def init():
         else:
             LOG.debug("LIFECYCLE: CIMI_URL ... " + config.dic['CIMI_URL'])
 
-        LOG.debug('LIFECYCLE: Checking configuration...')
         LOG.info('LIFECYCLE: [HOST_IP=' + config.dic['HOST_IP'] + ']')
         LOG.info('LIFECYCLE: [SERVER_PORT=' + str(config.dic['SERVER_PORT']) + ']')
         LOG.info('LIFECYCLE: [DOCKER_SOCKET=' + config.dic['DOCKER_SOCKET'] + ']')
