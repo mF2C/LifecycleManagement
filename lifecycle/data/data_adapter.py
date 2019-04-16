@@ -17,45 +17,6 @@ import lifecycle.data.mF2C.mf2c as mf2c
 #import lifecycle.data.standalone.data as data_standalone
 
 
-'''
- Data managed by this component:
- SERVICE:
-       {
-           "name": "hello-world",
-           "description": "Hello World Service",
-           "resourceURI": "/hello-world",
-           "exec": "hello-world",
-           "exec_type": "docker",
-           "exec_ports": ["8080", "8081"],
-           "category": {
-               "cpu": "low",
-               "memory": "low",
-               "storage": "low",
-               "inclinometer": false,
-               "temperature": false,
-               "jammer": false,
-               "location": false
-           }
-       }
-
- SERVICE INSTANCE:
-   {
-       ...
-       "id": "",
-       "user": "testuser",
-       "service": "",
-       "agreement": "",
-       "status": "waiting",
-       "agents": [
-           {"agent": resource-link, "url": "192.168.1.31", "ports": [8081], "container_id": "10asd673f", "status": "waiting",
-               "num_cpus": 3, "allow": true, "master_compss": true},
-           {"agent": resource-link, "url": "192.168.1.34", "ports": [8081], "container_id": "99asd673f", "status": "waiting",
-               "num_cpus": 2, "allow": true, "master_compss": false}
-      ]
-   }
-'''
-
-
 ###############################################################################
 # COMMON
 
@@ -74,8 +35,14 @@ def exist_device(device_id):
     return data_mf2c.exist_device(device_id)
 
 
+# get_leader_ip: Get IP address from Leader
+def get_leader_ip():
+    return data_mf2c.get_leader_ip()
+
+
 ###############################################################################
 # USER MANAGEMENT
+
 # get_um_profile: Get um_profile
 def get_um_profile():
     return data_mf2c.get_um_profile()
@@ -95,14 +62,10 @@ def get_check_um():
 def get_um_current(val):
     return mf2c.user_management_get_current(val)
 
-###############################################################################
-# get_leader_ip: Get IP address from Leader
-def get_leader_ip():
-    return data_mf2c.get_leader_ip()
-
 
 ###############################################################################
 # SERVICE
+
 # get_service: Get service
 def get_service(service_id):
     return data_mf2c.get_service(service_id)
@@ -110,6 +73,7 @@ def get_service(service_id):
 
 ###############################################################################
 # SERVICE INSTANCE
+
 # get_service_instance: Gets the service instance
 def get_service_instance(service_instance_id, obj_response_cimi=None):
     return data_mf2c.get_service_instance(service_instance_id, obj_response_cimi)
