@@ -16,24 +16,24 @@ from common.logs import LOG
 import config
 
 
-# initialize all the SLA processes
-# IN:
-#   - Service instance
-#   - agreement id
-def initializes_sla(service_instance, agreement_id):
-    try:
-        LOG.debug("LIFECYCLE: sla_adapter: initializes_sla #############################")
-        LOG.debug("LIFECYCLE: sla_adapter: initializes_sla: " + str(service_instance) + ", " + str(agreement_id))
-
-        if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
-            LOG.warning("LIFECYCLE: sla_adapter: initializes_sla: STANDALONE_MODE enabled")
-            return None
-
-        else:
-            return mf2c.sla_start_agreement(agreement_id)
-    except:
-        LOG.error('LIFECYCLE: sla_adapter: initializes_sla: Exception')
+# FUNCTION: create_sla_agreement: creates the SLA agreement
+def create_sla_agreement(sla_template_id, user_id, service):
+    if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
+        LOG.warning("LIFECYCLE: sla_adapter: create_sla_agreement: STANDALONE_MODE enabled; Returning None ...")
         return None
+    else:
+        LOG.debug("LIFECYCLE: sla_adapter: create_sla_agreement: Creating a new SLA template [" + sla_template_id + ", " + user_id + "] " + " for service '" + service['name'] + "' ...")
+        return mf2c.create_sla_agreement(sla_template_id, user_id, service)
+
+
+# FUNCTION: initializes_sla: initialize all the SLA processes
+def initializes_sla(service_instance, agreement_id):
+    if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
+        LOG.warning("LIFECYCLE: sla_adapter: initializes_sla: STANDALONE_MODE enabled; Returning None ...")
+        return None
+    else:
+        LOG.debug("LIFECYCLE: sla_adapter: initializes_sla: Starting SLA (" + str(service_instance) + ", " + agreement_id + ") ...")
+        return mf2c.sla_start_agreement(agreement_id)
 
 
 # stops_sla_agreement
@@ -41,19 +41,12 @@ def initializes_sla(service_instance, agreement_id):
 #   - Service instance
 #   - agreement id
 def stop_sla_agreement(service_instance, agreement_id):
-    try:
-        LOG.debug("LIFECYCLE: sla_adapter: stops_sla_agreement #############################")
-        LOG.debug("LIFECYCLE: sla_adapter: stops_sla_agreement: " + str(service_instance) + ", " + str(agreement_id))
-
-        if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
-            LOG.warning("LIFECYCLE: sla_adapter: stop_sla_agreement: STANDALONE_MODE enabled")
-            return None
-
-        else:
-            return mf2c.sla_stop_agreement(agreement_id)
-    except:
-        LOG.error('LIFECYCLE: sla_adapter: stops_sla_agreement: Exception')
+    if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
+        LOG.warning("LIFECYCLE: sla_adapter: stop_sla_agreement: STANDALONE_MODE enabled; Returning None ...")
         return None
+    else:
+        LOG.debug("LIFECYCLE: sla_adapter: sla_stop_agreement: Stopping SLA (" + str(service_instance) + ", " + agreement_id + ") ...")
+        return mf2c.sla_stop_agreement(agreement_id)
 
 
 # terminates_sla_agreement
@@ -61,17 +54,9 @@ def stop_sla_agreement(service_instance, agreement_id):
 #   - Service instance
 #   - agreement id
 def terminate_sla_agreement(service_instance, agreement_id):
-    try:
-        LOG.debug("LIFECYCLE: sla_adapter: terminate_sla_agreement #############################")
-        LOG.debug("LIFECYCLE: sla_adapter: terminate_sla_agreement: " + str(service_instance) + ", " + str(agreement_id))
-
-        if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
-            LOG.warning("LIFECYCLE: agent_decision: terminate_sla_agreement: STANDALONE_MODE enabled")
-            return None
-
-        else:
-            # TODO terminate function is not ready (sla)
-            return mf2c.sla_terminate_agreement(agreement_id)
-    except:
-        LOG.error('LIFECYCLE: sla_adapter: terminate_sla_agreement: Exception')
+    if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
+        LOG.warning("LIFECYCLE: agent_decision: sla_terminate_agreement: STANDALONE_MODE enabled; Returning None ...")
         return None
+    else:
+        LOG.debug("LIFECYCLE: sla_adapter: sla_terminate_agreement: Terminating SLA (" + str(service_instance) + ", " + agreement_id + ") ...")
+        return mf2c.sla_terminate_agreement(agreement_id)

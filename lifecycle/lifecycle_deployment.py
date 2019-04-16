@@ -158,7 +158,7 @@ def thr_submit_remote(service, agent):
 
 
 # thr_submit_service_in_agents: deploy agents (parallel process)
-def thr_submit_service_in_agents(service, service_instance, agreement_id):
+def thr_submit_service_in_agents(service, service_instance, sla_template_id, user_id):
     try:
         LOG.debug("LIFECYCLE: Lifecycle_Deployment: thr_submit_service_in_agents: Executing thread ...")
 
@@ -185,11 +185,15 @@ def thr_submit_service_in_agents(service, service_instance, agreement_id):
         for x in thrs:
             x.join()
 
-        # 5. initializes SLA
-        if sla_adapter.initializes_sla(service_instance, agreement_id):
-            LOG.debug("LIFECYCLE: Lifecycle_Deployment: thr_submit_service_in_agents: sla agreement started")
-        else:
-            LOG.error("LIFECYCLE: Lifecycle_Deployment: thr_submit_service_in_agents: sla agreement NOT started")
+        # 5.1 creates SLA template
+        id_agreement = sla_adapter.create_sla_agreement(sla_template_id, user_id, service)
+        if id_agreement is not None:
+            service_instance['agreement'] = id_agreement
+            # 5.2 initializes SLA
+            if sla_adapter.initializes_sla(service_instance, id_agreement):
+                LOG.debug("LIFECYCLE: Lifecycle_Deployment: thr_submit_service_in_agents: sla agreement started")
+            else:
+                LOG.error("LIFECYCLE: Lifecycle_Deployment: thr_submit_service_in_agents: sla agreement NOT started")
 
         # 6. save / update service_instance
         LOG.debug("LIFECYCLE: Lifecycle_Deployment: thr_submit_service_in_agents: UPDATING service_instance: " + str(service_instance))
@@ -202,13 +206,13 @@ def thr_submit_service_in_agents(service, service_instance, agreement_id):
 
 
 # forward_submit_request_to_leader
-def forward_submit_request_to_leader(service, user_id, agreement_id, service_instance_id):
+def forward_submit_request_to_leader(service, user_id, sla_template_id, service_instance_id):
     LOG.debug("LIFECYCLE: Lifecycle_Deployment: forward_submit_request_to_leader: Forwarding service [" + service['name'] + "] deployment to leader" +
-              " (user_id: " + user_id + ", agreement_id: " + agreement_id + ", service_instance_id: " + service_instance_id + ") ...")
+              " (user_id: " + user_id + ", sla_template_id: " + sla_template_id + ", service_instance_id: " + service_instance_id + ") ...")
 
     service_instance = None
     if not service_instance_id:
-        service_instance = data_adapter.create_service_instance(service, [], user_id, agreement_id)
+        service_instance = data_adapter.create_service_instance(service, [], user_id, "")
         service_instance_id = service_instance['id']
 
     leader_ip = data_adapter.get_leader_ip()
@@ -225,7 +229,7 @@ def forward_submit_request_to_leader(service, user_id, agreement_id, service_ins
                                    "Actions:",
                                    "1) Service instance deleted, 2) Request not completed")
     # forward to leader
-    elif leader_ip is not None and mf2c.lifecycle_parent_deploy(leader_ip, service['id'], user_id, agreement_id, service_instance_id):
+    elif leader_ip is not None and mf2c.lifecycle_parent_deploy(leader_ip, service['id'], user_id, sla_template_id, service_instance_id):
         return common.gen_response_ok("Request forwarded to Leader. Service deployment operation is being processed...",
                                       "service_instance",
                                       service_instance)
@@ -241,12 +245,11 @@ def forward_submit_request_to_leader(service, user_id, agreement_id, service_ins
                                    "1) Service instance deleted, 2) Request not completed")
 
 
-# submit_service_in_agents: Submits a service (no access to external docker APIs; calls to other agent's lifecycle components)
-# IN: service, user_id, agreement_id, agents_list
-# OUT: service_instance
-def submit_service_in_agents(service, user_id, agreement_id, service_instance_id, agents_list, check_service=False):
+# FUNCTION: submit_service_in_agents: Submits a service in a set of agents / devices
+#  (no access to external docker APIs; calls to other agent's lifecycle components)
+def submit_service_in_agents(service, user_id, service_instance_id, sla_template_id, agents_list, check_service=False):
     LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Deploying service [name=" + service['name'] + ", "
-              ", user_id=" + user_id + ", agreement_id=" + agreement_id + ", agents_list=" + str(agents_list) + "] in agents ...")
+              ", user_id=" + user_id + ", sla_template_id=" + sla_template_id + ", agents_list=" + str(agents_list) + "] in agents ...")
     try:
         # 1. check parameters content
         if check_service and not check_service_content(service):
@@ -259,7 +262,7 @@ def submit_service_in_agents(service, user_id, agreement_id, service_instance_id
             return common.gen_response(500, 'error creating service_instance', 'service', str(service))
         else:
             LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Creating service instance ... ")
-            service_instance = data_adapter.create_service_instance(service, agents_list, user_id, agreement_id)
+            service_instance = data_adapter.create_service_instance(service, agents_list, user_id, "")
             if not service_instance:
                 LOG.error("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: error creating service_instance")
                 return common.gen_response(500, 'error creating service_instance', 'service', str(service))
@@ -274,12 +277,12 @@ def submit_service_in_agents(service, user_id, agreement_id, service_instance_id
         if m == "error" or r is None:
             LOG.error("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: error when selecting agents. Forwarding to Leader...")
             # forward to parent
-            return forward_submit_request_to_leader(service, user_id, agreement_id, service_instance['id'])
+            return forward_submit_request_to_leader(service, user_id, sla_template_id, service_instance['id'])
 
         elif m == "not-enough-resources-found" or len(r['agents']) == 0:
             LOG.warning("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Not enough resources (number of agents) found. Forwarding to Leader...")
             # forward to parent
-            return forward_submit_request_to_leader(service, user_id, agreement_id, service_instance['id'])
+            return forward_submit_request_to_leader(service, user_id, sla_template_id, service_instance['id'])
 
         else:
             service_instance = r
@@ -287,7 +290,7 @@ def submit_service_in_agents(service, user_id, agreement_id, service_instance_id
 
             # submit service thread
             service_instance['status'] = STATUS_DEPLOYING
-            t = threading.Thread(target=thr_submit_service_in_agents, args=(service, service_instance, agreement_id,))
+            t = threading.Thread(target=thr_submit_service_in_agents, args=(service, service_instance, sla_template_id, user_id,))
             t.start()
 
             return common.gen_response_ok("Service deployment operation is being processed [" + service_instance['id'] + "]...",
@@ -298,11 +301,10 @@ def submit_service_in_agents(service, user_id, agreement_id, service_instance_id
         return common.gen_response(500, 'Exception', 'service', str(service))
 
 
-# submit: Submits a service (gets list of agents from mF2C components - recommender, landscaper - or from config)
-# IN: service, user_id, agreement_id, service_instance_id (FORWARD REQUEST)
-# OUT: service_instance
-def submit(service, user_id, agreement_id, service_instance_id):
-    LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit: " + str(service) + ", user_id: " + user_id)
+# FUNCTION: submit: Submits a service in mF2C
+# (gets list of agents from mF2C components - recommender, landscaper - or from config)
+def submit(service, user_id, service_instance_id, sla_template_id):
+    LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit: Deploying service [" + service['name'] + "] in mF2C ...")
     try:
         # 1. check parameters content
         if not check_service_content(service):
@@ -315,17 +317,17 @@ def submit(service, user_id, agreement_id, service_instance_id):
             # warning
             LOG.error("LIFECYCLE: Lifecycle_Deployment: submit: available_agents_list is None. Forwarding to Leader...")
             # forward to parent
-            return forward_submit_request_to_leader(service, user_id, agreement_id, "")
+            return forward_submit_request_to_leader(service, user_id, sla_template_id, "")
 
         elif len(available_agents_list) == 0:
             # no resurces / agents found
             LOG.warning("LIFECYCLE: Lifecycle_Deployment: submit: available_agents_list is empty. Forwarding to Leader...")
             # forward to parent
-            return forward_submit_request_to_leader(service, user_id, agreement_id, "")
+            return forward_submit_request_to_leader(service, user_id, sla_template_id, "")
 
         else:
             # 3. Create new service instance & allocate service / call other agents when needed
-            return submit_service_in_agents(service, user_id, agreement_id, service_instance_id, available_agents_list)
+            return submit_service_in_agents(service, user_id, service_instance_id, sla_template_id, available_agents_list)
     except:
         LOG.exception('LIFECYCLE: Lifecycle_Deployment: submit: Exception')
         return common.gen_response(500, 'Exception', 'service', str(service))

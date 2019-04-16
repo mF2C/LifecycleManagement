@@ -225,20 +225,13 @@ def postService(request):
     if not data_adapter.exist_user(user_id):
         return common.gen_response(404, "Error", "user_id", user_id, "message", "User ID not found")
 
-    # AGREEMENT_ID:
-    if 'agreement_id' not in data:
-        LOG.debug("LIFECYCLE: REST API: postService: Parameter not found: 'agreement_id'")
-        LOG.debug("LIFECYCLE: REST API: postService: Retrieving 'agreement_id' value ...")
-        agreement_id = "AGREEMENT_ID" # TODO
-    else:
-        agreement_id = data['agreement_id']
-
-    # AGREEMENT TEMPLATE
-    # TODO
+    # SLA TEMPLATE
     if 'sla_template' not in data:
-        LOG.debug("LIFECYCLE: REST API: postService: Parameter not found: 'agreement_template'")
+        LOG.error("LIFECYCLE: REST API: postService: Parameter not found: 'agreement_template'")
+        sla_template_id = "SLA_TEMPLATE_ID" # TODO
     else:
         LOG.debug("LIFECYCLE: REST API: postService: Parameter found: 'agreement_template': " + data['agreement_template'])
+        sla_template_id = data['sla_template']
 
     # SERVICE:
     if 'service' not in data and 'service_id' not in data:
@@ -280,8 +273,8 @@ def postService(request):
         # using a predefined list of agents:
         return lifecycle_depl.submit_service_in_agents(service,
                                                        user_id,
-                                                       agreement_id,
                                                        service_instance_id,
+                                                       sla_template_id,
                                                        data['agents_list'],
                                                        check_service=True)
     # OPTION B: submits the service with the help of the other mF2C components (landscaper, recommender ...)
@@ -289,8 +282,8 @@ def postService(request):
         # using agent_decision module (landscaper, recommender...):
         return lifecycle_depl.submit(service,
                                      user_id,
-                                     agreement_id,
-                                     service_instance_id)
+                                     service_instance_id,
+                                     sla_template_id)
 
 
 ####################################################################################################################

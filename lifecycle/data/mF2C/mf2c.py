@@ -25,16 +25,16 @@ from common.logs import LOG
 
 # FORWARD REQUEST TO LEADER
 # lifecycle_deploy: call to parent's lifceycle; forwards a "submit service" request
-def lifecycle_parent_deploy(leader_ip, service_id, user_id, agreement_id, service_instance_id):
+def lifecycle_parent_deploy(leader_ip, service_id, user_id, sla_template_id, service_instance_id):
     LOG.debug("LIFECYCLE: MF2C: lifecycle_parent_deploy: forward request to leader: " + leader_ip + ", service_id: " + str(service_id) +
-              ", user_id: " + str(user_id) + ", agreement_id: " + agreement_id + ", service_instance_id: " + service_instance_id)
+              ", user_id: " + str(user_id) + ", sla_template_id: " + sla_template_id + ", service_instance_id: " + service_instance_id)
     try:
         LOG.info("LIFECYCLE: MF2C: lifecycle_parent_deploy: HTTP POST: http://" + leader_ip + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/service")
 
         r = requests.post("http://" + leader_ip + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/service",
                           json={"service_id": service_id,
                                 "user_id": user_id,
-                                "agreement_id": agreement_id,
+                                "sla_template": sla_template_id,
                                 "service_instance_id": service_instance_id},
                           verify=config.dic['VERIFY_SSL'])
         LOG.debug("LIFECYCLE: MF2C: lifecycle_parent_deploy: response: " + str(r) + ", " + str(r.json()))
@@ -300,13 +300,12 @@ def sla_stop_agreement(agreement_id):
 
 
 # PUT /agreements/<id>/stop
-# TODO
 def sla_terminate_agreement(agreement_id):
     agreement_id = agreement_id.replace('agreement/', '')
     LOG.debug("LIFECYCLE: MF2C: sla_terminate_agreement: agreement_id: " + agreement_id)
     try:
         LOG.info("LIFECYCLE: MF2C: sla_terminate_agreement: HTTP PUT: " + str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/stop")
-        r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/stop",
+        r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/terminate",
                          verify=config.dic['VERIFY_SSL'])
         LOG.debug("LIFECYCLE: MF2C: sla_terminate_agreement: response: " + str(r) + ", " + str(r.json()))
 

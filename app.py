@@ -413,7 +413,7 @@ class Service(Resource):
                            "{<br/>"
                            "\"service_id\": \"service/74dd7176-111e-412a-98ce-a6409d58b3ca\",<br/>"
                            "\"user_id\": \"user/testuser\",<br/>"
-                           "\"agreement_template\": \"sla_agreement/12932af0ef123\"<br/>}",
+                           "\"sla_template\": \"sla-templatet/12932af0ef123\"<br/>}",
             "required": True,
             "paramType": "body",
             "type": "string"
