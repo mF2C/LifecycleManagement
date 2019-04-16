@@ -203,8 +203,8 @@ def thr_submit_service_in_agents(service, service_instance, agreement_id):
 
 # forward_submit_request_to_leader
 def forward_submit_request_to_leader(service, user_id, agreement_id, service_instance_id):
-    LOG.debug("LIFECYCLE: Lifecycle_Deployment: forward_submit_request_to_leader: " + str(service) +
-              ", user_id: " + user_id + ", agreement_id: " + agreement_id + ", service_instance_id: " + service_instance_id)
+    LOG.debug("LIFECYCLE: Lifecycle_Deployment: forward_submit_request_to_leader: Forwarding service [" + service['name'] + "] deployment to leader" +
+              " (user_id: " + user_id + ", agreement_id: " + agreement_id + ", service_instance_id: " + service_instance_id + ") ...")
 
     service_instance = None
     if not service_instance_id:
@@ -245,8 +245,8 @@ def forward_submit_request_to_leader(service, user_id, agreement_id, service_ins
 # IN: service, user_id, agreement_id, agents_list
 # OUT: service_instance
 def submit_service_in_agents(service, user_id, agreement_id, service_instance_id, agents_list, check_service=False):
-    LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: " + str(service) +
-              ", user_id: " + user_id + ", agreement_id: " + agreement_id + ", agents_list: " + str(agents_list))
+    LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Deploying service [name=" + service['name'] + ", "
+              ", user_id=" + user_id + ", agreement_id=" + agreement_id + ", agents_list=" + str(agents_list) + "] in agents ...")
     try:
         # 1. check parameters content
         if check_service and not check_service_content(service):

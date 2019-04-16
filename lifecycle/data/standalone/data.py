@@ -60,7 +60,7 @@ from common.logs import LOG
 # get_service_instance: Get service instance
 def get_service_instance(service_instance_id, obj_response_cimi=None):
     LOG.debug("Lifecycle-Management: Data: get_service_instance: " + service_instance_id)
-    return cimi.get_service_instance_by_id(service_instance_id, obj_response_cimi)
+    return cimi.get_service_instance_by_id(service_instance_id)
 
 
 # get_all_service_instances: Get all service instances

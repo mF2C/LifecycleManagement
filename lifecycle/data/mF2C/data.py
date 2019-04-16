@@ -151,7 +151,7 @@ def get_service(service_id):
 # get_service_instance: Get service instance
 def get_service_instance(service_instance_id, obj_response_cimi=None):
     LOG.debug("LIFECYCLE: Data: get_service_instance: " + service_instance_id)
-    return cimi.get_service_instance_by_id(service_instance_id, obj_response_cimi)
+    return cimi.get_service_instance_by_id(service_instance_id)
 
 
 # get_service_instance: Get service instance
@@ -163,19 +163,19 @@ def get_service_instance_report(service_instance_id):
 # get_all_service_instances: Get all service instances
 def get_all_service_instances(obj_response_cimi=None):
     LOG.debug("LIFECYCLE: Data: get_all_service_instances")
-    return cimi.get_all_service_instances(obj_response_cimi)
+    return cimi.get_all_service_instances()
 
 
 # del_service_instance: Delete service instance
 def del_service_instance(service_instance_id, obj_response_cimi=None):
     LOG.debug("LIFECYCLE: Data: del_service_instance: " + service_instance_id)
-    return cimi.del_service_instance_by_id(service_instance_id, obj_response_cimi)
+    return cimi.del_service_instance_by_id(service_instance_id)
 
 
 # del_all_service_instances: Delete all service instances
-def del_all_service_instances(obj_response_cimi=None):
-    LOG.debug("LIFECYCLE: Data: del_all_service_instances")
-    return cimi.del_all_service_instances(obj_response_cimi)
+def del_all_service_instances():
+    LOG.debug("LIFECYCLE: Data: del_all_service_instances: Deleting all  service instances ... ")
+    return cimi.del_all_service_instances()
 
 
 # create_service_instance: Creates a new service instance
@@ -186,13 +186,15 @@ def del_all_service_instances(obj_response_cimi=None):
 #       4. agreement_id
 #   OUT: service_instance dict
 def create_service_instance(service, agents_list, user_id, agreement_id):
-    LOG.debug("LIFECYCLE: Data: create_service_instance: " + str(service) + ", " + str(agents_list) + ", " + str(user_id) + ", " + str(agreement_id))
+    LOG.debug("LIFECYCLE: Data: create_service_instance: Adding new resource to service instances [" +
+              service['name'] + ", " + str(agents_list) + ", " + str(user_id) + ", " + str(agreement_id) + "] ...")
 
     if len(agents_list) == 0:
         new_service_instance = service_instance.new_empty_service_instance(service, user_id, agreement_id)
     else:
         new_service_instance = service_instance.new_service_instance(service, agents_list, user_id, agreement_id)
 
+    LOG.debug("LIFECYCLE: Data: create_service_instance: adding service_intance to CIMI ...")
     res = cimi.add_service_instance(new_service_instance)
 
     if not res:
@@ -204,9 +206,8 @@ def create_service_instance(service, agents_list, user_id, agreement_id):
 # update_service_instance: Updates a service instance
 #       service_instance_id = "service-instance/250af452-959f-4ac6-9b06-54f757b46bf0"
 def update_service_instance(service_instance_id, service_instance):
-    LOG.debug("LIFECYCLE: Data: (1) update_service_instance: " + service_instance_id + ", " + str(service_instance))
+    LOG.debug("LIFECYCLE: Data: update_service_instance: Updating resource ... (" + service_instance_id + ", " + str(service_instance) + ")")
     res = cimi.update_service_instance(service_instance_id, service_instance)
-    LOG.debug("LIFECYCLE: Data: (2) update_service_instance: " + str(res))
     if not res:
         LOG.error("LIFECYCLE: Data: update_service_instance: Error during the edition of the service_instance object")
         return None
@@ -214,14 +215,6 @@ def update_service_instance(service_instance_id, service_instance):
 
 
 ###############################################################################
-
-
-# Get battery level
-def get_power():
-    # get 'my' device_id
-    device_id = get_current_device_id()
-    LOG.info("LIFECYCLE: Data: get_power: Getting power status from device [" + device_id + "] ...")
-    return cimi.get_power(device_id)
 
 
 # Get parent

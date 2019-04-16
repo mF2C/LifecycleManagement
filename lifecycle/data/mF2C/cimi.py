@@ -67,7 +67,7 @@ def common_new_map_fields():
     return default_map
 
 
-# common_update_map_fields: generates a map with time and acl values
+# FUNCTION: common_update_map_fields: generates a map with time and acl values
 def common_update_map_fields():
     now = datetime.datetime.now()
     default_map = {
@@ -77,7 +77,7 @@ def common_update_map_fields():
     return default_map
 
 
-# patch_update_map_fields: TODO remove after dataclay is updated
+# FUNCTION: patch_update_map_fields: TODO remove after dataclay is updated
 def patch_update_map_fields():
     now = datetime.datetime.now()
     default_map = {
@@ -94,14 +94,13 @@ def patch_update_map_fields():
 # COMMON
 
 # TODO get this information from new RESOURCE: AGENT
-# get_current_device_info
+# FUNCTION: get_current_device_info
 def get_current_device_info():
     try:
         res = requests.get(config.dic['CIMI_URL'] + "/device",
                            headers=CIMI_HEADER,
                            verify=False)
-
-        LOG.info("LIFECYCLE: cimi: get_current_device_info: response: " + str(res.json()))
+        LOG.debug("LIFECYCLE: cimi: get_current_device_info: response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 200 and res.json()['count'] == 0:
             LOG.warning("LIFECYCLE: cimi: get_current_device_info: 'device' not found")
@@ -109,43 +108,46 @@ def get_current_device_info():
         elif res.status_code == 200:
             return res.json()['devices'][0]
 
-        LOG.warning("LIFECYCLE: cimi: get_current_device_info: 'device' not found")
+        LOG.warning("LIFECYCLE: cimi: get_current_device_info: 'device' not found; Returning -1 ...")
         return -1
     except:
-        LOG.exception('LIFECYCLE: cimi: get_current_device_info: Exception')
+        LOG.exception("LIFECYCLE: cimi: get_current_device_info: Exception; Returning None ...")
         return None
 
 
-# exist_user: check if 'user id' exists
+# FUNCTION: exist_user: check if 'user id' exists
 def exist_user(user_id):
     try:
         user_id = user_id.replace('user/', '')
         res = requests.get(config.dic['CIMI_URL'] + "/user/" + user_id,
                            headers=CIMI_HEADER,
                            verify=False)
-        LOG.debug("LIFECYCLE: cimi: exist_user: Response: " + str(res.json()))
+        LOG.debug("LIFECYCLE: cimi: exist_user: [" + user_id + "] response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 200 and not res.json()['id'] is None:
             return True
+
+        LOG.warning("LIFECYCLE: cimi: exist_user: 'user' not found / error getting user (user_id=" + user_id + "); Returning False ...")
     except:
-        LOG.warning("LIFECYCLE: cimi: exist_user: controlled exception")
-    LOG.warning("LIFECYCLE: cimi: exist_user: 'user' not found / error getting user")
+        LOG.warning("LIFECYCLE: cimi: exist_user: controlled exception; Returning False ...")
     return False
 
 
-# exist_device: check if 'device id' exists
+# FUNCTION: exist_device: check if 'device id' exists
 def exist_device(device_id):
     try:
         device_id = device_id.replace('device/', '')
         res = requests.get(config.dic['CIMI_URL'] + "/device/" + device_id,
                            headers=CIMI_HEADER,
                            verify=False)
-        LOG.debug("LIFECYCLE: cimi: exist_device: Response: " + str(res.json()))
+        LOG.debug("LIFECYCLE: cimi: exist_device: [" + device_id + "] response: " + str(res) + ", " + str(res.json()))
+
         if res.status_code == 200 and not res.json()['id'] is None:
             return True
+
+        LOG.warning("LIFECYCLE: cimi: exist_device: 'device' not found / error getting device; Returning False ...")
     except:
-        LOG.warning("LIFECYCLE: cimi: exist_user: controlled exception")
-    LOG.warning("LIFECYCLE: cimi: exist_device: 'device' not found / error getting device")
+        LOG.warning("LIFECYCLE: cimi: exist_user: controlled exception; Returning False ...")
     return False
 
 
@@ -153,259 +155,217 @@ def exist_device(device_id):
 # UM
 
 # TODO get this information from new RESOURCE: AGENT
-# get_user_profile_by_device: get profile from device
+# FUNCTION: get_user_profile_by_device: get profile from device
 def get_user_profile_by_device(device_id):
     try:
         device_id = device_id.replace('device/', '')
-
         res = requests.get(config.dic['CIMI_URL'] + "/user-profile?$filter=device_id=\"device/" + device_id + "\"",
                            headers=CIMI_HEADER,
                            verify=False)
-
-        LOG.debug("LIFECYCLE: cimi: get_user_profile_by_device: response: " + str(res))
-        LOG.debug("LIFECYCLE: cimi: get_user_profile_by_device: response: " + str(res.json()))
+        LOG.debug("LIFECYCLE: cimi: get_user_profile_by_device: [" + device_id + "] response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 200 and len(res.json()['userProfiles']) > 0:
             return res.json()['userProfiles'][0]
         else:
-            LOG.warning("LIFECYCLE: cimi: get_user_profile_by_device: User's profile not found [device_id=" + device_id + "]")
+            LOG.warning("LIFECYCLE: cimi: get_user_profile_by_device: User's profile not found [device_id=" + device_id + "]; Returning -1 ...")
             return -1
     except:
-        LOG.exception('LIFECYCLE: cimi: get_user_profile_by_device: Exception')
+        LOG.exception("LIFECYCLE: cimi: get_user_profile_by_device: Exception (parameters: device_id=" + device_id + "); Returning None ...")
         return None
 
 
 # TODO get this information from new RESOURCE: AGENT
-# get_sharing_model_by_device: get sharing model from device
+# FUNCTION: get_sharing_model_by_device: get sharing model from device
 def get_sharing_model_by_device(device_id):
     try:
         device_id = device_id.replace('device/', '')
-
         res = requests.get(config.dic['CIMI_URL'] + "/sharing-model?$filter=device_id=\"device/" + device_id + "\"",
                            headers=CIMI_HEADER,
                            verify=False)
-
-        LOG.debug("LIFECYCLE: cimi: get_sharing_model_by_device: response: " + str(res))
-        LOG.debug("LIFECYCLE: cimi: get_sharing_model_by_device: response: " + str(res.json()))
+        LOG.debug("LIFECYCLE: cimi: get_sharing_model_by_device: [" + device_id + "] response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 200 and len(res.json()['sharingModels']) > 0:
             return res.json()['sharingModels'][0]
         else:
-            LOG.warning("LIFECYCLE: cimi: get_sharing_model_by_device: Sharing-model not found [device_id=" + device_id + "]")
+            LOG.warning("LIFECYCLE: cimi: get_sharing_model_by_device: Sharing-model not found [device_id=" + device_id + "]; Returning -1 ...")
             return -1
     except:
-        LOG.exception('LIFECYCLE: cimi: get_sharing_model_by_device: Exception')
+        LOG.exception("LIFECYCLE: cimi: get_sharing_model_by_device: Exception (parameters: device_id=" + device_id + "); Returning None ...")
         return None
 
 
 ###############################################################################
 
 
-# get_service_by_id: get service by id
+# FUNCTION: get_service_by_id: get service by id
 def get_service_by_id(id):
     try:
         resource_id = id.replace(RSRC_SERVICE + '/', '')
-        LOG.debug("LIFECYCLE: cimi: get_service_by_id: Getting service instance [" + resource_id + "] ... ")
+        res = requests.get(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE + '/' + resource_id,
+                           headers=CIMI_HEADER,
+                           verify=False)
+        LOG.debug("LIFECYCLE: cimi: get_service_by_id: [" + resource_id + "] response: " + str(res) + ", " + str(res.json()))
 
-        res = requests.get(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE + '/' + resource_id, headers=CIMI_HEADER, verify=False)
         if res.status_code == 200:
             return res.json()
 
-        LOG.error("LIFECYCLE: cimi: get_service_by_id: Request failed: " + res.status_code)
-        LOG.error("LIFECYCLE: cimi: get_service_by_id: Response: " + str(res.json()))
-        return None
+        LOG.warning("LIFECYCLE: cimi: get_service_by_id: No service retrieved. Id=" + id + "; Returning None ...")
     except:
-        LOG.exception('LIFECYCLE: cimi: get_service_by_id: Exception')
-        return None
+        LOG.exception("LIFECYCLE: cimi: get_service_by_id: Exception (parameters: id=" + id + "); Returning None ...")
+    return None
 
 
-# get_service_instance_by_id: get service instance by id
-def get_service_instance_by_id(id, obj_response_cimi=None):
+# FUNCTION: get_service_instance_by_id: get service instance by id
+def get_service_instance_by_id(id):
     try:
-        LOG.debug("LIFECYCLE: cimi: get_service_instance_by_id: Getting service instance [" + id + "] ... ")
+        res = requests.get(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE + '/' + id,
+                           headers=CIMI_HEADER,
+                           verify=False)
+        LOG.debug("LIFECYCLE: cimi: get_service_instance_by_id: [" + id + "] response: " + str(res) + ", " + str(res.json()))
 
-        res = requests.get(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE + '/' + id, headers=CIMI_HEADER, verify=False)
         if res.status_code == 200:
             return res.json()
 
-        LOG.error("LIFECYCLE: cimi: get_service_instance_by_id: Request failed: " + res.status_code)
-        LOG.error("LIFECYCLE: cimi: get_service_instance_by_id: Response: " + str(res.json()))
-        return None
+        LOG.warning("LIFECYCLE: cimi: get_service_instance_by_id: No service instance retrieved. Id=" + id + "; Returning None ...")
     except:
-        LOG.exception('LIFECYCLE: cimi: get_service_instance_by_id: Exception')
-        return None
+        LOG.exception("LIFECYCLE: cimi: get_service_instance_by_id: Exception (parameters: id=" + id + "); Returning None ...")
+    return None
 
 
-# get_service_instance_report: get service instance report
+# FUNCTION: get_service_instance_report: get service instance report
 def get_service_instance_report(id):
     try:
-        LOG.debug("LIFECYCLE: cimi: get_service_instance_report: Getting service instance report from [" + id + "] ... ")
-
         res = requests.get(config.dic['CIMI_URL'] + "/" + RSRC_SERVICE_INSTANCE_REPORT + "?$filter=requesting_application_id/href='service-instance/" + id + "'",
                            headers=CIMI_HEADER,
                            verify=False)
+        LOG.debug("LIFECYCLE: cimi: get_service_instance_report: [" + id + "] response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 200 and len(res.json()['serviceOperationReports']) > 0:
             return res.json()['serviceOperationReports'][0]
         elif res.status_code == 200:
-            LOG.warning("LIFECYCLE: cimi: get_service_instance_report: Report not found [service-instance=" + id + "]")
+            LOG.warning("LIFECYCLE: cimi: get_service_instance_report: Report not found [service-instance=" + id + "]; Returning empty dict ...")
             return {}
 
-        LOG.error("LIFECYCLE: cimi: get_service_instance_report: Request failed: " + res.status_code)
-        LOG.error("LIFECYCLE: cimi: get_service_instance_report: Response: " + str(res.json()))
-        return None
+        LOG.warning("LIFECYCLE: cimi: get_service_instance_report: No report retrieved. id=" + id + "; Returning None ...")
     except:
-        LOG.exception('LIFECYCLE: cimi: get_service_instance_report: Exception')
-        return None
+        LOG.exception("LIFECYCLE: cimi: get_service_instance_report: Exception (parameters: id=" + id + "); Returning None ...")
+    return None
 
 
-# get_all_service_instances: get all service instances
-def get_all_service_instances(obj_response_cimi=None):
+# FUNCTION: get_all_service_instances: get all service instances
+def get_all_service_instances():
     try:
-        LOG.debug("LIFECYCLE: cimi: get_all_service_instances: Getting all service instances ... ")
+        res = requests.get(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE,
+                           headers=CIMI_HEADER,
+                           verify=False)
+        LOG.debug("LIFECYCLE: cimi: get_all_service_instances: response: " + str(res) + ", " + str(res.json()))
 
-        res = requests.get(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE, headers=CIMI_HEADER, verify=False)
         if res.status_code == 200:
             return res.json()['serviceInstances']
 
-        LOG.error("LIFECYCLE: cimi: get_all_service_instances: Request failed: " + res.status_code)
-        LOG.error("LIFECYCLE: cimi: get_all_service_instances: Response: " + str(res.json()))
-        return None
+        LOG.warning("LIFECYCLE: cimi: get_all_service_instances: No service instances retrieved; Returning None ...")
     except:
-        LOG.exception('LIFECYCLE: cimi: get_all_service_instances: Exception')
-        return None
+        LOG.exception("LIFECYCLE: cimi: get_all_service_instances: Exception; Returning None ...")
+    return None
 
 
-# del_service_instance_by_id: delete service instance
-def del_service_instance_by_id(resource_id, obj_response_cimi=None):
+# FUNCTION: del_service_instance_by_id: delete service instance
+def del_service_instance_by_id(resource_id):
     try:
-        LOG.debug("LIFECYCLE: cimi: del_service_instance_by_id: Deleting resource [" + resource_id + "] ... ")
         resource_id = resource_id.replace(RSRC_SERVICE_INSTANCE + '/', '')
+        res = requests.delete(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE + '/' + resource_id,
+                              headers=CIMI_HEADER,
+                              verify=False)
+        LOG.debug("LIFECYCLE: cimi: del_service_instance_by_id: [" + resource_id + "] response: " + str(res) + ", " + str(res.json()))
 
-        res = requests.delete(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE + '/' + resource_id, headers=CIMI_HEADER, verify=False)
         if res.status_code == 200:
             return res.json()
 
-        return None
+        LOG.warning("LIFECYCLE: cimi: del_service_instance_by_id: Service instance not deleted. Id=" + resource_id + "; Returning None ...")
     except:
-        LOG.exception('LIFECYCLE: cimi: del_service_instance_by_id: Exception')
-        return None
+        LOG.exception("LIFECYCLE: cimi: del_service_instance_by_id: Exception (parameters: resource_id=" + resource_id + "); Returning None ...")
+    return None
 
 
-# del_all_service_instances: delete all service instances
-def del_all_service_instances(obj_response_cimi=None):
+# FUNCTION: del_all_service_instances: delete all service instances
+def del_all_service_instances():
     try:
-        LOG.debug("LIFECYCLE: cimi: del_all_service_instances: Deleting all  service instances ... ")
-
         service_instances = get_all_service_instances()
         for si in service_instances:
-            LOG.info("LIFECYCLE: cimi: del_all_service_instances: Deleting " + si['id'] + " ... ")
+            LOG.debug("LIFECYCLE: cimi: del_all_service_instances: Deleting " + si['id'] + " ... ")
             resource_id = si['id'].replace(RSRC_SERVICE_INSTANCE + '/', '')
-            requests.delete(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE + '/' + resource_id, headers=CIMI_HEADER, verify=False)
+            res = requests.delete(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE + '/' + resource_id,
+                                  headers=CIMI_HEADER,
+                                  verify=False)
+            LOG.debug("LIFECYCLE: cimi: del_all_service_instances: [all] response: " + str(res) + ", " + str(res.json()))
         return True
     except:
-        LOG.exception('LIFECYCLE: cimi: del_all_service_instances: Exception')
+        LOG.exception("LIFECYCLE: cimi: del_all_service_instances: Exception; Returning False ...")
         return False
 
 
 # FUNCTION: add_service_instance: add resource to cimi
-# RETURNS: resource
 def add_service_instance(content):
     try:
-        LOG.debug("LIFECYCLE: cimi: add_service_instance: Adding new resource to service instances ... ")
-
-        # complete map and update resource
-        content.update(common_new_map_fields())
-
+        content.update(common_new_map_fields()) # complete map and update resource
         LOG.debug("LIFECYCLE: cimi: add_service_instance: [content=" + str(content) + "] ... ")
-
         res = requests.post(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE,
                             headers=CIMI_HEADER,
                             verify=False,
                             json=content)
-
-        LOG.debug("LIFECYCLE: cimi: add_service_instance: res: " + str(res))
+        LOG.debug("LIFECYCLE: cimi: add_service_instance: response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 201:
             id = res.json()['resource-id'].replace(RSRC_SERVICE_INSTANCE + '/', '')
             return get_service_instance_by_id(id)
 
-        LOG.error("LIFECYCLE: cimi: add_service_instance: Request failed: " + res.status_code)
-        LOG.error("LIFECYCLE: cimi: add_service_instance: Response: " + str(res.json()))
-        return None
+        LOG.warning("LIFECYCLE: cimi: add_service_instance: Service instance not added. content=" + str(content) + "; Returning None ...")
     except:
-        LOG.exception('LIFECYCLE: cimi: add_service_instance: Exception while adding new resource to service instances!')
-        return None
+        LOG.exception("LIFECYCLE: cimi: add_service_instance: Exception while adding new resource to service instances!; Returning None ...")
+    return None
 
 
-# update_service_instance: updates a service_instance
+# FUNCTION: update_service_instance: updates a service_instance
 def update_service_instance(resource_id, content):
     try:
-        LOG.debug("LIFECYCLE: cimi: update_service_instance: Updating resource [" + resource_id + "] ... ")
         resource_id = resource_id.replace(RSRC_SERVICE_INSTANCE + '/', '')
-
-        # complete map and update resource
-        content.update(common_update_map_fields())
-
+        content.update(common_update_map_fields()) # complete map and update resource
         content.update(patch_update_map_fields())
-
         LOG.debug("LIFECYCLE: cimi: update_service_instance: [content=" + str(content) + "] ... ")
-
         res = requests.put(config.dic['CIMI_URL']  + '/' + RSRC_SERVICE_INSTANCE + '/' + resource_id,
                            headers=CIMI_HEADER,
                            verify=False,
                            json=content)
-
-        LOG.debug("LIFECYCLE: cimi: update_service_instance: [res=" + str(res) + "]")
+        LOG.debug("LIFECYCLE: cimi: update_service_instance: response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 200:
             return get_service_instance_by_id(resource_id)
 
-        LOG.error("LIFECYCLE: cimi: update_service_instance: Request failed: " + res.status_code)
-        LOG.error("LIFECYCLE: cimi: update_service_instance: Response: " + str(res.json()))
-        return None
+        LOG.warning("LIFECYCLE: cimi: update_service_instance: Service instance not updated. resource_id=" + resource_id +
+                    ", content=" + str(content) + "; Returning None ...")
     except:
-        LOG.exception('LIFECYCLE: cimi: update_service_instance: Exception')
-        return None
+        LOG.exception("LIFECYCLE: cimi: update_service_instance: Exception; Returning None ...")
+    return None
 
 
 ###############################################################################
 
-# get_power
-def get_power(device_id):
-    try:
-        device_id = device_id.replace('device/', '')
-        res = requests.get(config.dic['CIMI_URL'] + "/device-dynamic?$filter=device/href='device/" + device_id + "'",
-                           headers=CIMI_HEADER,
-                           verify=False)
-
-        if res.status_code == 200 and res.json()['count'] > 0:
-            return res.json()['deviceDynamics'][0]
-        else:
-            LOG.warning("LIFECYCLE: cimi: 'device-dynamic' not found [device_id=" + device_id + "]")
-            return -1
-    except:
-        LOG.exception('LIFECYCLE: cimi: get_power: Exception')
-        return None
-
 
 # TODO get this information from new RESOURCE: AGENT
-# get_parent
+# FUNCTION: get_parent
 def get_parent(device_id):
     try:
         device_id = device_id.replace('device/', '')
         res = requests.get(config.dic['CIMI_URL'] + "/device-dynamic?$filter=myLeaderID/href='device/" + device_id + "'",
                            headers=CIMI_HEADER,
                            verify=False)
-
-        LOG.debug("LIFECYCLE: cimi: get_parent: [res=" + str(res) + "]")
-        LOG.debug("LIFECYCLE: cimi: get_parent: [res.json()=" + str(res.json()) + "]")
+        LOG.debug("LIFECYCLE: cimi: get_parent: response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 200:
             return res.json()['deviceDynamics'][0]
         else:
-            LOG.warning("LIFECYCLE: cimi: get_parent: 'device-dynamic' not found [device_id=" + device_id + "]")
+            LOG.warning("LIFECYCLE: cimi: get_parent: 'device-dynamic' not found [device_id=" + device_id + "]; Returning -1 ...")
             return -1
     except:
-        LOG.exception('LIFECYCLE: cimi: get_parent: Exception')
+        LOG.exception("LIFECYCLE: cimi: get_parent: Exception; Returning None ...")
         return None

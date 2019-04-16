@@ -37,26 +37,18 @@ from common.common import SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS
 #   {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
 #    'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'machine-A',
 #    'compute utilization': 0.0, 'disk utilization': 0.0},
-#   {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
-#    'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'machine-B',
-#    'compute utilization': 0.0, 'disk utilization': 0.0},
-#   {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
-#    'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': '192.168.252.41',
-#    'compute utilization': 0.0, 'disk utilization': 0.0},
-#   {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
-#    'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'tango-docker',
-#    'compute utilization': 0.0, 'disk utilization': 0.0}
+#   ...
 #  ]
 #
 # ==> [{"agent_ip": "192.168.252.41"}, {"agent_ip": "192.168.252.42"}]
 def get_available_agents_resources(service):
     try:
-        LOG.debug("LIFECYCLE: agent_decision: get_available_agents_list ################")
-        LOG.debug("LIFECYCLE: agent_decision: get_available_agents_list: " + str(service))
+        LOG.info("LIFECYCLE: GET AVAILABLE AGENTS: ANALYTICS ENGINE / RECOMMENDER ################# (1) ###")
+        LOG.info("LIFECYCLE: agent_decision: get_available_agents_list: Gets a list of available agents for service '" + service['name'] + "'" +
+                 " [" + service['id'] + "] ...")
 
         if common.is_standalone_mode():
-            LOG.warning("LIFECYCLE: agent_decision: get_available_agents_list: STANDALONE_MODE enabled")
-            LOG.error("LIFECYCLE: agent_decision: get_available_agents_list: returning None...")
+            LOG.warning("LIFECYCLE: agent_decision: get_available_agents_list: STANDALONE_MODE enabled; returning None ...")
             return None
         else:
             # Call to ANALYTICS ENGINE (RECOMMENDER & LANDSCAPER)
@@ -106,34 +98,35 @@ def get_available_agents_resources(service):
 # user_management: call to USER MANAGEMENT -> profiling and sharing model
 def user_management(service_instance):
     try:
-        LOG.debug("LIFECYCLE: agent_decision: user_management ############################")
-        LOG.debug("LIFECYCLE: agent_decision: user_management: " + str(service_instance))
+        LOG.info("LIFECYCLE: SELECT AGENTS: USER MANAGEMENT ####################################### (3) ###")
+        LOG.info("LIFECYCLE: agent_decision: user_management: Checking user-profile and sharing-model in selected agents " +
+                 str(service_instance["agents"]) + " ...")
 
         l_filtered_agents = []
         for agent in service_instance["agents"]:
-            LOG.debug("LIFECYCLE: agent_decision: user_management: Getting user_profiling and user_sharing_model policies result from " + agent['url'] + " ...")
+            LOG.debug("LIFECYCLE: agent_decision: user_management: Getting user-profile and sharing-model policies result from " + agent['url'] + " ...")
             res = None
 
             # LOCAL
             if agent['url'] == common.get_local_ip():
-                LOG.debug("LIFECYCLE: agent_decision: user_management: LOCAL user_profiling and user_sharing_model policies")
+                LOG.debug("LIFECYCLE: agent_decision: user_management: Getting LOCAL user-profile and sharing-model policies ...")
                 res = data_adapter.get_check_um()
             # 'REMOTE' AGENT
             elif common.check_ip(agent['url']):
-                LOG.debug("LIFECYCLE: agent_decision: user_management: REMOTE user_profiling and user_sharing_model policies")
+                LOG.debug("LIFECYCLE: agent_decision: user_management: Getting REMOTE user-profile and sharing-model policies ...")
                 res = mf2c.lifecycle_um_check_avialability(agent)
             else:
-                LOG.warning("LIFECYCLE: agent_decision: user_management: Could not get user_profiling and user_sharing_model policies")
+                LOG.warning("LIFECYCLE: agent_decision: user_management: Could not get user-profile and sharing-model policies")
 
-            LOG.debug("LIFECYCLE: agent_decision: user_management: res: " + str(res))
+            LOG.debug("LIFECYCLE: agent_decision: user_management: res=" + str(res))
 
             # mantain agent in list if no user_profiling or user_sharing_model
             if res is None:
-                LOG.warning("LIFECYCLE: agent_decision: user_management: user_profiling or user_sharing_model result is None")
+                LOG.warning("LIFECYCLE: agent_decision: user_management: user-profile or sharing-model result is None")
                 l_filtered_agents.append(agent)
             # check content
             else:
-                LOG.debug("LIFECYCLE: agent_decision: user_management: Checking user information ...")
+                LOG.debug("LIFECYCLE: agent_decision: user_management: Checking agents information ...")
                 if not res['result']:
                     LOG.debug("LIFECYCLE: agent_decision: user_management: agent not allowed: " + str(agent))
                 else:
@@ -174,8 +167,8 @@ def check_qos(agent_resp):
 # qos_providing: call to QoS PROVIDING
 def qos_providing(service_instance):
     try:
-        LOG.debug("LIFECYCLE: agent_decision: qos_providing ############################")
-        LOG.debug("LIFECYCLE: agent_decision: qos_providing: (1): " + str(service_instance))
+        LOG.info("LIFECYCLE: SELECT AGENTS: SERVICE MANAGEMENT (QoS) ############################## (2) ###")
+        LOG.debug("LIFECYCLE: agent_decision: qos_providing: Checking QoS of service instance [" + str(service_instance) + "] ...")
 
         service_instance_resp = mf2c.service_management_qos(service_instance)
         LOG.debug("LIFECYCLE: agent_decision: qos_providing: service_instance_resp: " + str(service_instance_resp))

@@ -21,37 +21,32 @@ PORT_MAX = 55000
 PORT_INDEX = 50001
 
 
+# tryPort
 def tryPort(port):
-    LOG.debug("LIFECYCLE: Trying Port " + str(port) + " ...")
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     result = False
     try:
         sock.bind(("0.0.0.0", port))
         result = True
-        LOG.debug("LIFECYCLE: Port " + str(port) + " is FREE")
     except:
-        LOG.debug("LIFECYCLE: Port " + str(port) + " is in use")
+        LOG.warning("LIFECYCLE: tryPort: Port (" + str(port) + ") is in use")
     sock.close()
     return result
 
 
 # is_port_free
 def is_port_free(port):
-    LOG.debug("LIFECYCLE: ports_mngr: is_port_free? [" + str(port) + "] ...")
     try:
         if port < 25000:
-            LOG.warning("LIFECYCLE: ports_mngr: is_port_free: Port [" + str(port) + "] is < 25000")
+            LOG.warning("LIFECYCLE: ports_mngr: is_port_free: Ports (" + str(port) + ") under 25000 are nor allowed")
             return False
 
         if db.get_from_DB_DOCKER_PORTS(port) is None and tryPort(port):
-            LOG.debug("LIFECYCLE: ports_mngr: is_port_free: [" + str(port) + "] is free")
+            LOG.debug("LIFECYCLE: ports_mngr: is_port_free: Port (" + str(port) + ") is free")
             return True
-
-        LOG.warning("LIFECYCLE: ports_mngr: is_port_free: Port [" + str(port) + "] is in use")
-        return False
     except:
-        LOG.error("LIFECYCLE: ports_mngr: is_port_free [" + str(port) + "]: Exception")
-        return False
+        LOG.exception("LIFECYCLE: ports_mngr: is_port_free [" + str(port) + "]: Exception")
+    return False
 
 
 # take_port
@@ -68,13 +63,9 @@ def release_port(port):
 def assign_new_port():
     global PORT_INDEX
     for i in range(PORT_MIN, PORT_MAX):
-        LOG.debug("LIFECYCLE: ports_mngr: PORT_INDEX: [" + str(PORT_INDEX) + "]")
         if is_port_free(PORT_INDEX):
             return PORT_INDEX
         PORT_INDEX = PORT_INDEX + 1
-
-
-#################
 
 
 # replace_in_list: replace element in list
@@ -88,10 +79,9 @@ def replace_in_list(l, xvalue, newxvalue):
 # create_ports_dict:
 def create_ports_dict(ports):
     try:
-        LOG.debug("LIFECYCLE: ports_mngr: create_ports_dict: Configuring ports [" + str(ports) + "]...")
+        LOG.debug("LIFECYCLE: ports_mngr: create_ports_dict: Checking and configuring service instance ports [" + str(ports) + "] ...")
         dict_ports = {}
         for p in ports:
-            LOG.debug("LIFECYCLE: ports_mngr: create_ports_dict: port [" + str(p) + "]...")
             if is_port_free(p):
                 dict_ports.update({p:p})
                 take_port(p, p)
@@ -106,5 +96,5 @@ def create_ports_dict(ports):
 
         return dict_ports
     except:
-        LOG.error("LIFECYCLE: ports_mngr: create_ports_dict: Error during the ports dict creation: " + str(ports))
+        LOG.exception("LIFECYCLE: ports_mngr: create_ports_dict: Error during the ports dict creation: " + str(ports))
         return {ports[0]:ports[0]}

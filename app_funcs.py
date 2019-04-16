@@ -233,6 +233,13 @@ def postService(request):
     else:
         agreement_id = data['agreement_id']
 
+    # AGREEMENT TEMPLATE
+    # TODO
+    if 'agreement_template' not in data:
+        LOG.debug("LIFECYCLE: REST API: postService: Parameter not found: 'agreement_template'")
+    else:
+        LOG.debug("LIFECYCLE: REST API: postService: Parameter found: 'agreement_template': " + data['agreement_template'])
+
     # SERVICE:
     if 'service' not in data and 'service_id' not in data:
         LOG.error('LIFECYCLE: REST API: postService: Exception - parameter not found: service / service_id')

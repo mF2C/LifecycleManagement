@@ -23,7 +23,7 @@ from common.common import STATUS_CREATED_NOT_INITIALIZED
 #       4. agreement_id
 #   OUT: service_instance dict
 def new_service_instance(service, agents_list, user_id, agreement_id):
-    LOG.debug("LIFECYCLE: Data: Service Instance: new_service_instance: " + str(service) + ", " + str(agents_list) + ", " + str(user_id) + ", " + str(agreement_id))
+    LOG.debug("LIFECYCLE: Data: Service Instance: new_service_instance: " + service['name'] + ", " + str(agents_list) + ", " + str(user_id) + ", " + str(agreement_id))
 
     # create list of agents
     list_of_agents = []
@@ -67,15 +67,13 @@ def new_service_instance(service, agents_list, user_id, agreement_id):
                             "service_type":     service['exec_type'],
                             "status":           STATUS_CREATED_NOT_INITIALIZED}
 
-    LOG.debug("LIFECYCLE: Data: Service Instance: new_service_instance: create_service_instance: adding service_intance to CIMI ...")
-    LOG.debug("LIFECYCLE: Data: Service Instance: new_service_instance: create_service_instance: " + str(new_service_instance))
-
+    LOG.debug("LIFECYCLE: Data: Service Instance: new_service_instance: create_service_instance: service_intance=" + str(new_service_instance))
     return new_service_instance
 
 
 # new_empty_service_instance: Creates a new service instance object without agents
 def new_empty_service_instance(service, user_id, agreement_id):
-    LOG.debug("LIFECYCLE: Data: Service Instance: new_empty_service_instance: " + str(service) + ", " + str(user_id) + ", " + str(agreement_id))
+    LOG.debug("LIFECYCLE: Data: Service Instance: new_empty_service_instance: " + service['name'] + ", " + str(user_id) + ", " + str(agreement_id))
 
     # SERVICE_INSTANCE:
     new_service_instance = {"service":          service['id'],
@@ -89,15 +87,13 @@ def new_empty_service_instance(service, user_id, agreement_id):
                             "service_type":     service['exec_type'],
                             "status":           STATUS_CREATED_NOT_INITIALIZED}
 
-    LOG.debug("LIFECYCLE: Data: Service Instance: new_empty_service_instance: create_service_instance: adding service_intance to CIMI ...")
     LOG.debug("LIFECYCLE: Data: Service Instance: new_empty_service_instance: create_service_instance: " + str(new_service_instance))
-
     return new_service_instance
 
 
 # add_agents_to_empty_service_instance: Adds a list of agents to the service instance
 def add_agents_to_empty_service_instance(service, user_id, agreement_id, agents_list):
-    LOG.debug("LIFECYCLE: Data: Service Instance: add_agents_to_empty_service_instance: " + str(service) + ", " + str(user_id) + ", " + str(agreement_id))
+    LOG.debug("LIFECYCLE: Data: Service Instance: add_agents_to_empty_service_instance: " + service['name'] + ", " + str(user_id) + ", " + str(agreement_id))
 
     # SERVICE_INSTANCE:
     new_service_instance = {"service":          service['id'],

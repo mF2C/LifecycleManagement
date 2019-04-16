@@ -102,12 +102,6 @@ def get_leader_ip():
 
 
 ###############################################################################
-# get_power: Get battery level
-def get_power():
-    return data_mf2c.get_power()
-
-
-###############################################################################
 # SERVICE
 # get_service: Get service
 def get_service(service_id):
@@ -137,8 +131,8 @@ def del_service_instance(service_instance_id, obj_response_cimi=None):
 
 
 # del_all_service_instances: Deletes all service instances
-def del_all_service_instances(obj_response_cimi=None):
-    return data_mf2c.del_all_service_instances(obj_response_cimi)
+def del_all_service_instances():
+    return data_mf2c.del_all_service_instances()
 
 
 # create_service_instance: Creates a new service instance

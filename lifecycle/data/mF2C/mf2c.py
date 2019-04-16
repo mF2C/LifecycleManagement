@@ -30,23 +30,22 @@ def lifecycle_parent_deploy(leader_ip, service_id, user_id, agreement_id, servic
               ", user_id: " + str(user_id) + ", agreement_id: " + agreement_id + ", service_instance_id: " + service_instance_id)
     try:
         LOG.info("LIFECYCLE: MF2C: lifecycle_parent_deploy: HTTP POST: http://" + leader_ip + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/service")
+
         r = requests.post("http://" + leader_ip + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/service",
                           json={"service_id": service_id,
                                 "user_id": user_id,
                                 "agreement_id": agreement_id,
                                 "service_instance_id": service_instance_id},
                           verify=config.dic['VERIFY_SSL'])
-        LOG.debug("LIFECYCLE: MF2C: lifecycle_parent_deploy: response: " + str(r))
+        LOG.debug("LIFECYCLE: MF2C: lifecycle_parent_deploy: response: " + str(r) + ", " + str(r.json()))
 
         if r.status_code >= 200 and r.status_code <= 204:
-            LOG.debug('LIFECYCLE: MF2C: lifecycle_parent_deploy: status_code=' +  str(r.status_code))
             return True
 
-        LOG.error('LIFECYCLE: MF2C: lifecycle_parent_deploy: Error: status_code=' + str(r.status_code))
-        return False
+        LOG.error("LIFECYCLE: MF2C: lifecycle_parent_deploy: Error: status_code=" + str(r.status_code) + "; Returning None ...")
     except:
-        LOG.exception('LIFECYCLE: MF2C: lifecycle_parent_deploy: Exception')
-        return False
+        LOG.exception("LIFECYCLE: MF2C: lifecycle_parent_deploy: Exception; Returning False ...")
+    return False
 
 
 # DEPLOY A SERVICE
@@ -56,23 +55,21 @@ def lifecycle_deploy(service, agent):
     try:
         LOG.info("LIFECYCLE: MF2C: lifecycle_deploy: HTTP POST: http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/service-instance-int")
         r = requests.post("http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/service-instance-int",
-                          json={"service": service, "agent": agent},
+                          json={"service": service,
+                                "agent": agent},
                           verify=config.dic['VERIFY_SSL'])
-        LOG.debug("LIFECYCLE: MF2C: lifecycle_deploy: response: " + str(r))
-
-        json_data = json.loads(r.text)
-        agent = json_data['agent']
-        LOG.debug("LIFECYCLE: MF2C: lifecycle_deploy: agent: " + str(agent))
+        LOG.debug("LIFECYCLE: MF2C: lifecycle_deploy: response: " + str(r) + ", " + str(r.json()))
 
         if r.status_code == 200:
-            LOG.debug('LIFECYCLE: MF2C: lifecycle_deploy: status_code=' + str(r.status_code) + '; response: ' + str(json_data))
+            json_data = json.loads(r.text)
+            agent = json_data['agent']
+            LOG.debug("LIFECYCLE: MF2C: lifecycle_deploy: result: agent: " + str(agent))
             return ast.literal_eval(agent)
 
-        LOG.error('LIFECYCLE: MF2C: lifecycle_deploy: Error: status_code=' + str(r.status_code))
-        return None
+        LOG.error("LIFECYCLE: MF2C: lifecycle_deploy: Error: status_code=" + str(r.status_code) + "; Returning None ...")
     except:
-        LOG.exception('LIFECYCLE: MF2C: lifecycle_deploy: Exception')
-        return None
+        LOG.exception("LIFECYCLE: MF2C: lifecycle_deploy: Exception; Returning None ...")
+    return None
 
 
 # START / STOP SERVICE INSTANCE
@@ -82,23 +79,22 @@ def lifecycle_operation(service, agent, operation):
     try:
         LOG.info("LIFECYCLE: MF2C: lifecycle_operation: HTTP PUT: http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/service-instance-int")
         r = requests.put("http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/service-instance-int",
-                         json={"service": service, "operation": operation, "agent": agent},
+                         json={"service": service,
+                               "operation": operation,
+                               "agent": agent},
                          verify=config.dic['VERIFY_SSL'])
-        LOG.debug("LIFECYCLE: MF2C: lifecycle_operation: response:" + str(r))
-
-        json_data = json.loads(r.text)
-        agent = json_data['agent']
-        LOG.debug("LIFECYCLE: MF2C: lifecycle_operation: agent: " + str(agent))
+        LOG.debug("LIFECYCLE: MF2C: lifecycle_operation: response: " + str(r) + ", " + str(r.json()))
 
         if r.status_code == 200:
-            LOG.debug('LIFECYCLE: MF2C: lifecycle_operation: status_code=' +  str(r.status_code) + '; response: ' + str(json_data))
+            json_data = json.loads(r.text)
+            agent = json_data['agent']
+            LOG.debug("LIFECYCLE: MF2C: lifecycle_operation: agent: " + str(agent))
             return ast.literal_eval(agent)
 
-        LOG.error('LIFECYCLE: MF2C: lifecycle_operation: Error: status_code=' +  str(r.status_code))
-        return None
+        LOG.error("LIFECYCLE: MF2C: lifecycle_operation: Error: status_code=" +  str(r.status_code) + "; Returning None ...")
     except:
-        LOG.exception('LIFECYCLE: MF2C: lifecycle_operation: Exception')
-        return None
+        LOG.exception("LIFECYCLE: MF2C: lifecycle_operation: Exception; Returning None ...")
+    return None
 
 
 # lifecycle_um_info: call to lifceycle from other agent in order to get sharing model and user profile
@@ -108,23 +104,17 @@ def lifecycle_um_check_avialability(agent):
         LOG.info("LIFECYCLE: MF2C: lifecycle_um_check_avialability: HTTP GET: http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/check-agent-um")
         r = requests.get("http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/check-agent-um",
                          verify=config.dic['VERIFY_SSL'])
-        LOG.debug("LIFECYCLE: MF2C: lifecycle_um_check_avialability: response:" + str(r))
-
-        json_data = json.loads(r.text)
-        LOG.debug("LIFECYCLE: MF2C: lifecycle_um_check_avialability: response:" + str(json_data))
-
-        #agent_um = json_data['agent_um']
-        #LOG.debug("LIFECYCLE: MF2C: lifecycle_um_check_avialability: agent_um: " + str(agent_um))
+        LOG.debug("LIFECYCLE: MF2C: lifecycle_um_check_avialability: response: " + str(r) + ", " + str(r.json()))
 
         if r.status_code == 200:
-            LOG.debug('LIFECYCLE: MF2C: lifecycle_um_check_avialability: status_code=' +  str(r.status_code) + '; response: ' + str(json_data))
-            return json_data #ast.literal_eval(agent_um)
+            json_data = json.loads(r.text)
+            LOG.debug("LIFECYCLE: MF2C: lifecycle_um_check_avialability: json_data=" + str(json_data))
+            return json_data
 
-        LOG.error('LIFECYCLE: MF2C: lifecycle_um_check_avialability: Error: status_code=' +  str(r.status_code))
-        return None
+        LOG.error("LIFECYCLE: MF2C: lifecycle_um_check_avialability: Error: status_code=" +  str(r.status_code) + "; Returning None ...")
     except:
-        LOG.exception('LIFECYCLE: MF2C: lifecycle_um_check_avialability: Exception')
-        return None
+        LOG.exception("LIFECYCLE: MF2C: lifecycle_um_check_avialability: Exception; Returning None ...")
+    return None
 
 
 ###############################################################################
@@ -136,70 +126,64 @@ def lifecycle_um_check_avialability(agent):
 # SET UM INFORMATION
 # set_lifecycle_um_properties: call to lifceycle from other agent in order to update user management properties
 def user_management_set_um_properties(apps=0):
-    LOG.debug("LIFECYCLE: MF2C: user_management_set_um_properties: localhost - local UM ")
+    LOG.debug("LIFECYCLE: MF2C: user_management_set_um_properties: localhost - local UM: Updating UM properties ...")
     try:
-        LOG.debug("LIFECYCLE: MF2C: user_management_set_um_properties: Updating UM properties ...")
         LOG.info("LIFECYCLE: MF2C: user_management_set_um_properties: HTTP PUT: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/user-profile")
         r = requests.put(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/user-profile",
                          json={"apps_running": apps},
                          verify=config.dic['VERIFY_SSL'])
-
-        json_data = json.loads(r.text)
-        LOG.debug("LIFECYCLE: MF2C: user_management_set_um_properties: response: " + str(r) + ", json_data: " + str(json_data))
+        LOG.debug("LIFECYCLE: MF2C: user_management_set_um_properties: response: " + str(r) + ", " + str(r.json()))
 
         if r.status_code == 200:
-            LOG.debug('LIFECYCLE: MF2C: user_management_set_um_properties: status_code=' + str(r.status_code))
+            json_data = json.loads(r.text)
+            LOG.debug('LIFECYCLE: MF2C: user_management_set_um_properties: json_data=' + str(json_data))
             return json_data
 
-        LOG.error('LIFECYCLE: MF2C: user_management_set_um_properties: Error: status_code=' + str(r.status_code))
+        LOG.error("LIFECYCLE: MF2C: user_management_set_um_properties: Error: status_code=" + str(r.status_code) + "; Returning None ...")
     except:
-        LOG.exception('LIFECYCLE: MF2C: user_management_set_um_properties: Exception')
-        return None
+        LOG.exception("LIFECYCLE: MF2C: user_management_set_um_properties: Exception; Returning None ...")
+    return None
 
 
 # CHECK AVIALABILITY
 # user_management_check_avialability: call to local UM to check if it's possible to deploy a service
 def user_management_check_avialability():
-    LOG.debug("LIFECYCLE: MF2C: user_management_check_avialability: localhost - local UM ")
+    LOG.debug("LIFECYCLE: MF2C: user_management_check_avialability: localhost - local UM: Checking avialability ...")
     try:
-        LOG.debug("LIFECYCLE: MF2C: user_management_check_avialability: Checking avialability ...")
         LOG.info("LIFECYCLE: MF2C: user_management_check_avialability: HTTP GET: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/check")
         r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/check",
                          verify=config.dic['VERIFY_SSL'])
+        LOG.debug("LIFECYCLE: MF2C: user_management_check_avialability: response: " + str(r) + ", " + str(r.json()))
 
         json_data = json.loads(r.text)
-        LOG.debug("LIFECYCLE: MF2C: user_management_check_avialability: response: " + str(r) + ", json_data: " + str(json_data))
-
+        LOG.debug("LIFECYCLE: MF2C: user_management_check_avialability: json_data=" + str(json_data))
         if r.status_code == 200 and not json_data['result'] is None:
-            LOG.debug('LIFECYCLE: MF2C: user_management_check_avialability: status_code=' + str(r.status_code))
             return json_data
 
-        LOG.error('LIFECYCLE: MF2C: user_management_check_avialability: Error: status_code=' + str(r.status_code))
+        LOG.error("LIFECYCLE: MF2C: user_management_check_avialability: Error: status_code=" + str(r.status_code) + "; Returning None ...")
     except:
-        LOG.exception('LIFECYCLE: MF2C: user_management_check_avialability: Exception')
-        return None
+        LOG.exception("LIFECYCLE: MF2C: user_management_check_avialability: Exception; Returning None ...")
+    return None
 
 
 # GET CURRENT USER / DEVICE
 # user_management_get_current: call to local UM to get current values (user, device)
 def user_management_get_current(val):
-    LOG.debug("LIFECYCLE: MF2C: user_management_get_current: Getting current " + val + " from localhost - UM ")
+    LOG.debug("LIFECYCLE: MF2C: user_management_get_current: Getting current " + val + " from localhost - UM: Checking avialability ...")
     try:
-        LOG.debug("LIFECYCLE: MF2C: user_management_get_current: Checking avialability ...")
         LOG.info("LIFECYCLE: MF2C: user_management_get_current: HTTP GET: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/current/" + val)
         r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/current/" + val,
                          verify=config.dic['VERIFY_SSL'])
+        LOG.debug("LIFECYCLE: MF2C: user_management_get_current: response: " + str(r) + ", " + str(r.json()))
 
         json_data = json.loads(r.text)
-        LOG.debug("LIFECYCLE: MF2C: user_management_get_current: response: " + str(r) + ", json_data: " + str(json_data))
-
+        LOG.debug("LIFECYCLE: MF2C: user_management_get_current: json_data=" + str(json_data))
         if r.status_code == 200 and not json_data['result'] is None:
-            LOG.debug('LIFECYCLE: MF2C: user_management_get_current: status_code=' + str(r.status_code))
             return json_data
 
-        LOG.error('LIFECYCLE: MF2C: user_management_get_current: Error: status_code=' + str(r.status_code))
+        LOG.error("LIFECYCLE: MF2C: user_management_get_current: Error: status_code=" + str(r.status_code) + "; Returning None ...")
     except:
-        LOG.exception('LIFECYCLE: MF2C: user_management_get_current: Exception')
+        LOG.exception("LIFECYCLE: MF2C: user_management_get_current: Exception; Returning None ...")
     return None
 
 
@@ -208,59 +192,72 @@ def user_management_get_current(val):
 
 
 # CALL TO LANDSCAPER & RECOMMENDER: get service's recipe / get available resources for a recipe
-#   =>  POST http://192.168.252.41:46020/mf2c/optimal
+#   =>  POST 'http://localhost:46020/mf2c/optimal'
 # 	    BODY: service json
 def recommender_get_optimal_resources(service):
     LOG.debug("LIFECYCLE: MF2C: recommender_get_optimal_resources: service: " + str(service))
-    LOG.info("LIFECYCLE: MF2C: recommender_get_optimal_resources: HTTP POST: " + str(config.dic['URL_PM_RECOM_LANDSCAPER']) + "/optimal")
     try:
-        # 'http://localhost:46020/mf2c/optimal'
+        LOG.info("LIFECYCLE: MF2C: recommender_get_optimal_resources: HTTP POST: " + str(config.dic['URL_PM_RECOM_LANDSCAPER']) + "/optimal")
         r = requests.post(str(config.dic['URL_PM_RECOM_LANDSCAPER']) + "/optimal",
                           json=service,
                           headers={"Accept": "text/json", "Content-Type": "application/json"},
                           verify=config.dic['VERIFY_SSL'],
                           timeout=config.dic['TIMEOUT_ANALYTICSENGINE'])
-        LOG.debug("LIFECYCLE: MF2C: recommender_get_optimal_resources: response: " + str(r))
+        LOG.debug("LIFECYCLE: MF2C: recommender_get_optimal_resources: response: " + str(r) + ", " + str(r.json()))
 
-        json_data = json.loads(r.text)
-        LOG.debug("LIFECYCLE: MF2C: recommender_get_optimal_resources: json_data: " + str(json_data))
+        if r.ok: # status_code == 200:
+            # RESPONSE EXAMPLE
+            # json_data:
+            # [
+            #  {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
+            #   'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'machine-A',
+            #   'compute utilization': 0.0, 'disk utilization': 0.0},
+            #  ...
+            # ]
+            # ==> [{"agent_ip": "192.168.252.41"}, {"agent_ip": "192.168.252.42"}]
 
-        # EXAMPLE
-        # json_data:
-        # [
-        #  {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
-        #   'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'machine-A',
-        #   'compute utilization': 0.0, 'disk utilization': 0.0},
-        #  {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
-        #   'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'machine-B',
-        #   'compute utilization': 0.0, 'disk utilization': 0.0},
-        #  {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
-        #   'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': '192.168.252.41',
-        #   'compute utilization': 0.0, 'disk utilization': 0.0},
-        #  {'compute saturation': 0.0, 'network saturation': 0.0, 'memory saturation': 0.0, 'memory utilization': 0.0,
-        #   'network utilization': 0.0, 'type': 'machine', 'disk saturation': 0.0, 'node_name': 'tango-docker',
-        #   'compute utilization': 0.0, 'disk utilization': 0.0}
-        # ]
-        # ==> [{"agent_ip": "192.168.252.41"}, {"agent_ip": "192.168.252.42"}]
-
-        if r.ok: #status_code == 200:
-            LOG.debug('LIFECYCLE: MF2C: recommender_get_optimal_resources: status_code=' +  str(r.ok)) #r.status_code))
+            json_data = json.loads(r.text)
+            LOG.debug("LIFECYCLE: MF2C: recommender_get_optimal_resources: json_data=" + str(json_data))
 
             # create list of agents
             list_of_agents = []
             for elem in json_data:
                 list_of_agents.append({"agent_ip": elem['node_name']})
 
-            LOG.debug("LIFECYCLE: MF2C: recommender_get_optimal_resources: list_of_agents:" + str(list_of_agents))
+            LOG.debug("LIFECYCLE: MF2C: recommender_get_optimal_resources: list_of_agents=" + str(list_of_agents))
             return list_of_agents
 
-        LOG.error('LIFECYCLE: MF2C: get_available_resources: Error: status_code=' +  str(r.status_code))
-        return None
+        LOG.error("LIFECYCLE: MF2C: get_available_resources: Error: status_code=" +  str(r.status_code) + "; Returning None ...")
     except:
-        LOG.exception('LIFECYCLE: MF2C: recommender_get_optimal_resources: Exception')
-        return None
+        LOG.exception("LIFECYCLE: MF2C: recommender_get_optimal_resources: Exception; Returning None ...")
+    return None
 
 ###############################################################################
+
+
+# create_sla_agreement: create SLA agreement
+# curl -k -X POST -d @resources/samples/create-agreement.json https://localhost:8090/mf2c/create-agreement
+# {"template_id":"t01","agreement_id":"9be511e8-347f-4a40-b784-e80789e4c65b","parameters":{"user":"a-user-id"}}
+def create_sla_agreement(template_id, user_id, service):
+    LOG.debug("LIFECYCLE: MF2C: create_sla_agreement: template_id=" + template_id + ", user_id=" + user_id + ", service=" + service['name'])
+    try:
+        LOG.info("LIFECYCLE: MF2C: create_sla_agreement: HTTP POST: " + str(config.dic['URL_PM_SLA_MANAGER']) + "/mf2c/create-agreement")
+        body = {"template_id": template_id,
+                "parameters": {"user":user_id}}
+        r = requests.post(str(config.dic['URL_PM_SLA_MANAGER']) + "/mf2c/create-agreement",
+                          json=body,
+                          verify=config.dic['VERIFY_SSL'])
+        LOG.debug("LIFECYCLE: MF2C: create_sla_agreement: response: " + str(r) + ", " + str(r.json()))
+
+        if r.status_code >= 200 and r.status_code <= 204:
+            json_data = json.loads(r.text)
+            LOG.debug("LIFECYCLE: MF2C: create_sla_agreement: json_data=" + str(json_data))
+            return json_data['agreement_id']
+
+        LOG.error("LIFECYCLE: MF2C: create_sla_agreement: Error: status_code=" +  str(r.status_code) + "; Returning None ...")
+    except:
+        LOG.exception("LIFECYCLE: MF2C: create_sla_agreement: Exception; Returning None ...")
+    return None
 
 
 # start_sla_agreement: start SLA agreement
@@ -268,64 +265,58 @@ def recommender_get_optimal_resources(service):
 def sla_start_agreement(agreement_id):
     agreement_id = agreement_id.replace('agreement/', '')
     LOG.debug("LIFECYCLE: MF2C: start_sla_agreement: agreement_id: " + agreement_id)
-    LOG.info("LIFECYCLE: MF2C: start_sla_agreement: HTTP PUT: " + str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/start")
     try:
+        LOG.info("LIFECYCLE: MF2C: start_sla_agreement: HTTP PUT: " + str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/start")
         r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/start",
                          verify=config.dic['VERIFY_SSL'])
-        LOG.debug("LIFECYCLE: MF2C: start_sla_agreement: response: " + str(r))
+        LOG.debug("LIFECYCLE: MF2C: start_sla_agreement: response: " + str(r) + ", " + str(r.json()))
 
         if r.status_code >= 200 and r.status_code <= 204:
-            LOG.debug('LIFECYCLE: MF2C: start_sla_agreement: status_code=' +  str(r.status_code))
             return True
 
-        LOG.error('LIFECYCLE: MF2C: start_sla_agreement: Error: status_code=' +  str(r.status_code))
-        return False
+        LOG.error("LIFECYCLE: MF2C: start_sla_agreement: Error: status_code=" +  str(r.status_code) + "; Returning False ...")
     except:
-        LOG.exception('LIFECYCLE: MF2C: start_sla_agreement: Exception')
-        return False
+        LOG.exception("LIFECYCLE: MF2C: start_sla_agreement: Exception; Returning False ...")
+    return False
 
 
 # PUT /agreements/<id>/stop
 def sla_stop_agreement(agreement_id):
     agreement_id = agreement_id.replace('agreement/', '')
     LOG.debug("LIFECYCLE: MF2C: stop_sla_agreement: agreement_id: " + agreement_id)
-    LOG.info("LIFECYCLE: MF2C: start_sla_agreement: HTTP PUT: " + str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/stop")
     try:
+        LOG.info("LIFECYCLE: MF2C: start_sla_agreement: HTTP PUT: " + str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/stop")
         r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/stop",
                          verify=config.dic['VERIFY_SSL'])
-        LOG.debug("LIFECYCLE: MF2C: stop_sla_agreement: response: " + str(r))
+        LOG.debug("LIFECYCLE: MF2C: stop_sla_agreement: response: " + str(r) + ", " + str(r.json()))
 
-        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202 or r.status_code == 204:
-            LOG.debug('LIFECYCLE: MF2C: stop_sla_agreement: status_code=' +  str(r.status_code))
+        if r.status_code >= 200 and r.status_code <= 204:
             return True
 
-        LOG.error('LIFECYCLE: MF2C: stop_sla_agreement: Error: status_code=' +  str(r.status_code))
-        return False
+        LOG.error("LIFECYCLE: MF2C: stop_sla_agreement: Error: status_code=" +  str(r.status_code) + "; Returning False ...")
     except:
-        LOG.exception('LIFECYCLE: MF2C: stop_sla_agreement: Exception')
-        return False
+        LOG.exception("LIFECYCLE: MF2C: stop_sla_agreement: Exception; Returning False ...")
+    return False
 
 
 # PUT /agreements/<id>/stop
 # TODO
 def sla_terminate_agreement(agreement_id):
     agreement_id = agreement_id.replace('agreement/', '')
-    LOG.debug("LIFECYCLE: MF2C: stop_sla_agreement: agreement_id: " + agreement_id)
-    LOG.info("LIFECYCLE: MF2C: start_sla_agreement: HTTP PUT: " + str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/stop")
+    LOG.debug("LIFECYCLE: MF2C: sla_terminate_agreement: agreement_id: " + agreement_id)
     try:
+        LOG.info("LIFECYCLE: MF2C: sla_terminate_agreement: HTTP PUT: " + str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/stop")
         r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/stop",
                          verify=config.dic['VERIFY_SSL'])
-        LOG.debug("LIFECYCLE: MF2C: stop_sla_agreement: response: " + str(r))
+        LOG.debug("LIFECYCLE: MF2C: sla_terminate_agreement: response: " + str(r) + ", " + str(r.json()))
 
-        if r.status_code == 200 or r.status_code == 201 or r.status_code == 202 or r.status_code == 204:
-            LOG.debug('LIFECYCLE: MF2C: stop_sla_agreement: status_code=' +  str(r.status_code))
+        if r.status_code >= 200 and r.status_code <= 204:
             return True
 
-        LOG.error('LIFECYCLE: MF2C: stop_sla_agreement: Error: status_code=' +  str(r.status_code))
-        return False
+        LOG.error("LIFECYCLE: MF2C: sla_terminate_agreement: Error: status_code=" +  str(r.status_code) + "; Returning False ...")
     except:
-        LOG.exception('LIFECYCLE: MF2C: stop_sla_agreement: Exception')
-        return False
+        LOG.exception("LIFECYCLE: MF2C: sla_terminate_agreement: Exception; Returning False ...")
+    return False
 
 ###############################################################################
 
@@ -340,20 +331,19 @@ def service_management_qos(service_instance):
         id = service_instance['id']
         id_service = service_instance['service']
         LOG.debug("LIFECYCLE: MF2C: service_management_qos: service: " + id_service + " service_instance_id: " + id)
-        LOG.debug("LIFECYCLE: MF2C: service_management_qos: HTTP GET: " + str(config.dic['URL_AC_SERVICE_MNGMT']) + "/" + id)
 
-        r = requests.get(str(config.dic['URL_AC_SERVICE_MNGMT']) + "/" + id, verify=config.dic['VERIFY_SSL'])
-        LOG.debug("LIFECYCLE: MF2C: service_management_qos: response: " + str(r))
+        LOG.info("LIFECYCLE: MF2C: service_management_qos: HTTP GET: " + str(config.dic['URL_AC_SERVICE_MNGMT']) + "/" + id)
+        r = requests.get(str(config.dic['URL_AC_SERVICE_MNGMT']) + "/" + id,
+                         verify=config.dic['VERIFY_SSL'])
+        LOG.debug("LIFECYCLE: MF2C: service_management_qos: response: " + str(r) + ", " + str(r.json()))
 
         json_data = json.loads(r.text)
-        LOG.debug("LIFECYCLE: MF2C: service_management_qos: " + str(json_data) + ", status: " + str(json_data['status']))
+        LOG.debug("LIFECYCLE: MF2C: service_management_qos: json_data=" + str(json_data) + ", status=" + str(json_data['status']))
 
         if json_data['status'] == 200:
-            LOG.debug("LIFECYCLE: MF2C: service_management_qos: status=" + str(json_data['status']) + ", service: " + str(json_data["service-instance"]))
             return json_data["service-instance"]
 
-        LOG.error("LIFECYCLE: MF2C: service_management_qos: Error: status: " + str(json_data['status']))
-        return None
+        LOG.error("LIFECYCLE: MF2C: service_management_qos: Error: status: " + str(json_data['status']) + "; Returning None ...")
     except:
-        LOG.exception('LIFECYCLE: MF2C: service_management_qos: Exception')
-        return None
+        LOG.exception("LIFECYCLE: MF2C: service_management_qos: Exception; Returning None ...")
+    return None
