@@ -71,9 +71,9 @@ def init():
         common.set_value_env('URL_AC_SERVICE_MNGMT')
         common.set_value_env('URL_AC_USER_MANAGEMENT')
         common.set_value_env('URL_PM_RECOM_LANDSCAPER')
-        # CIMI URL
         common.set_value_env('CIMI_URL')
-        LOG.debug('LIFECYCLE: [CIMI_URL=' + config.dic['CIMI_URL'] + ']')
+
+        # CIMI URL
         if "/api" not in config.dic['CIMI_URL'] and not config.dic['CIMI_URL'].endswith("/api"):
             LOG.debug("LIFECYCLE: Adding '/api' to CIMI_URL ...")
             if config.dic['CIMI_URL'].endswith("/"):
@@ -110,7 +110,6 @@ def init():
         LOG.info('LIFECYCLE: [PORT_COMPSs=' + str(config.dic['PORT_COMPSs']) + ']')
         LOG.info('LIFECYCLE: [NETWORK_COMPSs=' + config.dic['NETWORK_COMPSs'] + ']')
         LOG.info('LIFECYCLE: [DATACLAY_EP=' + config.dic['DATACLAY_EP'] + ']')
-
         if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
             LOG.warning("LIFECYCLE: STANDALONE_MODE enabled")
         else:
