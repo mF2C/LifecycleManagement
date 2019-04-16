@@ -108,7 +108,7 @@ def user_management(service_instance):
             res = None
 
             # LOCAL
-            if agent['url'] == common.get_local_ip():
+            if agent['url'] == data_adapter.get_my_ip(): #common.get_local_ip():
                 LOG.debug("LIFECYCLE: agent_decision: user_management: Getting LOCAL user-profile and sharing-model policies ...")
                 res = data_adapter.get_check_um()
             # 'REMOTE' AGENT

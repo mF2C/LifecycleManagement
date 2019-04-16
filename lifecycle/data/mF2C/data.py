@@ -16,106 +16,71 @@ import lifecycle.data.service_instance as service_instance
 from common.logs import LOG
 
 
-'''
- Data managed by this component:
- SERVICE:
-       {
-           "name": "hello-world",
-           "description": "Hello World Service",
-           "resourceURI": "/hello-world",
-           "exec": "hello-world",
-           "exec_type": "docker",
-           "exec_ports": ["8080", "8081"],
-           "category": {
-               "cpu": "low",
-               "memory": "low",
-               "storage": "low",
-               "inclinometer": false,
-               "temperature": false,
-               "jammer": false,
-               "location": false
-           }
-       }
-
- SERVICE INSTANCE:
-   {
-       ...
-       "id": "",
-       "user": "testuser",
-       "device_id": "",
-	   "device_ip": "",
-	   "parent_device_id": "",
-	   "parent_device_ip": "",
-       "service": "",
-       "agreement": "",
-       "status": "waiting",
-       "service_type": "swarm",
-       "agents": [
-           {"agent": resource-link, "url": "192.168.1.31", "ports": [8081], "container_id": "10asd673f", "status": "waiting",
-               "num_cpus": 3, "allow": true, "master_compss": true, "app_type": "swarm"},
-           {"agent": resource-link, "url": "192.168.1.34", "ports": [8081], "container_id": "99asd673f", "status": "waiting",
-               "num_cpus": 2, "allow": true, "master_compss": false, "app_type": "swarm"}
-      ]
-   }
-'''
-
-
 ###############################################################################
 # COMMON
 
-# TODO get this information from new RESOURCE: AGENT
-# get_current_device_id
+# FUNCTION: get_current_device_id
 def get_current_device_id():
     LOG.info("LIFECYCLE: Data: get_device_id: Getting 'my' device ID ...")
 
-    device = cimi.get_current_device_info()
-    LOG.debug("LIFECYCLE: Data: get_device_id: device = " + str(device))
+    agent = cimi.get_agent_info()
+    LOG.debug("LIFECYCLE: Data: get_device_id: agent=" + str(agent))
 
-    if not device is None and device != -1:
-        LOG.info("LIFECYCLE: Data: get_device_id: Returning 'my' device ID = " + str(device['id']))
-        return device['id']
+    if not agent is None and agent != -1:
+        LOG.info("LIFECYCLE: Data: get_device_id: Returning 'my' device ID = " + agent['device_id'] + " ...")
+        return agent['device_id']
     else:
         return -1
 
 
-# get_current_device
-def get_current_device():
-    LOG.info("LIFECYCLE: Data: get_current_device: Getting 'my' device ID ...")
+# FUNCTION: get_agent
+def __get_agent():
+    LOG.info("LIFECYCLE: Data: get_agent: Getting 'my' device ID ...")
 
-    device = cimi.get_current_device_info()
-    LOG.debug("LIFECYCLE: Data: get_current_device: device = " + str(device))
+    agent = cimi.get_agent_info()
+    LOG.debug("LIFECYCLE: Data: get_agent: agent=" + str(agent))
 
-    if not device is None and device != -1:
-        LOG.info("LIFECYCLE: Data: get_current_device: Returning 'my' device = " + str(device))
-        return device
+    if not agent is None and agent != -1:
+        return agent
     else:
         return None
 
 
-# Get 'my' ip address
+# FUNCTION: get_my_ip: Get 'my' ip address
 def get_my_ip():
-    my_device = get_current_device()
-    if my_device is not None:
-        LOG.info("LIFECYCLE: Data: get_my_ip: IP from current device = " + my_device['ethernetAddress'])
-        return my_device['ethernetAddress']
+    agent = __get_agent()
+    if agent is not None:
+        LOG.info("LIFECYCLE: Data: get_my_ip: IP from current agent = " + agent['device_ip'])
+        return agent['device_ip']
     else:
-        LOG.error("LIFECYCLE: Data: get_my_ip: Error retrieving IP from device ...")
+        LOG.error("LIFECYCLE: Data: get_my_ip: Error retrieving IP from agent. Returning None ...")
         return None
 
 
-# exist_user: check if 'user id' exists
+# FUNCTION: get_leader_ip: Get leader ip address
+def get_leader_ip():
+    agent = __get_agent()
+    if agent is not None:
+        LOG.info("LIFECYCLE: Data: get_leader_ip: LEADER IP from current agent = " + agent['leader_ip'])
+        return agent['leader_ip']
+    else:
+        LOG.error("LIFECYCLE: Data: get_leader_ip: Error retrieving LEADER IP from agent. Returning None ...")
+        return None
+
+
+# FUNCTION: exist_user: check if 'user id' exists
 def exist_user(user_id):
     return cimi.exist_user(user_id)
 
 
-# exist_device: check if 'device id' exists
+# FUNCTION: exist_device: check if 'device id' exists
 def exist_device(device_id):
     return cimi.exist_device(device_id)
 
 
-
 ###############################################################################
 # USER MANAGEMENT
+
 # get_um_profile: Get um_profile
 def get_um_profile():
     LOG.debug("LIFECYCLE: Data: get_current_user_profile: Getting information about current user and device...")
@@ -213,24 +178,3 @@ def update_service_instance(service_instance_id, service_instance):
         return None
     return res
 
-
-###############################################################################
-
-
-# Get parent
-def get_parent():
-    # get 'my' device_id
-    device_id = get_current_device_id()
-    LOG.info("LIFECYCLE: Data: get_parent: Getting LEADER ID from device [" + device_id + "] ...")
-    return cimi.get_parent(device_id)
-
-
-# Get leader ip address
-def get_leader_ip():
-    parent = get_parent()
-    if parent is not None and parent != -1:
-        LOG.info("LIFECYCLE: Data: get_parent: LEADER IP from current device = " + parent['ethernetAddress'])
-        return parent['ethernetAddress']
-    else:
-        LOG.error("LIFECYCLE: Data: get_parent: Error retrieving LEADER IP from device ...")
-        return None

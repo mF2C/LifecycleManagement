@@ -115,31 +115,6 @@ def check_ip(ip_adress):
     return False
 
 
-# TODO get from agent resource
-# get_ip_address: get IP
-def get_ip_address():
-    ipaddr = ''
-    try:
-        # 1: Use outside connection
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(('google.com', 0))
-        ipaddr = s.getsockname()[0]
-    except:
-        try:
-            # 2: Use the gethostname method
-            ipaddr = socket.gethostbyname(socket.gethostname())
-        except:
-            LOG.error('LIFECYCLE: common: get_ip_address: Exception')
-
-    LOG.info('LIFECYCLE: common: ipaddr: ' + ipaddr)
-    return ipaddr
-
-
-# get_local_ip: Get local / host IP
-def get_local_ip():
-    return config.dic['HOST_IP'] #get_ip_address() #config.dic['HOST_IP']
-
-
 ###############################################################################
 # ENV:
 # set_value_env: set value (in config dict) from environment

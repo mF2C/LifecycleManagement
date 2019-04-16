@@ -173,7 +173,7 @@ def thr_operation_service(service_instance, operation):
         for agent in service_instance["agents"]:
             LOG.info("LIFECYCLE:>>> AGENT >>> " + agent['url'] + " <<<")
             # LOCAL
-            if agent['url'] == common.get_local_ip():
+            if agent['url'] == data_adapter.get_my_ip(): #common.get_local_ip():
                 thrs.append(threading.Thread(target=thr_operation_service_local, args=(operation, service, agent,)))
             # REMOTE AGENT (call lifecycle from agent)
             elif common.check_ip(agent['url']):

@@ -167,7 +167,7 @@ def thr_submit_service_in_agents(service, service_instance, agreement_id):
         for agent in service_instance["agents"]:
             LOG.debug("LIFECYCLE:>>> AGENT >>> " + agent['url'] + " <<<")
             # LOCAL
-            if agent['url'] == common.get_local_ip():
+            if agent['url'] == data_adapter.get_my_ip(): #common.get_local_ip():
                 thrs.append(threading.Thread(target=thr_submit_local, args=(service, agent,)))
             # 'REMOTE' AGENT: calls to lifecycle from remote agent
             elif common.check_ip(agent['url']):

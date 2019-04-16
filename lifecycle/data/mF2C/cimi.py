@@ -17,6 +17,64 @@ import config
 from common.logs import LOG
 
 
+'''
+ Data managed by this component:
+SERVICE:
+{
+   "name": "hello-world",
+   "description": "Hello World Service",
+   "resourceURI": "/hello-world",
+   "exec": "hello-world",
+   "exec_type": "docker",
+   "exec_ports": ["8080", "8081"],
+   "category": {
+       "cpu": "low",
+       "memory": "low",
+       "storage": "low",
+       "inclinometer": false,
+       "temperature": false,
+       "jammer": false,
+       "location": false
+   }
+}
+
+SERVICE INSTANCE:
+{
+   ...
+   "id": "",
+   "user": "testuser",
+   "device_id": "",
+   "device_ip": "",
+   "parent_device_id": "",
+   "parent_device_ip": "",
+   "service": "",
+   "agreement": "",
+   "status": "waiting",
+   "service_type": "swarm",
+   "agents": [
+       {"agent": resource-link, "url": "192.168.1.31", "ports": [8081], "container_id": "10asd673f", "status": "waiting",
+           "num_cpus": 3, "allow": true, "master_compss": true, "app_type": "swarm"},
+       {"agent": resource-link, "url": "192.168.1.34", "ports": [8081], "container_id": "99asd673f", "status": "waiting",
+           "num_cpus": 2, "allow": true, "master_compss": false, "app_type": "swarm"}
+  ]
+}
+
+AGENT
+{
+    "authenticated" : true,
+    "leader_id" : "device_2",
+    "leaderAddress" : "192.168.252.42",
+    "connected" : true,
+    "device_ip" : "192.168.252.41",
+    "id" : "agent/9a2f5cf5-b885-4c8f-8783-66451f59928d",
+    "isLeader" : false,
+    "resourceURI" : "http://schemas.dmtf.org/cimi/2/Agent",
+    "childrenIPs" : [ "192.168.252.43" ],
+    "device_id" : "device_1"
+}
+'''
+
+
 # SERVICE_INSTANCE CIMI RESOURCE
 RSRC_SERVICE_INSTANCE = "service-instance"
 # SERVICE CIMI RESOURCE
@@ -94,24 +152,36 @@ def patch_update_map_fields():
 # COMMON
 
 # TODO get this information from new RESOURCE: AGENT
-# FUNCTION: get_current_device_info
-def get_current_device_info():
+# FUNCTION: get_agent_info: get 'agent' resource content
+# {
+#     "authenticated" : true,
+#     "leader_id" : "device_2",
+#     "leaderAddress" : "192.168.252.42",
+#     "connected" : true,
+#     "device_ip" : "192.168.252.41",
+#     "id" : "agent/9a2f5cf5-b885-4c8f-8783-66451f59928d",
+#     "isLeader" : false,
+#     "resourceURI" : "http://schemas.dmtf.org/cimi/2/Agent",
+#     "childrenIPs" : [ "192.168.252.43" ],
+#     "device_id" : "device_1"
+# }
+def get_agent_info():
     try:
-        res = requests.get(config.dic['CIMI_URL'] + "/device",
+        res = requests.get(config.dic['CIMI_URL'] + "/agent",
                            headers=CIMI_HEADER,
                            verify=False)
-        LOG.debug("LIFECYCLE: cimi: get_current_device_info: response: " + str(res) + ", " + str(res.json()))
+        LOG.debug("LIFECYCLE: cimi: get_agent_info: response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 200 and res.json()['count'] == 0:
-            LOG.warning("LIFECYCLE: cimi: get_current_device_info: 'device' not found")
+            LOG.warning("LIFECYCLE: cimi: get_agent_info: 'agent' not found")
             return -1
         elif res.status_code == 200:
-            return res.json()['devices'][0]
+            return res.json()['agents'][0]
 
-        LOG.warning("LIFECYCLE: cimi: get_current_device_info: 'device' not found; Returning -1 ...")
+        LOG.warning("LIFECYCLE: cimi: get_agent_info: 'agent' not found; Returning -1 ...")
         return -1
     except:
-        LOG.exception("LIFECYCLE: cimi: get_current_device_info: Exception; Returning None ...")
+        LOG.exception("LIFECYCLE: cimi: get_agent_info: Exception; Returning None ...")
         return None
 
 

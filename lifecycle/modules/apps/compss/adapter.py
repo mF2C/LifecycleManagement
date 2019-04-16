@@ -186,7 +186,7 @@ def find_master(service_instance):
                 return agent
 
         for agent in service_instance['agents']:
-            if agent['status'] == STATUS_STARTED and agent['url'] == common.get_local_ip():
+            if agent['status'] == STATUS_STARTED and agent['url'] == data_adapter.get_my_ip(): #common.get_local_ip():
                 LOG.debug("LIFECYCLE: COMPSs adapter: find_master: Local agent has COMPSs, status=STARTED and is included in the service instance!")
                 LOG.debug("LIFECYCLE: COMPSs adapter: find_master: agent: " + str(agent))
                 agent['master_compss'] = True
@@ -210,7 +210,7 @@ def find_master(service_instance):
 # gen_resource:
 def gen_resource(url, ports):
     try:
-        if url == common.get_ip_address():
+        if url == data_adapter.get_my_ip(): #common.get_ip_address():
             LOG.debug("LIFECYCLE: COMPSs adapter: gen_resource: (local) get_COMPSs_port_DB_DOCKER_PORTS ...")
             compss_port = db.get_COMPSs_port_DB_DOCKER_PORTS(ports)
         else:
