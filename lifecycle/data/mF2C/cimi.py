@@ -310,6 +310,7 @@ def get_service_instance_report(id):
                            verify=False)
         LOG.debug("LIFECYCLE: cimi: get_service_instance_report: [" + id + "] response: " + str(res) + ", " + str(res.json()))
 
+
         if res.status_code == 200 and len(res.json()['serviceOperationReports']) > 0:
             return res.json()['serviceOperationReports'][0]
         elif res.status_code == 200:

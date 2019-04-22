@@ -44,7 +44,7 @@ ENV VARIABLES (lifecycle):
 def init():
     try:
         # CONFIGURATION / ENVIRONMENT VALUES
-        LOG.info('LIFECYCLE: Reading values from ENVIRONMENT...')
+        LOG.info('LIFECYCLE: config: Reading values from ENVIRONMENT...')
 
         # STANDALONE_MODE
         common.set_value_env('STANDALONE_MODE')
@@ -74,7 +74,7 @@ def init():
         common.set_value_env('URL_PM_RECOM_LANDSCAPER')
         common.set_value_env('CIMI_URL')
 
-        LOG.info('LIFECYCLE: Checking configuration...')
+        LOG.info('LIFECYCLE: config: Checking configuration...')
 
         # CIMI URL
         if "/api" not in config.dic['CIMI_URL'] and not config.dic['CIMI_URL'].endswith("/api"):
@@ -117,4 +117,4 @@ def init():
         else:
             LOG.info("LIFECYCLE: STANDALONE_MODE not enabled")
     except:
-        LOG.error('LIFECYCLE: init_config: Exception: Error while initializing application')
+        LOG.exception('LIFECYCLE: config: Exception: Error while initializing application')
