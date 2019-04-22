@@ -73,11 +73,6 @@ def exist_user(user_id):
     return cimi.exist_user(user_id)
 
 
-# FUNCTION: exist_device: check if 'device id' exists
-def exist_device(device_id):
-    return cimi.exist_device(device_id)
-
-
 ###############################################################################
 # USER MANAGEMENT
 

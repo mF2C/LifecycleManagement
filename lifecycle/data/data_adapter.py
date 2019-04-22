@@ -30,11 +30,6 @@ def exist_user(user_id):
     return data_mf2c.exist_user(user_id)
 
 
-# exist_device: check if 'device id' exists
-def exist_device(device_id):
-    return data_mf2c.exist_device(device_id)
-
-
 # get_leader_ip: Get IP address from Leader
 def get_leader_ip():
     return data_mf2c.get_leader_ip()
