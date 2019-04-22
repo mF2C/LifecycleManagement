@@ -157,9 +157,11 @@ def deleteServiceInstance(service_instance_id):
 def postService(request):
     # 1. Parse and check input data
     data = request.get_json()
-    if 'user_id' not in data or 'agreement_id' not in data:
-        LOG.error('LIFECYCLE: REST API: postService: Exception - parameter not found: user_id / agreement_id')
-        return Response(json.dumps({'error': True, 'message': 'parameter not found: user_id / agreement_id'}), status=406, content_type='application/json')
+	
+    agreement_id = "AGREEMENT_ID"
+    if 'user_id' not in data:
+        LOG.error('LIFECYCLE: REST API: postService: Exception - parameter not found: user_id')
+        return Response(json.dumps({'error': True, 'message': 'parameter not found: user_id'}), status=406, content_type='application/json')
     elif 'service' not in data and 'service_id' not in data:
         LOG.error('LIFECYCLE: REST API: postService: Exception - parameter not found: service / service_id')
         return Response(json.dumps({'error': True, 'message': 'parameter not found: service /  service_id'}), status=406, content_type='application/json')
@@ -190,7 +192,7 @@ def postService(request):
         # using a predefined list of agents:
         return lifecycle_depl.submit_service_in_agents(service,
                                                        data['user_id'],
-                                                       data['agreement_id'],
+                                                       agreement_id,
                                                        data['agents_list'],
                                                        check_service=True)
     # OPTION: submits the service with the help of the other mF2C components (landscaper, recommender ...)
@@ -198,7 +200,7 @@ def postService(request):
         # using agent_decision module (landscaper, recommender...):
         return lifecycle_depl.submit(service,
                                      data['user_id'],
-                                     data['agreement_id'])
+                                     agreement_id)
 
 
 ####################################################################################################################
