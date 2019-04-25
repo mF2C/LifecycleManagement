@@ -160,15 +160,19 @@ def postService(request):
 	
     agreement_id = "AGREEMENT_ID"
     if 'user_id' not in data:
-        LOG.error('LIFECYCLE: REST API: postService: Exception - parameter not found: user_id')
-        return Response(json.dumps({'error': True, 'message': 'parameter not found: user_id'}), status=406, content_type='application/json')
-    elif 'service' not in data and 'service_id' not in data:
+        LOG.warning('LIFECYCLE: REST API: postService: Exception - parameter not found: user_id')
+        user_id = "ADMIN"
+        #return Response(json.dumps({'error': True, 'message': 'parameter not found: user_id'}), status=406, content_type='application/json')
+    else:
+        user_id = data['user_id']
+
+    if 'service' not in data and 'service_id' not in data:
         LOG.error('LIFECYCLE: REST API: postService: Exception - parameter not found: service / service_id')
         return Response(json.dumps({'error': True, 'message': 'parameter not found: service /  service_id'}), status=406, content_type='application/json')
 
     # check if user exists
-    if not data_adapter.exist_user(data['user_id']):
-        return common.gen_response(404, "Error", "user_id", data['user_id'], "message", "User ID not found")
+    #if not data_adapter.exist_user(data['user_id']):
+    #    return common.gen_response(404, "Error", "user_id", data['user_id'], "message", "User ID not found")
 
     # 2. Get service
     # OPTION: full service defined in the request
@@ -191,7 +195,7 @@ def postService(request):
     if 'agents_list' in data:
         # using a predefined list of agents:
         return lifecycle_depl.submit_service_in_agents(service,
-                                                       data['user_id'],
+                                                       user_id, #data['user_id'],
                                                        agreement_id,
                                                        data['agents_list'],
                                                        check_service=True)
@@ -199,7 +203,7 @@ def postService(request):
     else:
         # using agent_decision module (landscaper, recommender...):
         return lifecycle_depl.submit(service,
-                                     data['user_id'],
+                                     user_id, #data['user_id'],
                                      agreement_id)
 
 
