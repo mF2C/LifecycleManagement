@@ -68,11 +68,6 @@ def get_leader_ip():
         return None
 
 
-# FUNCTION: exist_user: check if 'user id' exists
-def exist_user(user_id):
-    return cimi.exist_user(user_id)
-
-
 ###############################################################################
 # USER MANAGEMENT
 

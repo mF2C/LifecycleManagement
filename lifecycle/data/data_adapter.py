@@ -25,11 +25,6 @@ def get_my_ip():
     return data_mf2c.get_my_ip()
 
 
-# exist_user: check if 'user id' exists
-def exist_user(user_id):
-    return data_mf2c.exist_user(user_id)
-
-
 # get_leader_ip: Get IP address from Leader
 def get_leader_ip():
     return data_mf2c.get_leader_ip()

@@ -185,24 +185,6 @@ def get_agent_info():
         return None
 
 
-# FUNCTION: exist_user: check if 'user id' exists
-def exist_user(user_id):
-    try:
-        user_id = user_id.replace('user/', '')
-        res = requests.get(config.dic['CIMI_URL'] + "/user/" + user_id,
-                           headers=CIMI_HEADER,
-                           verify=False)
-        LOG.debug("LIFECYCLE: cimi: exist_user: [" + user_id + "] response: " + str(res) + ", " + str(res.json()))
-
-        if res.status_code == 200 and not res.json()['id'] is None:
-            return True
-
-        LOG.warning("LIFECYCLE: cimi: exist_user: 'user' not found / error getting user (user_id=" + user_id + "); Returning False ...")
-    except:
-        LOG.warning("LIFECYCLE: cimi: exist_user: controlled exception; Returning False ...")
-    return False
-
-
 ###############################################################################
 # UM
 

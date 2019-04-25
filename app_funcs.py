@@ -87,16 +87,6 @@ def getCheckAgentUMInfo():
     return resp
 
 
-# getAgentInfo
-def putAgentUMInfo(request):
-    # 1. Parse and check input data
-    data = request.get_json()
-
-    # response
-    resp = Response(json.dumps(data), status=200, mimetype='application/json')
-    return resp
-
-
 # getServiceInstance
 def getServiceInstance(service_instance_id):
     if service_instance_id == "all":
@@ -213,17 +203,13 @@ def postService(request):
 
     # USER_ID:
     if 'user_id' not in data:
-        LOG.debug("LIFECYCLE: REST API: postService: Parameter not found: 'user_id'")
-        LOG.debug("LIFECYCLE: REST API: postService: Retrieving 'user_id' value from agent ...")
+        LOG.debug("LIFECYCLE: REST API: postService: Parameter not found: 'user_id'. Retrieving 'user_id' value from agent ...")
         res = data_adapter.get_um_current("user")
-        user_id = ""
+        user_id = "ADMIN" # TODO
         if not res:
             user_id = res['user']
     else:
         user_id = data['user_id']
-    # check if user exists
-    if not data_adapter.exist_user(user_id):
-        return common.gen_response(404, "Error", "user_id", user_id, "message", "User ID not found")
 
     # SLA TEMPLATE
     if 'sla_template' not in data:

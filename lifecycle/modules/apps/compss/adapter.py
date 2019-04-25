@@ -178,7 +178,7 @@ def set_master(service_instance):
 # find_master:
 def find_master(service_instance):
     try:
-        LOG.debug("LIFECYCLE: COMPSs adapter: Check if local agent has COMPSs and is included in the service instance ...")
+        LOG.debug("LIFECYCLE: COMPSs adapter: find_master: Check if local agent has COMPSs and is included in the service instance ...")
 
         for agent in service_instance['agents']:
             if agent['master_compss'] and agent['status'] == STATUS_STARTED:
@@ -205,6 +205,21 @@ def find_master(service_instance):
 
     LOG.warning("LIFECYCLE: COMPSs adapter: find_master: return service_instance['agents'][0]: " + str(service_instance['agents'][0]))
     return service_instance['agents'][0]
+
+
+# store_appid_in_master:
+def store_appid_in_master(service_instance, appId):
+    try:
+        LOG.debug("LIFECYCLE: COMPSs adapter: store_appid_in_master: Storing appId [" + str(appId) + "] in the service instance ...")
+
+        for agent in service_instance['agents']:
+            if agent['master_compss']:
+                LOG.debug("LIFECYCLE: COMPSs adapter: store_appid_in_master: Agent is master: " + str(agent))
+                agent['agent_param'] = str(appId)
+                res = data_adapter.update_service_instance(service_instance['id'], service_instance)
+                LOG.debug("LIFECYCLE: COMPSs adapter: store_appid_in_master: res=" + res + ", agent=" + str(agent))
+    except:
+        LOG.exception("LIFECYCLE: COMPSs adapter: store_appid_in_master: Exception")
 
 
 # gen_resource:
@@ -330,7 +345,12 @@ def start_job_in_agents(service_instance, body):
         res = requests.put("http://" + master_agent['url'] + ":" + str(compss_port) + "/COMPSs/startApplication",
                            data=xml,
                            headers={'Content-Type': 'application/xml'})
-        LOG.debug("LIFECYCLE: COMPSs adapter: start_job_in_agents: [res=" + str(res) + "]")
+        LOG.debug("LIFECYCLE: COMPSs: adapter: start_job_in_agents: response: " + str(res) + ", " + str(res.json()))
+
+        # TODO store operation ID
+        appId = "12312422312"
+        store_appid_in_master(service_instance, appId)
+
         return True
     except:
         LOG.exception('LIFECYCLE: COMPSs adapter: start_job_in_agents: Exception')
@@ -338,18 +358,180 @@ def start_job_in_agents(service_instance, body):
 
 
 # add_resources_to_job
-def add_resources_to_job(service_instance):
+def add_resources_to_job(service_instance, appId, workerIP):
+    # <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    # <newResource>
+    #    <appId>1357211900655995414</appId>
+    #    <externalResource>
+    #        <adaptor>es.bsc.compss.agent.rest.master.Adaptor</adaptor>
+    #        <description>
+    #            <memorySize>4.0</memorySize>
+    #            <memoryType>[unassigned]</memoryType>
+    #            <operatingSystemDistribution>[unassigned]</operatingSystemDistribution>
+    #            <operatingSystemType>[unassigned]</operatingSystemType>
+    #            <operatingSystemVersion>[unassigned]</operatingSystemVersion>
+    #            <pricePerUnit>-1.0</pricePerUnit>
+    #            <priceTimeUnit>-1</priceTimeUnit>
+    #            <processors>
+    #                <architecture>[unassigned]</architecture>
+    #                <computingUnits>1</computingUnits>
+    #                <internalMemory>-1.0</internalMemory>
+    #                <name>MainProcessor</name>
+    #                <propName>[unassigned]</propName>
+    #                <propValue>[unassigned]</propValue>
+    #                <speed>-1.0</speed>
+    #                <type>CPU</type>
+    #            </processors>
+    #            <storageSize>-1.0</storageSize>
+    #            <storageType>[unassigned]</storageType>
+    #            <value>0.0</value>
+    #            <wallClockLimit>-1</wallClockLimit>
+    #        </description>
+    #        <name>172.18.0.6</name>
+    #        <resourceConf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ResourcesExternalAdaptorProperties">
+    #            <Property>
+    #                <Name>Port</Name>
+    #                <Value>46102</Value>
+    #            </Property>
+    #        </resourceConf>
+    #    </externalResource>
+    # </newResource>
     LOG.debug("LIFECYCLE: COMPSs adapter: add_resources_to_job: ")
-    # TODO
+    try:
+        # TODO get new port for new resource ==> 46102
+        xml = "<newResource>" \
+              "     <appId>" + appId + "</appId>" \
+              "     <externalResource>" \
+              "         <adaptor>es.bsc.compss.agent.rest.master.Adaptor</adaptor>" \
+              "         <description>" \
+              "             <memorySize>4.0</memorySize>" \
+              "             <memoryType>[unassigned]</memoryType>" \
+              "             <operatingSystemDistribution>[unassigned]</operatingSystemDistribution>" \
+              "             <operatingSystemType>[unassigned]</operatingSystemType>" \
+              "             <operatingSystemVersion>[unassigned]</operatingSystemVersion>" \
+              "             <pricePerUnit>-1.0</pricePerUnit>" \
+              "             <priceTimeUnit>-1</priceTimeUnit>" \
+              "             <processors>" \
+              "                 <architecture>[unassigned]</architecture>" \
+              "                 <computingUnits>2</computingUnits>" \
+              "                 <internalMemory>-1.0</internalMemory>" \
+              "                 <name>MainProcessor</name>" \
+              "                 <propName>[unassigned]</propName>" \
+              "                 <propValue>[unassigned]</propValue>" \
+              "                 <speed>-1.0</speed>" \
+              "                 <type>CPU</type>" \
+              "             </processors>" \
+              "             <storageSize>-1.0</storageSize>" \
+              "             <storageType>[unassigned]</storageType>" \
+              "             <value>0.0</value>" \
+              "             <wallClockLimit>-1</wallClockLimit>" \
+              "         </description>" \
+              "         <name>" + workerIP + "</name>" \
+              "         <resourceConf xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"ResourcesExternalAdaptorProperties\">" \
+              "             <Property>" \
+              "                 <Name>Port</Name>" \
+              "                 <Value>46102</Value>" \
+              "             </Property>" \
+              "         </resourceConf>" \
+              "     </externalResource>" \
+              "</newResource>"
+
+        master_agent = find_master(service_instance)
+        compss_port = db.get_COMPSs_port_DB_DOCKER_PORTS(master_agent['ports'])
+
+        res = requests.put("http://" + master_agent['url'] + ":" + str(compss_port) + "/COMPSs/newResource",
+                           data=xml,
+                           headers={'Content-Type': 'application/xml'})
+        LOG.debug("LIFECYCLE: COMPSs: adapter: add_resources_to_job: response: " + str(res) + ", " + str(res.json()))
+
+        return True
+    except:
+        LOG.exception('LIFECYCLE: COMPSs adapter: add_resources_to_job: Exception')
+        return False
 
 
 # rem_resources_from_job
-def rem_resources_from_job(service_instance):
+def rem_resources_from_job(service_instance, appId, workerIP):
+    # OPTION 1
+    # <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    # <removeNode>
+    #    <appId>8408755967528372176</appId>
+    #    <workerName>172.18.0.5</workerName>
+    # </removeNode>
+    #
+    # OPTION 2
+    # <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    # <reduceNode>
+    #    <appId>8234957497504047381</appId>
+    #    <resources>
+    #        <memorySize>4.0</memorySize>
+    #        <memoryType>[unassigned]</memoryType>
+    #        <operatingSystemDistribution>[unassigned]</operatingSystemDistribution>
+    #        <operatingSystemType>[unassigned]</operatingSystemType>
+    #        <operatingSystemVersion>[unassigned]</operatingSystemVersion>
+    #        <pricePerUnit>-1.0</pricePerUnit>
+    #        <priceTimeUnit>-1</priceTimeUnit>
+    #        <processors>
+    #            <architecture>[unassigned]</architecture>
+    #            <computingUnits>1</computingUnits>
+    #            <internalMemory>-1.0</internalMemory>
+    #            <name>MainProcessor</name>
+    #            <propName>[unassigned]</propName>
+    #            <propValue>[unassigned]</propValue>
+    #            <speed>-1.0</speed>
+    #            <type>CPU</type>
+    #        </processors>
+    #        <storageSize>-1.0</storageSize>
+    #        <storageType>[unassigned]</storageType>
+    #        <value>0.0</value>
+    #        <wallClockLimit>-1</wallClockLimit>
+    #    </resources>
+    #    <workerName>172.18.0.5</workerName>
+    # </reduceNode>
     LOG.debug("LIFECYCLE: COMPSs adapter: rem_resources_from_job: ")
-    # TODO
+    try:
+        xml = "<removeNode>" \
+              "     <appId>" + appId + "</appId>" \
+              "     <workerName>" + workerIP + "</workerName>" \
+              "</removeNode>"
+
+        master_agent = find_master(service_instance)
+        compss_port = db.get_COMPSs_port_DB_DOCKER_PORTS(master_agent['ports'])
+
+        res = requests.put("http://" + master_agent['url'] + ":" + str(compss_port) + "/COMPSs/removeNode",
+                           data=xml,
+                           headers={'Content-Type': 'application/xml'})
+        LOG.debug("LIFECYCLE: COMPSs: adapter: rem_resources_from_job: response: " + str(res) + ", " + str(res.json()))
+
+        return True
+    except:
+        LOG.exception('LIFECYCLE: COMPSs adapter: rem_resources_from_job: Exception')
+        return False
 
 
 # notify_job_resource_lost
-def notify_job_resource_lost(service_instance):
+def notify_job_resource_lost(service_instance, appId, workerIP):
+    # <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    # <lostNode>
+    #    <appId>1357211900655995414</appId>
+    #    <workerName>172.18.0.5</workerName>
+    # </lostNode>
     LOG.debug("LLIFECYCLE: COMPSs adapter: notify_job_resource_lost: ")
-    # TODO
+    try:
+        xml = "<lostNode>" \
+              "     <appId>" + appId + "</appId>" \
+              "     <workerName>" + workerIP + "</workerName>" \
+              "</lostNode>"
+
+        master_agent = find_master(service_instance)
+        compss_port = db.get_COMPSs_port_DB_DOCKER_PORTS(master_agent['ports'])
+
+        res = requests.put("http://" + master_agent['url'] + ":" + str(compss_port) + "/COMPSs/lostNode",
+                           data=xml,
+                           headers={'Content-Type': 'application/xml'})
+        LOG.debug("LIFECYCLE: COMPSs: adapter: notify_job_resource_lost: response: " + str(res) + ", " + str(res.json()))
+
+        return True
+    except:
+        LOG.exception('LIFECYCLE: COMPSs adapter: notify_job_resource_lost: Exception')
+        return False

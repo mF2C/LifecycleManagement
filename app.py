@@ -73,7 +73,7 @@ try:
 
     # API DOC
     api = swagger.docs(Api(app),
-                       apiVersion='1.0.1',
+                       apiVersion='1.2.0',
                        api_spec_url=config.dic['API_DOC_URL'],
                        produces=["application/json", "text/html"],
                        swaggerVersion="1.2",
@@ -94,10 +94,13 @@ except ValueError:
 #
 #        GET:    get rest api service status
 #
+@app.route('/api/v2', methods=['GET'])
 @app.route('/api/v2/', methods=['GET'])
 def default_route():
     data = {
-        'app': "Lifecycle Management REST API", 'status': "Running", 'api_doc_json': "http://" + config.dic['HOST_IP'] + ":" + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'],
+        'app': "Lifecycle Management REST API",
+        'status': "Running",
+        'api_doc_json': "http://" + config.dic['HOST_IP'] + ":" + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'],
         'api_doc_html': "http://" + config.dic['HOST_IP'] + ":" + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'] + ".html#!/spec"
     }
     resp = Response(json.dumps(data), status=200, mimetype='application/json')
@@ -177,26 +180,6 @@ class AgentUM(Resource):
     def get(self):
         return lm.getAgentUMInfo()
 
-
-    # PUT /api/v2/lm/agent-um
-    @swagger.operation(
-        summary="updates user-profile current number of applications running",
-        notes="updates user-profile current number of applications running",
-        produces=["application/json"],
-        authorizations=[],
-        parameters=[{
-            "name": "body",
-            "description": "Parameters in JSON format.<br/>Example: <br/>"
-                "{\"apps\":1}",
-            "required": True,
-            "paramType": "body",
-            "type": "string"
-        }],
-        responseMessages=[{
-            "code": 500, "message": "Exception processing request"
-        }])
-    def put(self):
-        return lm.putAgentUMInfo(request)
 
 api.add_resource(AgentUM, '/api/v2/lm/agent-um')
 
