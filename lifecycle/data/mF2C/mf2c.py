@@ -222,7 +222,7 @@ def recommender_get_optimal_resources(service):
             # create list of agents
             list_of_agents = []
             for elem in json_data:
-                list_of_agents.append({"agent_ip": elem['node_name']})
+                list_of_agents.append({"agent_ip": elem['ipaddress']})
 
             LOG.debug("LIFECYCLE: MF2C: recommender_get_optimal_resources: list_of_agents=" + str(list_of_agents))
             return list_of_agents
