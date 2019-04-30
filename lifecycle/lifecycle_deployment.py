@@ -190,7 +190,7 @@ def thr_submit_service_in_agents(service, service_instance, sla_template_id, use
         if id_agreement is not None:
             service_instance['agreement'] = id_agreement
             # 5.2 initializes SLA
-            if sla_adapter.initializes_sla(service_instance, id_agreement):
+            if sla_adapter.start_sla_agreement(service_instance, id_agreement):
                 LOG.debug("LIFECYCLE: Lifecycle_Deployment: thr_submit_service_in_agents: sla agreement started")
             else:
                 LOG.error("LIFECYCLE: Lifecycle_Deployment: thr_submit_service_in_agents: sla agreement NOT started")

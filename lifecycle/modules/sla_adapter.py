@@ -26,13 +26,13 @@ def create_sla_agreement(sla_template_id, user_id, service):
         return mf2c.create_sla_agreement(sla_template_id, user_id, service)
 
 
-# FUNCTION: initializes_sla: initialize all the SLA processes
-def initializes_sla(service_instance, agreement_id):
+# FUNCTION: start_sla_agreement: initialize all the SLA processes
+def start_sla_agreement(service_instance, agreement_id):
     if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
-        LOG.warning("LIFECYCLE: sla_adapter: initializes_sla: STANDALONE_MODE enabled; Returning None ...")
+        LOG.warning("LIFECYCLE: sla_adapter: start_sla_agreement: STANDALONE_MODE enabled; Returning None ...")
         return None
     else:
-        LOG.debug("LIFECYCLE: sla_adapter: initializes_sla: Starting SLA (" + str(service_instance) + ", " + agreement_id + ") ...")
+        LOG.debug("LIFECYCLE: sla_adapter: start_sla_agreement: Starting SLA (" + str(service_instance) + ", " + agreement_id + ") ...")
         return mf2c.sla_start_agreement(agreement_id)
 
 

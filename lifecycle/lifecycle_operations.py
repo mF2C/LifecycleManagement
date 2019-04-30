@@ -196,7 +196,7 @@ def thr_operation_service(service_instance, operation):
         if operation == OPERATION_START:
             service_instance['status'] = STATUS_STARTED
             data_adapter.update_service_instance(service_instance['id'], service_instance)          # cimi / db
-            sla_adapter.initializes_sla(service_instance, service_instance['agreement'])            # sla
+            sla_adapter.start_sla_agreement(service_instance, service_instance['agreement'])            # sla
 
         elif operation == OPERATION_STOP:
             service_instance['status'] = STATUS_STOPPED

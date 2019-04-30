@@ -213,10 +213,10 @@ def postService(request):
 
     # SLA TEMPLATE
     if 'sla_template' not in data:
-        LOG.error("LIFECYCLE: REST API: postService: Parameter not found: 'agreement_template'")
+        LOG.error("LIFECYCLE: REST API: postService: Parameter not found: 'sla_template'")
         sla_template_id = "SLA_TEMPLATE_ID" # TODO
     else:
-        LOG.debug("LIFECYCLE: REST API: postService: Parameter found: 'agreement_template': " + data['sla_template'])
+        LOG.debug("LIFECYCLE: REST API: postService: Parameter found: 'sla_template': " + data['sla_template'])
         sla_template_id = data['sla_template']
 
     # SERVICE:
