@@ -212,6 +212,7 @@ def postService(request):
         user_id = data['user_id']
 
     # SLA TEMPLATE
+    #   (SERVICE) :sla_templates [{:href "sla-template/sla-template-id-1"}, {:href "sla-template/sla-template-id-2"}]
     if 'sla_template' not in data:
         LOG.error("LIFECYCLE: REST API: postService: Parameter not found: 'sla_template'")
         sla_template_id = "SLA_TEMPLATE_ID" # TODO

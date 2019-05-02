@@ -12,7 +12,8 @@ Created on 28 feb. 2019
 """
 
 from common.logs import LOG
-from common.common import STATUS_CREATED_NOT_INITIALIZED
+from common.common import STATUS_CREATED_NOT_INITIALIZED, STATUS_STARTED
+import lifecycle.data.data_adapter as data_adapter
 
 
 # new_service_instance: Creates a new service instance object
@@ -111,3 +112,89 @@ def add_agents_to_empty_service_instance(service, user_id, agreement_id, agents_
     LOG.debug("LIFECYCLE: Data: Service Instance: add_agents_to_empty_service_instance: create_service_instance: " + str(new_service_instance))
 
     return new_service_instance
+
+
+# is_agent_in_service_instance: check if an agent (url) is being used in a service_instance
+def is_agent_in_service_instance(service_instance, agent_url):
+    LOG.debug("LIFECYCLE: Data: Service Instance: is_agent_in_service_instance: " + service_instance['id'] + ", " + str(agent_url))
+    for agent in service_instance['agents']:
+        if agent['url'] == agent_url:
+            return True
+    return False
+
+
+# set_master:
+def set_master(service_instance):
+    try:
+        LOG.debug("LIFECYCLE: Data: Service Instance: set_master: Update service instance: set master (COMPSs)")
+        data_adapter.update_service_instance(service_instance['id'], service_instance)
+    except:
+        LOG.exception("LIFECYCLE: Data: Service Instance: set_master: Exception")
+
+
+# find_master:
+def find_master(service_instance):
+    try:
+        LOG.debug("LIFECYCLE: Data: Service Instance: find_master: Check if local agent has COMPSs and is included in the service instance ...")
+
+        for agent in service_instance['agents']:
+            if agent['master_compss'] and agent['status'] == STATUS_STARTED:
+                LOG.debug("LIFECYCLE: Data: Service Instance: find_master: Agent is master, status=STARTED: " + str(agent))
+                return agent
+
+        for agent in service_instance['agents']:
+            if agent['status'] == STATUS_STARTED and agent['url'] == data_adapter.get_my_ip(): #common.get_local_ip():
+                LOG.debug("LIFECYCLE: Data: Service Instance: find_master: Local agent has COMPSs, status=STARTED and is included in the service instance!")
+                LOG.debug("LIFECYCLE: Data: Service Instance: find_master: agent: " + str(agent))
+                agent['master_compss'] = True
+                set_master(service_instance)
+                return agent
+
+        LOG.debug("LIFECYCLE: Data: Service Instance: Check agents included in the service instance and status=STARTED ...")
+        for agent in service_instance['agents']:
+            if agent['status'] == STATUS_STARTED:
+                LOG.debug("LIFECYCLE: Data: Service Instance: find_master: agent: " + str(agent))
+                agent['master_compss'] = True
+                set_master(service_instance)
+                return agent
+    except:
+        LOG.exception("LIFECYCLE: Data: Service Instance: find_master: Exception")
+
+    LOG.warning("LIFECYCLE: Data: Service Instance: find_master: return service_instance['agents'][0]: " + str(service_instance['agents'][0]))
+    return service_instance['agents'][0]
+
+
+# is_master:
+def is_master(agent):
+    if agent['master_compss']:
+        return True
+    return False
+
+
+# store_appid_in_master:
+def store_appid_in_master(service_instance, appId):
+    try:
+        LOG.debug("LIFECYCLE: Data: Service Instance: store_appid_in_master: Storing appId [" + str(appId) + "] in the service instance ...")
+
+        for agent in service_instance['agents']:
+            if agent['master_compss']:
+                LOG.debug("LIFECYCLE: Data: Service Instance: store_appid_in_master: Agent is master: " + str(agent))
+                agent['agent_param'] = str(appId)
+                res = data_adapter.update_service_instance(service_instance['id'], service_instance)
+                LOG.debug("LIFECYCLE: Data: Service Instance: store_appid_in_master: res=" + res + ", agent=" + str(agent))
+    except:
+        LOG.exception("LIFECYCLE: Data: Service Instance: store_appid_in_master: Exception")
+
+
+# get_appid_from_master:
+def get_appid_from_master(service_instance):
+    try:
+        LOG.debug("LIFECYCLE: Data: Service Instance: get_appid_from_master: Getting (COMPSs) appId from the service instance ...")
+
+        for agent in service_instance['agents']:
+            if agent['master_compss']:
+                LOG.debug("LIFECYCLE: Data: Service Instance: get_appid_from_master: Agent is master: " + str(agent))
+                return agent['agent_param']
+    except:
+        LOG.exception("LIFECYCLE: Data: Service Instance: get_appid_from_master: Exception. Returning None ...")
+    return None

@@ -69,11 +69,6 @@ def get_available_agents_resources(service):
                 LOG.warning("LIFECYCLE: agent_decision: get_available_agents_list: temporal fix")
                 LOG.warning("LIFECYCLE: agent_decision: get_available_agents_list: returning localhost")
                 return [{"agent_ip": config.dic['HOST_IP']}]
-            # TODO temporal fix
-            elif resources[0]['agent_ip'] == "machine-B" or resources[0]['agent_ip'] == "machine-A":
-                LOG.warning("LIFECYCLE: agent_decision: get_available_agents_list: machine-B / machine-A")
-                LOG.warning("LIFECYCLE: agent_decision: get_available_agents_list: returning localhost")
-                return [{"agent_ip": config.dic['HOST_IP']}]
             else:
                 LOG.debug("LIFECYCLE: agent_decision: get_available_agents_list: total=" + str(len(resources)))
                 return resources

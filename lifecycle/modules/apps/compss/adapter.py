@@ -13,10 +13,10 @@ Created on 09 feb. 2018
 
 import requests
 from common.logs import LOG
-import common.common as common
 from common.common import STATUS_STARTED
 import lifecycle.data.db as db
 import lifecycle.data.data_adapter as data_adapter
+import lifecycle.data.service_instance as data_service_instance
 
 
 '''
@@ -145,81 +145,7 @@ Lifecycle & COMPSs (IT-2):
         </externalResource>
     </resources>
 </startApplication>
-
-
-# parameters:
-#   "  <ceiClass>es.bsc.compss.test.TestItf</ceiClass>" \
-#   "  <className>es.bsc.compss.test.Test</className>" \
-#   "  <methodName>main</methodName>" \
-#   "  <parameters>" \
-#   "    <array paramId=\"0\">" \
-#   "      <componentClassname>java.lang.String</componentClassname>" \
-#   "      <values>" \
-#   "        <element paramId=\"0\">" \
-#   "          <className>java.lang.String</className>" \
-#   "          <value xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" " \
-#   "             xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"xs:string\">3</value>" \
-#   "        </element>" \
-#   "      </values>" \
-#   "    </array>" \
-#   "  </parameters>" \
 '''
-
-
-# set_master:
-def set_master(service_instance):
-    try:
-        LOG.debug("LIFECYCLE: COMPSs adapter: set_master: Update service instance: set master (COMPSs)")
-        data_adapter.update_service_instance(service_instance['id'], service_instance)
-    except:
-        LOG.exception("LIFECYCLE: COMPSs adapter: set_master: Exception")
-
-
-# find_master:
-def find_master(service_instance):
-    try:
-        LOG.debug("LIFECYCLE: COMPSs adapter: find_master: Check if local agent has COMPSs and is included in the service instance ...")
-
-        for agent in service_instance['agents']:
-            if agent['master_compss'] and agent['status'] == STATUS_STARTED:
-                LOG.debug("LIFECYCLE: COMPSs adapter: find_master: Agent is master, status=STARTED: " + str(agent))
-                return agent
-
-        for agent in service_instance['agents']:
-            if agent['status'] == STATUS_STARTED and agent['url'] == data_adapter.get_my_ip(): #common.get_local_ip():
-                LOG.debug("LIFECYCLE: COMPSs adapter: find_master: Local agent has COMPSs, status=STARTED and is included in the service instance!")
-                LOG.debug("LIFECYCLE: COMPSs adapter: find_master: agent: " + str(agent))
-                agent['master_compss'] = True
-                set_master(service_instance)
-                return agent
-
-        LOG.debug("LIFECYCLE: COMPSs adapter: Check agents included in the service instance and status=STARTED ...")
-        for agent in service_instance['agents']:
-            if agent['status'] == STATUS_STARTED:
-                LOG.debug("LIFECYCLE: COMPSs adapter: find_master: agent: " + str(agent))
-                agent['master_compss'] = True
-                set_master(service_instance)
-                return agent
-    except:
-        LOG.exception("LIFECYCLE: COMPSs adapter: find_master: Exception")
-
-    LOG.warning("LIFECYCLE: COMPSs adapter: find_master: return service_instance['agents'][0]: " + str(service_instance['agents'][0]))
-    return service_instance['agents'][0]
-
-
-# store_appid_in_master:
-def store_appid_in_master(service_instance, appId):
-    try:
-        LOG.debug("LIFECYCLE: COMPSs adapter: store_appid_in_master: Storing appId [" + str(appId) + "] in the service instance ...")
-
-        for agent in service_instance['agents']:
-            if agent['master_compss']:
-                LOG.debug("LIFECYCLE: COMPSs adapter: store_appid_in_master: Agent is master: " + str(agent))
-                agent['agent_param'] = str(appId)
-                res = data_adapter.update_service_instance(service_instance['id'], service_instance)
-                LOG.debug("LIFECYCLE: COMPSs adapter: store_appid_in_master: res=" + res + ", agent=" + str(agent))
-    except:
-        LOG.exception("LIFECYCLE: COMPSs adapter: store_appid_in_master: Exception")
 
 
 # gen_resource:
@@ -339,7 +265,7 @@ def start_job_in_agents(service_instance, body):
               "</startApplication>"
         LOG.debug("LIFECYCLE: COMPSs adapter: start_job: [xml=" + xml + "]")
 
-        master_agent = find_master(service_instance)
+        master_agent = data_service_instance.find_master(service_instance)
         compss_port = db.get_COMPSs_port_DB_DOCKER_PORTS(master_agent['ports'])
 
         res = requests.put("http://" + master_agent['url'] + ":" + str(compss_port) + "/COMPSs/startApplication",
@@ -349,7 +275,7 @@ def start_job_in_agents(service_instance, body):
 
         # TODO store operation ID
         appId = "12312422312"
-        store_appid_in_master(service_instance, appId)
+        data_service_instance.store_appid_in_master(service_instance, appId)
 
         return True
     except:
@@ -436,7 +362,7 @@ def add_resources_to_job(service_instance, appId, workerIP):
               "     </externalResource>" \
               "</newResource>"
 
-        master_agent = find_master(service_instance)
+        master_agent = data_service_instance.find_master(service_instance)
         compss_port = db.get_COMPSs_port_DB_DOCKER_PORTS(master_agent['ports'])
 
         res = requests.put("http://" + master_agent['url'] + ":" + str(compss_port) + "/COMPSs/newResource",
@@ -495,7 +421,7 @@ def rem_resources_from_job(service_instance, appId, workerIP):
               "     <workerName>" + workerIP + "</workerName>" \
               "</removeNode>"
 
-        master_agent = find_master(service_instance)
+        master_agent = data_service_instance.find_master(service_instance)
         compss_port = db.get_COMPSs_port_DB_DOCKER_PORTS(master_agent['ports'])
 
         res = requests.put("http://" + master_agent['url'] + ":" + str(compss_port) + "/COMPSs/removeNode",
@@ -523,7 +449,7 @@ def notify_job_resource_lost(service_instance, appId, workerIP):
               "     <workerName>" + workerIP + "</workerName>" \
               "</lostNode>"
 
-        master_agent = find_master(service_instance)
+        master_agent = data_service_instance.find_master(service_instance)
         compss_port = db.get_COMPSs_port_DB_DOCKER_PORTS(master_agent['ports'])
 
         res = requests.put("http://" + master_agent['url'] + ":" + str(compss_port) + "/COMPSs/lostNode",
