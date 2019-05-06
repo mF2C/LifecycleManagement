@@ -269,7 +269,7 @@ def sla_start_agreement(agreement_id):
         LOG.info("LIFECYCLE: MF2C: start_sla_agreement: HTTP PUT: " + str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/start")
         r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/start",
                          verify=config.dic['VERIFY_SSL'])
-        LOG.debug("LIFECYCLE: MF2C: start_sla_agreement: response: " + str(r) + ", " + str(r.json()))
+        LOG.debug("LIFECYCLE: MF2C: start_sla_agreement: response: " + str(r) + ", " + str(r.text))
 
         if r.status_code >= 200 and r.status_code <= 204:
             return True

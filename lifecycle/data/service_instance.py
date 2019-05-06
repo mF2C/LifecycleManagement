@@ -13,7 +13,7 @@ Created on 28 feb. 2019
 
 from common.logs import LOG
 from common.common import STATUS_CREATED_NOT_INITIALIZED, STATUS_STARTED
-import lifecycle.data.data_adapter as data_adapter
+# import lifecycle.data.data_adapter as data_adapter
 
 
 # new_service_instance: Creates a new service instance object
