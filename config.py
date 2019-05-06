@@ -24,7 +24,7 @@ dic = { "VERSION":                      "1.2.1",
         "STANDALONE_MODE":              False,
 
         # working dir
-        "LM_WORKING_DIR_VOLUME":        "/tmp/lm/",
+        "LM_WORKING_DIR_VOLUME":        "/tmp/lm/", #"C://TMP/store/", # "/tmp/lm/", #
 
         # DOCKER / SWARM / K8s:
         "DOCKER_SOCKET":                "unix://var/run/docker.sock",

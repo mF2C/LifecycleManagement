@@ -29,11 +29,14 @@ SERVICE_INSTANCES_LIST = {
 
 DB_DOCKER_PORTS = None
 SERVICE_INSTANCES_LIST = []
-records = []
+#records = []
 
 
 # init: initialize elements
 def init():
+    global DB_DOCKER_PORTS
+    global SERVICE_INSTANCES_LIST
+    #global records
     try:
         # SERVICE_INSTANCES_LIST
         # "MEMORY DB"
@@ -87,7 +90,7 @@ def save_to_DB_DOCKER_PORTS(port, mapped_to):
             LOG.warning('LIFECYCLE: db: save_to_DB_DOCKER_PORTS: Port already added to DB')
             return False
     except:
-        LOG.error('LIFECYCLE: db: save_to_DB_DOCKER_PORTS: Exception')
+        LOG.exception('LIFECYCLE: db: save_to_DB_DOCKER_PORTS: Exception')
         return False
 
 
@@ -105,7 +108,7 @@ def get_from_DB_DOCKER_PORTS(port):
         else:
             LOG.warning('LIFECYCLE: db: get_from_DB_DOCKER_PORTS: No records found')
     except:
-        LOG.error('LIFECYCLE: db: get_from_DB_DOCKER_PORTS: Exception')
+        LOG.exception('LIFECYCLE: db: get_from_DB_DOCKER_PORTS: Exception')
     return None
 
 
@@ -123,7 +126,7 @@ def get_COMPSs_port_DB_DOCKER_PORTS(lports):
                     LOG.debug('LIFECYCLE: db: get_COMPSs_port_DB_DOCKER_PORTS: PORT_COMPSs: ' + str(records[0]['port']))
                     return records[0]['port']
     except:
-        LOG.error('LIFECYCLE: db: get_COMPSs_port_DB_DOCKER_PORTS: Exception')
+        LOG.exception('LIFECYCLE: db: get_COMPSs_port_DB_DOCKER_PORTS: Exception')
 
     LOG.error('LIFECYCLE: db: get_COMPSs_port_DB_DOCKER_PORTS: No COMPSs ports found in DB!')
     return config.dic['PORT_COMPSs']
@@ -142,5 +145,5 @@ def del_from_DB_DOCKER_PORTS(port):
             LOG.warning('LIFECYCLE: db: del_from_DB_DOCKER_PORTS: Port was not found in DB')
             return False
     except:
-        LOG.error('LIFECYCLE: db: del_from_DB_DOCKER_PORTS: Exception')
+        LOG.exception('LIFECYCLE: db: del_from_DB_DOCKER_PORTS: Exception')
         return False
