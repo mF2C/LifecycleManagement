@@ -16,9 +16,9 @@ import lifecycle.data.db as db
 from common.logs import LOG
 
 
-PORT_MIN = 50001
+PORT_MIN = 20001
 PORT_MAX = 55000
-PORT_INDEX = 50001
+PORT_INDEX = 20001
 
 
 # tryPort
@@ -27,6 +27,7 @@ def tryPort(port):
     result = False
     try:
         sock.bind(("0.0.0.0", port))
+        #sock.connect_ex(('127.0.0.1', 80))
         result = True
     except:
         LOG.warning("LIFECYCLE: tryPort: Port (" + str(port) + ") is in use")
@@ -37,8 +38,8 @@ def tryPort(port):
 # is_port_free
 def is_port_free(port):
     try:
-        if port < 25000:
-            LOG.warning("LIFECYCLE: ports_mngr: is_port_free: Ports (" + str(port) + ") under 25000 are nor allowed")
+        if port < 10000:
+            LOG.warning("LIFECYCLE: ports_mngr: is_port_free: Ports (" + str(port) + ") under 10000 are nor allowed")
             return False
 
         if db.get_from_DB_DOCKER_PORTS(port) is None and tryPort(port):

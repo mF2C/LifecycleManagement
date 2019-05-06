@@ -13,8 +13,10 @@ Created on 02 may 2018
 
 
 import config
+import os
 import common.common as common
 from common.logs import LOG
+import lifecycle.data.db as db
 
 
 '''
@@ -46,6 +48,7 @@ def init():
         # CONFIGURATION / ENVIRONMENT VALUES
         LOG.info('LIFECYCLE: config: Reading values from ENVIRONMENT...')
 
+        common.set_value_env('LM_WORKING_DIR_VOLUME')  # LM_WORKING_DIR_VOLUME from environment values:
         # STANDALONE_MODE
         common.set_value_env('STANDALONE_MODE')
         # docker
@@ -96,6 +99,7 @@ def init():
         LOG.info('LIFECYCLE: [CERT_CRT=' + config.dic['CERT_CRT'] + ']')
         LOG.info('LIFECYCLE: [CERT_KEY=' + config.dic['CERT_KEY'] + ']')
         LOG.info('LIFECYCLE: [STANDALONE_MODE=' + str(config.dic['STANDALONE_MODE']) + ']')
+        LOG.info('LIFECYCLE: [LM_WORKING_DIR_VOLUME=' + config.dic['LM_WORKING_DIR_VOLUME'] + ']')
         LOG.info('LIFECYCLE: [VERIFY_SSL=' + str(config.dic['VERIFY_SSL']) + ']')
         LOG.info('LIFECYCLE: [CIMI_URL=' + config.dic['CIMI_URL'] + ']')
         LOG.info('LIFECYCLE: [CIMI_USER=' + config.dic['CIMI_USER'] + ']')
@@ -112,9 +116,18 @@ def init():
         LOG.info('LIFECYCLE: [PORT_COMPSs=' + str(config.dic['PORT_COMPSs']) + ']')
         LOG.info('LIFECYCLE: [NETWORK_COMPSs=' + config.dic['NETWORK_COMPSs'] + ']')
         LOG.info('LIFECYCLE: [DATACLAY_EP=' + config.dic['DATACLAY_EP'] + ']')
+
         if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
             LOG.warning("LIFECYCLE: STANDALONE_MODE enabled")
         else:
             LOG.info("LIFECYCLE: STANDALONE_MODE not enabled")
+
+        LOG.info('LIFECYCLE: init_config: init: Checking volume files ...')
+        if os.path.exists(config.dic['LM_WORKING_DIR_VOLUME'] + config.dic['DB_DOCKER_PORTS']):
+            LOG.info("LIFECYCLE: The file exists: " + config.dic['LM_WORKING_DIR_VOLUME'] + config.dic['DB_DOCKER_PORTS'])
+        else:
+            LOG.info("LIFECYCLE: The file does not exist: " + config.dic['LM_WORKING_DIR_VOLUME'] + config.dic['DB_DOCKER_PORTS'])
+
+        db.init()
     except:
         LOG.exception('LIFECYCLE: config: Exception: Error while initializing application')

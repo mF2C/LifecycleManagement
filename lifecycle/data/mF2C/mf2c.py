@@ -178,7 +178,7 @@ def user_management_get_current(val):
 
         json_data = json.loads(r.text)
         LOG.debug("LIFECYCLE: MF2C: user_management_get_current: json_data=" + str(json_data))
-        if r.status_code == 200 and not json_data['result'] is None:
+        if r.status_code == 200:
             return json_data
 
         LOG.error("LIFECYCLE: MF2C: user_management_get_current: Error: status_code=" + str(r.status_code) + "; Returning None ...")

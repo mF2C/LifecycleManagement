@@ -27,24 +27,31 @@ SERVICE_INSTANCES_LIST = {
 '''
 
 
-try:
-    # SERVICE_INSTANCES_LIST
-    # "MEMORY DB"
-    LOG.info('LIFECYCLE: db: Initializing SERVICE_INSTANCES_LIST ...')
-    SERVICE_INSTANCES_LIST = []
+DB_DOCKER_PORTS = None
+SERVICE_INSTANCES_LIST = []
+records = []
 
-    # DB_DOCKER_PORTS: PORTS DATABASE for each of the Lifecycles / agents
-    # "PHYSICAL DB"
-    LOG.info('LIFECYCLE: db: Initializing DB_DOCKER_PORTS ...')
-    DB_DOCKER_PORTS = Base(config.dic['DB_DOCKER_PORTS'])
-    # create new base with field names
-    if not DB_DOCKER_PORTS.exists():
-        DB_DOCKER_PORTS.create('port', 'mapped_to')
-    else:
-        DB_DOCKER_PORTS.open()
-        records = DB_DOCKER_PORTS()
-except:
-    LOG.error('LIFECYCLE: db: Exception: Error while initializing db components')
+
+# init: initialize elements
+def init():
+    try:
+        # SERVICE_INSTANCES_LIST
+        # "MEMORY DB"
+        LOG.info('LIFECYCLE: db: Initializing SERVICE_INSTANCES_LIST ...')
+        SERVICE_INSTANCES_LIST = []
+
+        # DB_DOCKER_PORTS: PORTS DATABASE for each of the Lifecycles / agents
+        # "PHYSICAL DB"
+        LOG.info('LIFECYCLE: db: Initializing DB_DOCKER_PORTS ...')
+        DB_DOCKER_PORTS = Base(config.dic['LM_WORKING_DIR_VOLUME'] + config.dic['DB_DOCKER_PORTS']) #Base(config.dic['DB_DOCKER_PORTS'])
+        # create new base with field names
+        if not DB_DOCKER_PORTS.exists():
+            DB_DOCKER_PORTS.create('port', 'mapped_to')
+        else:
+            DB_DOCKER_PORTS.open()
+            records = DB_DOCKER_PORTS()
+    except:
+        LOG.exception('LIFECYCLE: db: Exception: Error while initializing db components')
 
 
 # get_elem_from_list:

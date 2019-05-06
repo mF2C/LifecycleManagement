@@ -23,6 +23,9 @@ dic = { "VERSION":                      "1.2.1",
         "CERT_KEY":                     "cert/ia.key",
         "STANDALONE_MODE":              False,
 
+        # working dir
+        "LM_WORKING_DIR_VOLUME":        "/tmp/lm/",
+
         # DOCKER / SWARM / K8s:
         "DOCKER_SOCKET":                "unix://var/run/docker.sock",
         "DOCKER_SWARM":                 False,
@@ -46,7 +49,7 @@ dic = { "VERSION":                      "1.2.1",
         # docker socket volume
         "DOCKER_SOCKET_VOLUME":         "/var/run/docker.sock",
         # ports db
-        "DB_DOCKER_PORTS":              "./docker_ports_db",
+        "DB_DOCKER_PORTS":              "docker_ports_db", #"./docker_ports_db",
 
         # URLs / ports from other mF2C components:
         # PM-SLA MANAGER
