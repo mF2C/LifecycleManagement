@@ -224,6 +224,8 @@ def start_job(service_instance_id, body, agent): #service_instance_id, agent, pa
         LOG.debug("LIFECYCLE: COMPSs adapter: start_job: [xml=" + xml + "]")
 
         compss_port = db.get_COMPSs_port_DB_DOCKER_PORTS(agent['ports'])
+        LOG.debug("LIFECYCLE: COMPSs adapter: start_job: PUT http://" + agent['url'] + ":" + str(compss_port) + "/COMPSs/startApplication")
+
         res = requests.put("http://" + agent['url'] + ":" + str(compss_port) + "/COMPSs/startApplication",
                            data=xml,
                            headers={'Content-Type': 'application/xml'})
