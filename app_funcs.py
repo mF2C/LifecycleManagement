@@ -200,6 +200,8 @@ def deleteServiceInstance(service_instance_id):
 def postService(request):
     # 1. Parse and check input data
     data = request.get_json()
+    LOG.info("***************************************************************************************")
+    LOG.info("LIFECYCLE: REST API: postService: Launching new service [" + str(data) + "] ...")
 
     # USER_ID:
     if 'user_id' not in data:
@@ -208,11 +210,12 @@ def postService(request):
         user_id = "ADMIN" # TODO
         try:
             if res is not None:
-                user_id = res['acl']['owner']['principal']
+                user_id = res['user_id']
         except:
             LOG.exception("LIFECYCLE: REST API: postService: Exception; Error parsing 'res' variable")
     else:
         user_id = data['user_id']
+    LOG.info("LIFECYCLE: REST API: postService: user: " + user_id)
 
     # SLA TEMPLATE
     #   (SERVICE) :sla_templates [{:href "sla-template/sla-template-id-1"}, {:href "sla-template/sla-template-id-2"}]
@@ -222,6 +225,7 @@ def postService(request):
     else:
         LOG.debug("LIFECYCLE: REST API: postService: Parameter found: 'sla_template': " + data['sla_template'])
         sla_template_id = data['sla_template']
+    LOG.info("LIFECYCLE: REST API: postService: sla_template: " + sla_template_id)
 
     # SERVICE:
     if 'service' not in data and 'service_id' not in data:

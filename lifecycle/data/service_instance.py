@@ -13,6 +13,8 @@ Created on 28 feb. 2019
 
 from common.logs import LOG
 from common.common import STATUS_CREATED_NOT_INITIALIZED, STATUS_STARTED
+from lifecycle.data import data_adapter
+import lifecycle.data.mF2C.cimi as cimi
 # import lifecycle.data.data_adapter as data_adapter
 
 
@@ -56,17 +58,44 @@ def new_service_instance(service, agents_list, user_id, agreement_id):
                                "agent_param":   "not-defined"}) # TODO agent_param... to store COMPSS operation ID
         i += 1
 
-    # SERVICE_INSTANCE:
-    new_service_instance = {"service":          service['id'],
-                            "agreement":        agreement_id,
-                            "user":             user_id,
-                            "device_id":        "not-defined",
-                            "device_ip":        "not-defined",
-                            "parent_device_id": "not-defined",
-                            "parent_device_ip": "not-defined",
-                            "agents":           list_of_agents,
-                            "service_type":     service['exec_type'],
-                            "status":           STATUS_CREATED_NOT_INITIALIZED}
+    # info from AGENT
+    cimi_agent = cimi.get_agent()
+    if cimi_agent is not None and cimi_agent != -1:
+        if 'parent_device_id' not in cimi_agent:
+            parent_device_id = "not-defined"
+        else:
+            parent_device_id = cimi_agent['parent_device_id']
+
+        if 'parent_device_ip' not in cimi_agent:
+            parent_device_ip = "not-defined"
+        else:
+            parent_device_ip = cimi_agent['parent_device_ip']
+
+        # SERVICE_INSTANCE:
+        new_service_instance = {
+            "service": service['id'],
+            "agreement": agreement_id,
+            "user": user_id,
+            "device_id": cimi_agent['device_id'],
+            "device_ip": cimi_agent['device_ip'],
+            "parent_device_id": parent_device_ip,
+            "parent_device_ip": parent_device_id,
+            "agents": list_of_agents,
+            "service_type": service['exec_type'],
+            "status": STATUS_CREATED_NOT_INITIALIZED
+        }
+    else:
+        new_service_instance = {
+            "service":          service['id'],
+            "agreement":        agreement_id,
+            "user":             user_id,
+            "device_id":        "not-defined",
+            "device_ip":        "not-defined",
+            "parent_device_id": "not-defined",
+            "parent_device_ip": "not-defined",
+            "agents":           list_of_agents,
+            "service_type":     service['exec_type'],
+            "status":           STATUS_CREATED_NOT_INITIALIZED}
 
     LOG.debug("LIFECYCLE: Data: Service Instance: new_service_instance: create_service_instance: service_intance=" + str(new_service_instance))
     return new_service_instance

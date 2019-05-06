@@ -97,13 +97,12 @@ ACL = {"owner":
 CIMI_HEADER = {'slipstream-authn-info': 'super ADMIN'}
 
 
-# TODO replace ACL
 # Generates ACL for a specific user
 def getACLforUser(user):
     ACL_USER = {"owner":
                    {"principal": user,
                     "type": "ROLE"},
-               "rules": [{"principal": user,
+               "rules": [{"principal": "ADMIN",
                           "type": "ROLE",
                           "right": "ALL"},
                          {"principal": "ANON",
@@ -125,12 +124,34 @@ def common_new_map_fields():
     return default_map
 
 
+# common_new_map_fields: generates a map with time and acl values
+def common_new_map_fields_user(user):
+    now = datetime.datetime.now()
+    default_map = {
+        "created": now.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+        "updated": now.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+        "resourceURI": {"href": "service-instance/1234579abcdef"},
+        "acl": getACLforUser(user)
+    }
+    return default_map
+
+
 # FUNCTION: common_update_map_fields: generates a map with time and acl values
 def common_update_map_fields():
     now = datetime.datetime.now()
     default_map = {
         "updated": now.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
         "acl": ACL
+    }
+    return default_map
+
+
+# FUNCTION: common_update_map_fields: generates a map with time and acl values
+def common_update_map_fields_user(user):
+    now = datetime.datetime.now()
+    default_map = {
+        "updated": now.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
+        "acl": getACLforUser(user)
     }
     return default_map
 
@@ -143,7 +164,7 @@ def patch_update_map_fields():
         "device_ip":        "not-defined",
         "parent_device_id": "not-defined",
         "parent_device_ip": "not-defined",
-        "service_type": "not-defined"
+        "service_type":     "not-defined"
     }
     return default_map
 
@@ -340,10 +361,10 @@ def del_all_service_instances():
 
 
 # FUNCTION: add_service_instance: add resource to cimi
-def add_service_instance(content):
+def add_service_instance(content, user):
     try:
-        content.update(common_new_map_fields()) # complete map and update resource
-        LOG.debug("LIFECYCLE: cimi: add_service_instance: [content=" + str(content) + "] ... ")
+        content.update(common_new_map_fields_user(user)) #common_new_map_fields()) # complete map and update resource
+        LOG.debug("LIFECYCLE: cimi: add_service_instance: [content=" + str(content) + "] [user=" + user + "] ... ")
         res = requests.post(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE,
                             headers=CIMI_HEADER,
                             verify=False,
@@ -360,12 +381,12 @@ def add_service_instance(content):
     return None
 
 
-# FUNCTION: update_service_instance: updates a service_instance
+# FUNCTION: update_service_instance: updates a service_instance (content=service_instance)
 def update_service_instance(resource_id, content):
     try:
         resource_id = resource_id.replace(RSRC_SERVICE_INSTANCE + '/', '')
-        content.update(common_update_map_fields()) # complete map and update resource
-        content.update(patch_update_map_fields())
+        content.update(common_update_map_fields_user(content['user']))#common_update_map_fields()) # complete map and update resource
+        #content.update(patch_update_map_fields())
         LOG.debug("LIFECYCLE: cimi: update_service_instance: [content=" + str(content) + "] ... ")
         res = requests.put(config.dic['CIMI_URL']  + '/' + RSRC_SERVICE_INSTANCE + '/' + resource_id,
                            headers=CIMI_HEADER,
@@ -403,4 +424,37 @@ def get_parent(device_id):
             return -1
     except:
         LOG.exception("LIFECYCLE: cimi: get_parent: Exception; Returning None ...")
+        return None
+
+
+# FUNCTION: get_current_device_info: get 'agent' resource content
+# {
+#     "authenticated" : true,
+#     "leader_id" : "device_2",
+#     "leaderAddress" : "192.168.252.42",
+#     "connected" : true,
+#     "device_ip" : "192.168.252.41",
+#     "id" : "agent/9a2f5cf5-b885-4c8f-8783-66451f59928d",
+#     "isLeader" : false,
+#     "resourceURI" : "http://schemas.dmtf.org/cimi/2/Agent",
+#     "childrenIPs" : [ "192.168.252.43" ],
+#     "device_id" : "device_1"
+# }
+def get_agent():
+    try:
+        res = requests.get(config.dic['CIMI_URL'] + "/agent",
+                           headers=CIMI_HEADER,
+                           verify=False)
+        LOG.debug("LIFECYCLE: cimi: get_agent_info: response: " + str(res) + ", " + str(res.json()))
+
+        if res.status_code == 200 and res.json()['count'] == 0:
+            LOG.warning("LIFECYCLE: cimi: get_agent_info: 'agent' not found")
+            return -1
+        elif res.status_code == 200:
+            return res.json()['agents'][0]
+
+        LOG.warning("LIFECYCLE: cimi: get_agent_info: 'agent' not found; Returning -1 ...")
+        return -1
+    except:
+        LOG.error("LIFECYCLE: cimi: get_agent_info: Exception; Returning None ...")
         return None

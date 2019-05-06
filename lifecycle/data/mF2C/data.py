@@ -150,7 +150,7 @@ def create_service_instance(service, agents_list, user_id, agreement_id):
         new_service_instance = service_instance.new_service_instance(service, agents_list, user_id, agreement_id)
 
     LOG.debug("LIFECYCLE: Data: create_service_instance: adding service_intance to CIMI ...")
-    res = cimi.add_service_instance(new_service_instance)
+    res = cimi.add_service_instance(new_service_instance, user_id)
 
     if not res:
         LOG.error("LIFECYCLE: Data: create_service_instance: Error during the creation of the service_instance object")
