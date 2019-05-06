@@ -262,8 +262,8 @@ def submit_service_in_agents(service, user_id, service_instance_id, sla_template
             return common.gen_response(500, 'error creating service_instance', 'service', str(service))
         else:
             LOG.debug("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Creating service instance ... ")
-            service_instance = data_adapter.create_service_instance(service, agents_list, user_id, "")
-            if not service_instance:
+            service_instance = data_adapter.create_service_instance(service, agents_list, user_id, "DEFAULT-VALUE")
+            if not service_instance or 'id' not in service_instance:
                 LOG.error("LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: error creating service_instance")
                 return common.gen_response(500, 'error creating service_instance', 'service', str(service))
 
@@ -294,8 +294,7 @@ def submit_service_in_agents(service, user_id, service_instance_id, sla_template
             t.start()
 
             return common.gen_response_ok("Service deployment operation is being processed [" + service_instance['id'] + "]...",
-                                          "service_instance",
-                                          service_instance)
+                                          "service_instance", service_instance)
     except:
         LOG.exception('LIFECYCLE: Lifecycle_Deployment: submit_service_in_agents: Exception')
         return common.gen_response(500, 'Exception', 'service', str(service))

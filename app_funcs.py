@@ -206,8 +206,11 @@ def postService(request):
         LOG.debug("LIFECYCLE: REST API: postService: Parameter not found: 'user_id'. Retrieving 'user_id' value from agent ...")
         res = data_adapter.get_um_current("user")
         user_id = "ADMIN" # TODO
-        if not res:
-            user_id = res['user']
+        try:
+            if res is not None:
+                user_id = res['acl']['owner']['principal']
+        except:
+            LOG.exception("LIFECYCLE: REST API: postService: Exception; Error parsing 'res' variable")
     else:
         user_id = data['user_id']
 

@@ -128,8 +128,8 @@ def lifecycle_um_check_avialability(agent):
 def user_management_set_um_properties(apps=0):
     LOG.debug("LIFECYCLE: MF2C: user_management_set_um_properties: localhost - local UM: Updating UM properties ...")
     try:
-        LOG.info("LIFECYCLE: MF2C: user_management_set_um_properties: HTTP PUT: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/user-profile")
-        r = requests.put(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/user-profile",
+        LOG.info("LIFECYCLE: MF2C: user_management_set_um_properties: HTTP PUT: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharing-model")
+        r = requests.put(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharing-model",
                          json={"apps_running": apps},
                          verify=config.dic['VERIFY_SSL'])
         LOG.debug("LIFECYCLE: MF2C: user_management_set_um_properties: response: " + str(r) + ", " + str(r.json()))
@@ -203,7 +203,7 @@ def recommender_get_optimal_resources(service):
                           headers={"Accept": "text/json", "Content-Type": "application/json"},
                           verify=config.dic['VERIFY_SSL'],
                           timeout=config.dic['TIMEOUT_ANALYTICSENGINE'])
-        LOG.debug("LIFECYCLE: MF2C: recommender_get_optimal_resources: response: " + str(r) + ", " + str(r.json()))
+        LOG.debug("LIFECYCLE: MF2C: recommender_get_optimal_resources: response: " + str(r) + ", " + str(r.text)) # str(r.json()))
 
         if r.ok: # status_code == 200:
             # RESPONSE EXAMPLE
@@ -327,6 +327,10 @@ def sla_terminate_agreement(agreement_id):
 # ==> Returns a copy of the service instance specifying the agents that can be used to execute that service
 def service_management_qos(service_instance):
     try:
+        if 'id' not in service_instance:
+            LOG.error("LIFECYCLE: MF2C: service_management_qos: 'id' not found in service instance; Returning None ...")
+            return None
+
         id = service_instance['id']
         id_service = service_instance['service']
         LOG.debug("LIFECYCLE: MF2C: service_management_qos: service: " + id_service + " service_instance_id: " + id)
@@ -342,7 +346,7 @@ def service_management_qos(service_instance):
         if json_data['status'] == 200:
             return json_data["service-instance"]
 
-        LOG.error("LIFECYCLE: MF2C: service_management_qos: Error: status: " + str(json_data['status']) + "; Returning None ...")
+        LOG.error("LIFECYCLE: MF2C: service_management_qos: status: " + str(json_data['status']) + "; Returning None ...")
     except:
         LOG.exception("LIFECYCLE: MF2C: service_management_qos: Exception; Returning None ...")
     return None
