@@ -96,8 +96,6 @@ def init():
         LOG.info('[lifecycle.init_config] [init] [DOCKER_SWARM_=' + str(config.dic['DOCKER_SWARM']) + ']')
         LOG.info('[lifecycle.init_config] [init] [K8S_MASTER=' + str(config.dic['K8S_MASTER']) + ']')
         LOG.info('[lifecycle.init_config] [init] [API_DOC_URL=' + config.dic['API_DOC_URL'] + ']')
-        LOG.info('[lifecycle.init_config] [init] [CERT_CRT=' + config.dic['CERT_CRT'] + ']')
-        LOG.info('[lifecycle.init_config] [init] [CERT_KEY=' + config.dic['CERT_KEY'] + ']')
         LOG.info('[lifecycle.init_config] [init] [STANDALONE_MODE=' + str(config.dic['STANDALONE_MODE']) + ']')
         LOG.info('[lifecycle.init_config] [init] [LM_WORKING_DIR_VOLUME=' + config.dic['LM_WORKING_DIR_VOLUME'] + ']')
         LOG.info('[lifecycle.init_config] [init] [VERIFY_SSL=' + str(config.dic['VERIFY_SSL']) + ']')

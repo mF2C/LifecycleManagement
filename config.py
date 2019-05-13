@@ -19,8 +19,6 @@ dic = { "VERSION":                      "1.2.2",
         "SERVER_PORT":                  46000,
         "HOST_IP":                      "localhost",
         "API_DOC_URL":                  "/api/v2/lm",
-        "CERT_CRT":                     "cert/ia.crt",
-        "CERT_KEY":                     "cert/ia.key",
         "STANDALONE_MODE":              False,
 
         # working dir

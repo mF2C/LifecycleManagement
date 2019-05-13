@@ -503,8 +503,9 @@ def main():
     LOG.info("[app] Starting Lifecycle Management application [version=" + str(cfg.dic['VERSION']) + "] ...")
     LOG.info("[app] Swagger running on http://" + cfg.dic['HOST_IP'] + ":" + str(cfg.dic['SERVER_PORT']) + cfg.dic['API_DOC_URL'] + ".html")
     LOG.info("[app] REST API running on http://" + cfg.dic['HOST_IP'] + ":" + str(cfg.dic['SERVER_PORT']) + cfg.dic['API_DOC_URL'])
+
     # START (SSL) SERVER
-    # context = (config.dic['CERT_CRT'], config.dic['CERT_KEY'])
+    # context = ('PATH_TO_CERT_CRT', 'PATH_TO_CERT_KEY')
     # app.run(host='0.0.0.0', port=config.dic['SERVER_PORT'], ssl_context=context, threaded=True, debug=False)
 
     # START SERVER
