@@ -11,7 +11,26 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-from lifecycle.data import mf2c_data_adapter as adapter
+from lifecycle.data import mf2c_data_adapter as mf2c_data_adapter
+from lifecycle.data import standalone_data_adapter as standalone_data_adapter
+from lifecycle.logs import LOG
+
+
+# data adapterr
+adapter = None
+
+
+# set adapter
+def init(lm_mode):
+    global adapter
+
+    LOG.info('[lifecycle.data.data_adapter] [init] Setting data adapter...')
+    if lm_mode == "DEFAULT" or lm_mode == "MF2C":
+        LOG.info('[lifecycle.data.data_adapter] [init] LM_MODE = MF2C')
+        adapter = mf2c_data_adapter.Mf2cDataAdapter()
+    else:
+        LOG.info('[lifecycle.data.data_adapter] [init] LM_MODE = STANDALONE')
+        adapter = standalone_data_adapter.StandaloneDataAdapter()
 
 
 ###############################################################################

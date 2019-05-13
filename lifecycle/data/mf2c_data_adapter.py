@@ -1,5 +1,5 @@
 """
-CIMI - Data management
+Data adapter for MF2C project
 This is being developed for the MF2C Project: http://www.mf2c-project.eu/
 
 Copyright: Atos Research and Innovation, 2017.
@@ -17,150 +17,153 @@ from lifecycle.data.app import service_instance as si
 from lifecycle.data.app import db as db
 
 
-###############################################################################
-# COMMON
+# Data adapter class
+class Mf2cDataAdapter:
 
-# get_my_ip: Get IP address from local
-def get_my_ip():
-    return data_mf2c.get_my_ip()
+    ###############################################################################
+    # COMMON
 
-
-# get_leader_ip: Get IP address from Leader
-def get_leader_ip():
-    return data_mf2c.get_leader_ip()
+    # get_my_ip: Get IP address from local
+    def get_my_ip(self):
+        return data_mf2c.get_my_ip()
 
 
-# get_agent:
-def get_agent():
-    return data_mf2c.get_agent()
+    # get_leader_ip: Get IP address from Leader
+    def get_leader_ip(self):
+        return data_mf2c.get_leader_ip()
 
 
-###############################################################################
-# USER MANAGEMENT
-
-# get_um_profile: Get um_profile
-def get_um_profile():
-    return data_mf2c.get_um_profile()
+    # get_agent:
+    def get_agent(self):
+        return data_mf2c.get_agent()
 
 
-# get_um_sharing_model: Get sharing_model
-def get_um_sharing_model():
-    return data_mf2c.get_um_sharing_model()
+    ###############################################################################
+    # USER MANAGEMENT
+
+    # get_um_profile: Get um_profile
+    def get_um_profile(self):
+        return data_mf2c.get_um_profile()
 
 
-# get_check_swarm: checks if device can run swarm apps
-def get_check_swarm():
-    return swarm_adapter.is_swarm_node()
+    # get_um_sharing_model: Get sharing_model
+    def get_um_sharing_model(self):
+        return data_mf2c.get_um_sharing_model()
 
 
-###############################################################################
-# SERVICE
-
-# get_service: Get service
-def get_service(service_id):
-    return data_mf2c.get_service(service_id)
+    # get_check_swarm: checks if device can run swarm apps
+    def get_check_swarm(self):
+        return swarm_adapter.is_swarm_node()
 
 
-###############################################################################
-# SERVICE INSTANCE
+    ###############################################################################
+    # SERVICE
 
-# get_service_instance: Gets the service instance
-def get_service_instance(service_instance_id, obj_response_cimi=None):
-    return data_mf2c.get_service_instance(service_instance_id, obj_response_cimi)
-
-
-# get_service_instance_report: Gets the service instance report
-def get_service_instance_report(service_instance_id):
-    return data_mf2c.get_service_instance_report(service_instance_id)
+    # get_service: Get service
+    def get_service(self, service_id):
+        return data_mf2c.get_service(service_id)
 
 
-# get_all_service_instances: Gets all service instances
-def get_all_service_instances(obj_response_cimi=None):
-    return data_mf2c.get_all_service_instances(obj_response_cimi)
+    ###############################################################################
+    # SERVICE INSTANCE
+
+    # get_service_instance: Gets the service instance
+    def get_service_instance(self, service_instance_id, obj_response_cimi=None):
+        return data_mf2c.get_service_instance(service_instance_id, obj_response_cimi)
 
 
-# del_service_instance: Deletes service instance
-def del_service_instance(service_instance_id, obj_response_cimi=None):
-    return data_mf2c.del_service_instance(service_instance_id, obj_response_cimi)
+    # get_service_instance_report: Gets the service instance report
+    def get_service_instance_report(self, service_instance_id):
+        return data_mf2c.get_service_instance_report(service_instance_id)
 
 
-# del_all_service_instances: Deletes all service instances
-def del_all_service_instances():
-    return data_mf2c.del_all_service_instances()
+    # get_all_service_instances: Gets all service instances
+    def get_all_service_instances(self, obj_response_cimi=None):
+        return data_mf2c.get_all_service_instances(obj_response_cimi)
 
 
-# create_service_instance: Creates a new service instance
-def create_service_instance(service, agents_list, user_id, agreement_id):
-    return data_mf2c.create_service_instance(service, agents_list, user_id, agreement_id)
+    # del_service_instance: Deletes service instance
+    def del_service_instance(self, service_instance_id, obj_response_cimi=None):
+        return data_mf2c.del_service_instance(service_instance_id, obj_response_cimi)
 
 
-# update_service_instance: Updates a service instance
-def update_service_instance(service_instance_id, service_instance):
-    return data_mf2c.update_service_instance(service_instance_id, service_instance)
+    # del_all_service_instances: Deletes all service instances
+    def del_all_service_instances(self):
+        return data_mf2c.del_all_service_instances()
 
 
-# serv_instance_get_appid_from_master:
-def serv_instance_get_appid_from_master(service_instance):
-    return si.get_appid_from_master(service_instance)
+    # create_service_instance: Creates a new service instance
+    def create_service_instance(self, service, agents_list, user_id, agreement_id):
+        return data_mf2c.create_service_instance(service, agents_list, user_id, agreement_id)
 
 
-# serv_instance_store_appid_in_master:
-def serv_instance_store_appid_in_master(service_instance, appId):
-    return si.store_appid_in_master(service_instance, appId)
+    # update_service_instance: Updates a service instance
+    def update_service_instance(self, service_instance_id, service_instance):
+        return data_mf2c.update_service_instance(service_instance_id, service_instance)
 
 
-# serv_instance_is_master:
-def serv_instance_is_master(agent):
-    return si.is_master(agent)
+    # serv_instance_get_appid_from_master:
+    def serv_instance_get_appid_from_master(self, service_instance):
+        return si.get_appid_from_master(service_instance)
 
 
-# serv_instance_find_master:
-def serv_instance_find_master(service_instance):
-    return si.find_master(service_instance)
+    # serv_instance_store_appid_in_master:
+    def serv_instance_store_appid_in_master(self, service_instance, appId):
+        return si.store_appid_in_master(service_instance, appId)
 
 
-# serv_instance_is_agent_in_service_instance:
-def serv_instance_is_agent_in_service_instance(service_instance, agent_url):
-    return si.is_agent_in_service_instance(service_instance, agent_url)
+    # serv_instance_is_master:
+    def serv_instance_is_master(self, agent):
+        return si.is_master(agent)
 
 
-# serv_instance_add_agents_to_empty_service_instance:
-def serv_instance_add_agents_to_empty_service_instance(service, user_id, agreement_id, agents_list):
-    return si.add_agents_to_empty_service_instance(service, user_id, agreement_id, agents_list)
+    # serv_instance_find_master:
+    def serv_instance_find_master(self, service_instance):
+        return si.find_master(service_instance)
 
 
-# serv_instance_add_agents_to_empty_service_instance:
-def serv_instance_new_empty_service_instance(service, user_id, agreement_id):
-    return si.new_empty_service_instance(service, user_id, agreement_id)
+    # serv_instance_is_agent_in_service_instance:
+    def serv_instance_is_agent_in_service_instance(self, service_instance, agent_url):
+        return si.is_agent_in_service_instance(service_instance, agent_url)
 
 
-###############################################################################
-
-# db_init: initialize elements
-def db_init():
-    return db.init()
+    # serv_instance_add_agents_to_empty_service_instance:
+    def serv_instance_add_agents_to_empty_service_instance(self, service, user_id, agreement_id, agents_list):
+        return si.add_agents_to_empty_service_instance(service, user_id, agreement_id, agents_list)
 
 
-# db_get_elem_from_list:
-def db_get_elem_from_list(container_main_id):
-    return db.get_elem_from_list(container_main_id)
+    # serv_instance_add_agents_to_empty_service_instance:
+    def serv_instance_new_empty_service_instance(self, service, user_id, agreement_id):
+        return si.new_empty_service_instance(service, user_id, agreement_id)
 
 
-# db_save_port
-def db_save_port_mapped(port, mapped_to):
-    return db.save_to_DB_DOCKER_PORTS(port, mapped_to)
+    ###############################################################################
+
+    # db_init: initialize elements
+    def db_init(self):
+        return db.init()
 
 
-# db_get_port_mapped
-def db_get_port_mapped(port):
-    return db.get_from_DB_DOCKER_PORTS(port)
+    # db_get_elem_from_list:
+    def db_get_elem_from_list(self, container_main_id):
+        return db.get_elem_from_list(container_main_id)
 
 
-# db_get_compss_port
-def db_get_compss_port(lports):
-    return db.get_COMPSs_port_DB_DOCKER_PORTS(lports)
+    # db_save_port
+    def db_save_port_mapped(self, port, mapped_to):
+        return db.save_to_DB_DOCKER_PORTS(port, mapped_to)
 
 
-# db_delete_port
-def db_delete_port(port):
-    return db.del_from_DB_DOCKER_PORTS(port)
+    # db_get_port_mapped
+    def db_get_port_mapped(self, port):
+        return db.get_from_DB_DOCKER_PORTS(port)
+
+
+    # db_get_compss_port
+    def db_get_compss_port(self, lports):
+        return db.get_COMPSs_port_DB_DOCKER_PORTS(lports)
+
+
+    # db_delete_port
+    def db_delete_port(self, port):
+        return db.del_from_DB_DOCKER_PORTS(port)

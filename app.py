@@ -14,7 +14,7 @@ Created on 18 oct. 2018
 """
 
 import config as cfg
-import app_funcs as lm
+from lifecycle import app_funcs as lm
 # lm
 import lifecycle.init_config as lm_init_config
 # common

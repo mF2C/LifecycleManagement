@@ -16,7 +16,8 @@ import config
 import os
 from lifecycle import common as common
 from lifecycle.logs import LOG
-import lifecycle.data.data_adapter as data_adapter
+from lifecycle.data import data_adapter as data_adapter
+from lifecycle.connectors import connector as connector
 
 
 '''
@@ -49,6 +50,8 @@ def init():
         LOG.info('[lifecycle.init_config] [init] Reading values from ENVIRONMENT...')
 
         common.set_value_env('LM_WORKING_DIR_VOLUME')  # LM_WORKING_DIR_VOLUME from environment values:
+        # LM_MODE
+        common.set_value_env('LM_MODE')
         # STANDALONE_MODE
         common.set_value_env('STANDALONE_MODE')
         # docker
@@ -90,6 +93,7 @@ def init():
         else:
             LOG.debug("[lifecycle.init_config] [init] CIMI_URL ... " + config.dic['CIMI_URL'])
 
+        LOG.info('[lifecycle.init_config] [init] [LM_MODE=' + config.dic['LM_MODE'] + ']')
         LOG.info('[lifecycle.init_config] [init] [HOST_IP=' + config.dic['HOST_IP'] + ']')
         LOG.info('[lifecycle.init_config] [init] SERVER_PORT=' + str(config.dic['SERVER_PORT']) + ']')
         LOG.info('[lifecycle.init_config] [init] [DOCKER_SOCKET=' + config.dic['DOCKER_SOCKET'] + ']')
@@ -126,6 +130,8 @@ def init():
         else:
             LOG.info("[lifecycle.init_config] [init] The file does not exist: " + config.dic['LM_WORKING_DIR_VOLUME'] + config.dic['DB_DOCKER_PORTS'])
 
+        data_adapter.init(config.dic['LM_MODE'])
+        connector.init(config.dic['LM_MODE'])
         data_adapter.db_init()
     except:
         LOG.exception('[lifecycle.init_config] [init] Exception: Error while initializing application')

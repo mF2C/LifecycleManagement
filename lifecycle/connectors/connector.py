@@ -11,7 +11,26 @@ Created on 10 may. 2019
 @author: Roi Sucasas - ATOS
 """
 
-from lifecycle.connectors import mf2c_connector as conn
+from lifecycle.connectors import mf2c_connector as mf2c_connector
+from lifecycle.connectors import standalone_connector as standalone_connector
+from lifecycle.logs import LOG
+
+
+# data adapterr
+conn = None
+
+
+# set adapter
+def init(lm_mode):
+    global conn
+
+    LOG.info('[lifecycle.connectors.connector] [init] Setting connector...')
+    if lm_mode == "DEFAULT" or lm_mode == "MF2C":
+        LOG.info('[lifecycle.connectors.connector] [init] LM_MODE = MF2C')
+        conn = mf2c_connector.Mf2cConnector()
+    else:
+        LOG.info('[lifecycle.connectors.connector] [init] LM_MODE = STANDALONE')
+        conn = standalone_connector.StandaloneConnector()
 
 
 # SLA MANAGER #

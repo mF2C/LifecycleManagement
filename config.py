@@ -13,7 +13,9 @@ Created on 18 oct. 2018
 
 #!/usr/bin/python
 
-dic = { "VERSION":                      "1.2.2",
+dic = { "VERSION":                      "1.2.3",
+
+        "LM_MODE":                      "MF2C", # "DEFAULT"  "MF2C"  "STANDALONE"
 
         # SERVER - REST API:
         "SERVER_PORT":                  46000,
