@@ -197,19 +197,22 @@ def gen_resource(url, ports):
 
 
 # start_job: Start app in COMPSs container
-def start_job(service_instance_id, body, agent): #service_instance_id, agent, parameters):
+def start_job(service_instance, body):
     ceiClass = body['ceiClass']
     className = body['className']
     hasResult = body['hasResult']
     methodName = body['methodName']
     parameters = body['parameters']
-    LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] [agent=" + str(agent) + "], [body=" + str(body) + "]")
+
+    service_instance_id = service_instance['id']
+    agent = service_instance['agents'][0]
+
+    LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] service_instance_id=" + service_instance_id + ", agent=" + str(agent) + ", body=" + str(body))
     try:
-        # create (1) resource xml
+        # create resource xml
         xml_resource = gen_resource(agent['url'], agent['ports'])
 
         # create xml
-        # TODO ??? "  <serviceInstanceId>" + service_instance_id + "</serviceInstanceId>" \   ????
         xml = "<?xml version='1.0' encoding='utf-8'?>" \
               "<startApplication>" \
               "<ceiClass>" + ceiClass + "</ceiClass>" \
@@ -227,11 +230,15 @@ def start_job(service_instance_id, body, agent): #service_instance_id, agent, pa
         res = requests.put("http://" + agent['url'] + ":" + str(compss_port) + "/COMPSs/startApplication",
                            data=xml,
                            headers={'Content-Type': 'application/xml'})
-        LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] [res=" + str(res) + "]")
-        return True
+        LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] response: " + str(res) + ", " + str(res.json()))
+
+        if res.ok:
+            LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] res.text: " + str(res.text))
+            data_adapter.serv_instance_store_appid_in_master(service_instance, str(res.json()))
+            return True
     except:
         LOG.exception('[lifecycle.modules.apps.compss.adapter] [start_job] Exception')
-        return False
+    return False
 
 
 # start_job_in_agents: Start app in multiple COMPSs containers
@@ -273,14 +280,13 @@ def start_job_in_agents(service_instance, body):
                            headers={'Content-Type': 'application/xml'})
         LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job_in_agents] response: " + str(res) + ", " + str(res.json()))
 
-        # TODO store operation ID
-        appId = "12312422312"
-        data_adapter.serv_instance_store_appid_in_master(service_instance, appId)
-
-        return True
+        if res.ok:
+            LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job_in_agents] res.text: " + str(res.text))
+            data_adapter.serv_instance_store_appid_in_master(service_instance, str(res.json()))
+            return True
     except:
         LOG.exception('[lifecycle.modules.apps.compss.adapter] [start_job_in_agents] Exception')
-        return False
+    return False
 
 
 # add_resources_to_job

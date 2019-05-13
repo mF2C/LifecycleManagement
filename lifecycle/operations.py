@@ -268,7 +268,7 @@ def start_job(body, service_instance_id):
 
         # start job in agent(s)
         if len(service_instance['agents']) == 1:
-            res = apps_adapter.start_job_compss(service_instance_id, body, service_instance['agents'][0])
+            res = apps_adapter.start_job_compss(service_instance, body)
         elif len(service_instance['agents']) >= 2:
             res = apps_adapter.start_job_compss_multiple_agents(service_instance, body)
         else:

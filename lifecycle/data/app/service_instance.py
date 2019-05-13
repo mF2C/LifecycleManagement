@@ -209,8 +209,10 @@ def store_appid_in_master(service_instance, appId):
                 agent['agent_param'] = str(appId)
                 res = data_adapter.update_service_instance(service_instance['id'], service_instance)
                 LOG.debug("[lifecycle.data.app.service_instance] [store_appid_in_master] res=" + res + ", agent=" + str(agent))
+                return True
     except:
         LOG.exception("[lifecycle.data.app.service_instance] [store_appid_in_master] Exception")
+    return False
 
 
 # get_appid_from_master:

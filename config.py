@@ -13,7 +13,7 @@ Created on 18 oct. 2018
 
 #!/usr/bin/python
 
-dic = { "VERSION":                      "1.2.3",
+dic = { "VERSION":                      "1.2.4",
 
         "LM_MODE":                      "MF2C", # "DEFAULT"  "MF2C"  "STANDALONE"
 
