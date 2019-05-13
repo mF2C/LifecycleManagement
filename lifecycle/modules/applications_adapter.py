@@ -11,13 +11,12 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-
-import lifecycle.modules.apps.docker.adapter as docker_adpt
-import lifecycle.modules.apps.swarm.adapter as swarm_adpt
-import lifecycle.modules.apps.kubernetes.adapter as k8s_adpt
-import lifecycle.modules.apps.compss.adapter as compss_adpt
-from common.common import SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS, SERVICE_KUBERNETES, SERVICE_DOCKER_SWARM, STATUS_ERROR
-import lifecycle.data.mF2C.mf2c as mf2c
+from lifecycle.connectors import connector as connector
+from lifecycle.modules.apps.docker import adapter as docker_adpt
+from lifecycle.modules.apps.swarm import adapter as swarm_adpt
+from lifecycle.modules.apps.kubernetes import adapter as k8s_adpt
+from lifecycle.modules.apps.compss import adapter as compss_adpt
+from lifecycle.common import SERVICE_KUBERNETES, SERVICE_DOCKER_SWARM, STATUS_ERROR
 
 
 # Deploy / allocate service
@@ -40,7 +39,7 @@ def stop_service_agent(service, agent):
         return swarm_adpt.stop_service_agent(agent)
     else: # SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS
         if docker_adpt.stop_service_agent(agent) != STATUS_ERROR:
-            mf2c.user_management_set_um_properties(apps=-1)
+            connector.user_management_set_um_properties(apps=-1)
 
 
 # Start service in agent
@@ -52,7 +51,7 @@ def start_service_agent(service, agent):
         return swarm_adpt.start_service_agent(agent)
     else: # SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS
         if docker_adpt.start_service_agent(agent) != STATUS_ERROR:
-            mf2c.user_management_set_um_properties(apps=1)
+            connector.user_management_set_um_properties(apps=1)
 
 
 # terminate service in agent

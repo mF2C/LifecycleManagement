@@ -12,13 +12,12 @@ Created on 04 dic. 2018
 """
 
 import threading
-import lifecycle.modules.applications_adapter as apps_adapter
-import lifecycle.modules.sla_adapter as sla_adapter
-import common.common as common
-import lifecycle.data.data_adapter as data_adapter
-import lifecycle.data.mF2C.mf2c as mf2c
-from common.logs import LOG
-from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, STATUS_ERROR, STATUS_STARTED, STATUS_STOPPED, \
+from lifecycle.connectors import connector as connector
+from lifecycle.modules import applications_adapter as apps_adapter
+from lifecycle import common as common
+from lifecycle.data import data_adapter as data_adapter
+from lifecycle.logs import LOG
+from lifecycle.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, STATUS_ERROR, STATUS_STARTED, STATUS_STOPPED, \
     STATUS_TERMINATED, STATUS_UNKNOWN, STATUS_STARTING, STATUS_STOPPING, STATUS_TERMINATING
 
 
@@ -43,25 +42,6 @@ from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, 
             "opt_resource": ["SenseHat", "GP-20U7"],
             "category": 3 
         }
-        
-    old version:
-       {
-           "name": "hello-world",
-           "description": "Hello World Service",
-           "resourceURI": "/hello-world",
-           "exec": "hello-world",
-           "exec_type": "docker",
-           "exec_ports": ["8080", "8081"],
-           "category": {
-               "cpu": "low",
-               "memory": "low",
-               "storage": "low",
-               "inclinometer": false,
-               "temperature": false,
-               "jammer": false,
-               "location": false
-           }
-       }
 
        "exec_type": "docker" ........... "exec" = docker image (docker hub)
                     "compss" ........... "exec" = docker image based on COMPSs (docker hub)
@@ -103,75 +83,75 @@ from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, 
 # thr_operation_service_local: operation_service localhost
 def thr_operation_service_local(operation, service, agent):
     try:
-        LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service_local: service operation: " + operation + " (localhost)")
+        LOG.debug("[lifecycle.operations] [thr_operation_service_local] service operation: " + operation + " (localhost)")
 
         if operation == OPERATION_START:
-            LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service_local: start service locally: " + str(service) + ", agent: " + str(agent))
+            LOG.debug("[lifecycle.operations] [thr_operation_service_local] start service locally: " + str(service) + ", agent: " + str(agent))
             apps_adapter.start_service_agent(service, agent)
 
         elif operation == OPERATION_STOP:
-            LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service_local: stop service locally: " + str(service) + ", agent: " + str(agent))
+            LOG.debug("[lifecycle.operations] [thr_operation_service_local] stop service locally: " + str(service) + ", agent: " + str(agent))
             apps_adapter.stop_service_agent(service, agent)
 
         elif operation == OPERATION_TERMINATE:
-            LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service_local: terminate service locally: " + str(service) + ", agent: " + str(agent))
+            LOG.debug("[lifecycle.operations] [thr_operation_service_local] terminate service locally: " + str(service) + ", agent: " + str(agent))
             apps_adapter.terminate_service_agent(service, agent)
 
     except:
-        LOG.exception("LIFECYCLE: Lifecycle_Operations: thr_operation_service_local: thr: Exception")
+        LOG.exception("[lifecycle.operations] [thr_operation_service_local] Exception")
 
 
 # thr_operation_service_remote: operation_service remote
 def thr_operation_service_remote(operation, service, agent):
     try:
-        LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: service operation: " + operation + " (remote)")
+        LOG.debug("[lifecycle.operations] [thr_operation_service_remote] service operation: " + operation + " (remote)")
 
         if operation == OPERATION_START:
-            LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: start service in remote agent")
-            resp_start = mf2c.lifecycle_operation(service, agent, OPERATION_START)
+            LOG.debug("[lifecycle.operations] [thr_operation_service_remote] start service in remote agent")
+            resp_start = connector.lifecycle_operation(service, agent, OPERATION_START)
             if resp_start is not None:
                 agent['status'] = resp_start['status']
-                LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: result (start service): [agent=" + str(agent) + "]")
+                LOG.debug("[lifecycle.operations] [thr_operation_service_remote] result (start service): [agent=" + str(agent) + "]")
             else:
                 agent['status'] = STATUS_UNKNOWN
-                LOG.error("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: result (start service): ERROR")
+                LOG.error("[lifecycle.operations] [thr_operation_service_remote] result (start service): ERROR")
 
         elif operation == OPERATION_STOP:
-            LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: stop service in remote agent")
-            resp_stop = mf2c.lifecycle_operation(service, agent, OPERATION_STOP)
+            LOG.debug("[lifecycle.operations] [thr_operation_service_remote] stop service in remote agent")
+            resp_stop = connector.lifecycle_operation(service, agent, OPERATION_STOP)
             if resp_stop is not None:
                 agent['status'] = resp_stop['status']
-                LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: result (stop service): [agent=" + str(agent) + "]")
+                LOG.debug("[lifecycle.operations] [thr_operation_service_remote] result (stop service): [agent=" + str(agent) + "]")
             else:
                 agent['status'] = STATUS_UNKNOWN
-                LOG.error("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: result (stop service): ERROR")
+                LOG.error("[lifecycle.operations] [thr_operation_service_remote] result (stop service): ERROR")
 
         elif operation == OPERATION_TERMINATE:
-            LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: terminate service in remote agent")
-            resp_terminate = mf2c.lifecycle_operation(service, agent, OPERATION_TERMINATE)
+            LOG.debug("[lifecycle.operations] [thr_operation_service_remote] terminate service in remote agent")
+            resp_terminate = connector.lifecycle_operation(service, agent, OPERATION_TERMINATE)
             if resp_terminate is not None:
                 agent['status'] = resp_terminate['status']
-                LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: result (terminate service): [agent=" + str(agent) + "]")
+                LOG.debug("[lifecycle.operations] [thr_operation_service_remote] result (terminate service): [agent=" + str(agent) + "]")
             else:
                 agent['status'] = STATUS_UNKNOWN
-                LOG.error("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: result (terminate service): ERROR")
+                LOG.error("[lifecycle.operations] [thr_operation_service_remote] result (terminate service): ERROR")
 
     except:
-        LOG.exception("LIFECYCLE: Lifecycle_Operations: thr_operation_service_remote: thr: Exception")
+        LOG.exception("[lifecycle.operations] [thr_operation_service_remote]  Exception")
 
 
 # thr_operation_service: start/stop/terminate service instance in agents
 def thr_operation_service(service_instance, operation):
-    LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service: [" + operation + "]: " + service_instance['id'])
+    LOG.debug("[lifecycle.operations] [thr_operation_service] operation=" + operation + ", service_instance_id=" + service_instance['id'])
     try:
         # 1. get service
         service = data_adapter.get_service(service_instance['service'])
-        LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service: service: " + str(service))
+        LOG.debug("[lifecycle.operations] [thr_operation_service] service: " + str(service))
 
         # 2. stop/start/terminate service in all agents
         thrs = []  # 1 thread per agent
         for agent in service_instance["agents"]:
-            LOG.info("LIFECYCLE:>>> AGENT >>> " + agent['url'] + " <<<")
+            LOG.info("[lifecycle.operations] [thr_operation_service] >>> AGENT >>> " + agent['url'] + " <<<")
             # LOCAL
             if agent['url'] == data_adapter.get_my_ip(): #common.get_local_ip():
                 thrs.append(threading.Thread(target=thr_operation_service_local, args=(operation, service, agent,)))
@@ -181,7 +161,7 @@ def thr_operation_service(service_instance, operation):
             # NOT FOUND / NOT CONNECTED
             else:
                 agent['status'] = STATUS_ERROR
-                LOG.error("LIFECYCLE: Lifecycle_Operations: thr_operation_service: agent [" + agent['url'] + "] cannot be reached")
+                LOG.error("[lifecycle.operations] [thr_operation_service] agent [" + agent['url'] + "] cannot be reached")
 
         # start threads
         for x in thrs:
@@ -192,28 +172,28 @@ def thr_operation_service(service_instance, operation):
             x.join()
 
         # 3. save / update / terminate service_instance
-        LOG.debug("LIFECYCLE: Lifecycle_Operations: thr_operation_service: UPDATING service_instance [" + operation + "]: " + str(service_instance))
+        LOG.debug("[lifecycle.operations] [thr_operation_service] Updating service_instance [" + operation + "]: " + str(service_instance))
         if operation == OPERATION_START:
             service_instance['status'] = STATUS_STARTED
             data_adapter.update_service_instance(service_instance['id'], service_instance)          # cimi / db
-            sla_adapter.start_sla_agreement(service_instance, service_instance['agreement'])            # sla
+            connector.sla_start_agreement(service_instance['agreement'])                            # sla
 
         elif operation == OPERATION_STOP:
             service_instance['status'] = STATUS_STOPPED
             data_adapter.update_service_instance(service_instance['id'], service_instance)          # cimi / db
-            sla_adapter.stop_sla_agreement(service_instance, service_instance['agreement'])         # sla
+            connector.sla_stop_agreement(service_instance['agreement'])                             # sla
 
         elif operation == OPERATION_TERMINATE:
             service_instance['status'] = STATUS_TERMINATED
             data_adapter.del_service_instance(service_instance['id'])                               # cimi / db
-            sla_adapter.terminate_sla_agreement(service_instance, service_instance['agreement'])    # sla
+            connector.sla_terminate_agreement(service_instance['agreement'])                        # sla
     except:
-        LOG.exception('LIFECYCLE: Lifecycle_Operations: thr_operation_service: thr: Exception')
+        LOG.exception('[lifecycle.operations] [thr_operation_service] Exception')
 
 
 # operation_service: start/stop/terminate service instance in agents
 def operation_service(service_instance_id, operation):
-    LOG.debug("LIFECYCLE: Lifecycle_Operations: operation_service: [" + operation + "]: " + service_instance_id)
+    LOG.debug("[lifecycle.operations] [operation_service] operation=" + operation + ", service_instance_id=" + service_instance_id)
     try:
         # 1. get service_instance object
         service_instance = data_adapter.get_service_instance(service_instance_id)
@@ -234,7 +214,7 @@ def operation_service(service_instance_id, operation):
         # response
         return common.gen_response_ok("Service " + operation + " operation is being processed ...", "service_instance", service_instance)
     except:
-        LOG.exception('LIFECYCLE: Lifecycle_Operations: operation_service: Exception')
+        LOG.exception('[lifecycle.operations] [operation_service] Exception')
         return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
 
 
@@ -250,7 +230,7 @@ def stop(service_instance_id):
 
 # Terminate service, Deallocate service's resources
 def terminate(service_instance_id):
-    LOG.debug("LIFECYCLE: Lifecycle: terminate: " + service_instance_id)
+    LOG.debug("[lifecycle.operations] [terminate] service_instance_id=" + service_instance_id)
     try:
         # 1. get service_instance object
         service_instance = data_adapter.get_service_instance(service_instance_id)
@@ -264,7 +244,7 @@ def terminate(service_instance_id):
         # 3. terminate
         return operation_service(service_instance_id, OPERATION_TERMINATE)
     except:
-        LOG.exception('LIFECYCLE: Lifecycle: terminate: Exception')
+        LOG.exception('[lifecycle.operations] [terminate] Exception')
         return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
 
 
@@ -279,12 +259,12 @@ def terminate_all():
 
 # Service Instance Operation: starts a job / app
 def start_job(body, service_instance_id):
-    LOG.debug("LIFECYCLE: Lifecycle: start_job: " + str(body))
-    LOG.debug("LIFECYCLE: Lifecycle: start_job: [service_instance_id=" + service_instance_id + "]")
+    LOG.debug("[lifecycle.operations] [start_job] body=" + str(body))
+    LOG.debug("[lifecycle.operations] [start_job] service_instance_id=" + service_instance_id)
     try:
         # service instance
         service_instance = data_adapter.get_service_instance(service_instance_id)
-        LOG.debug("LIFECYCLE: Lifecycle: start_job: service_instance: " + str(service_instance))
+        LOG.debug("[lifecycle.operations] [start_job] service_instance=" + str(service_instance))
 
         # start job in agent(s)
         if len(service_instance['agents']) == 1:
@@ -292,7 +272,7 @@ def start_job(body, service_instance_id):
         elif len(service_instance['agents']) >= 2:
             res = apps_adapter.start_job_compss_multiple_agents(service_instance, body)
         else:
-            LOG.warning("LIFECYCLE: Lifecycle: start_job: Execution supported in only 1 or more agents! agents size=" + str(len(service_instance['agents'])))
+            LOG.warning("[lifecycle.operations] [start_job] Execution supported in only 1 or more agents! agents size=" + str(len(service_instance['agents'])))
             res = None
 
         if res:
@@ -300,5 +280,5 @@ def start_job(body, service_instance_id):
         else:
             return common.gen_response(500, 'Error when starting job', 'service_instance', str(service_instance))
     except:
-        LOG.exception('LIFECYCLE: Lifecycle: start_job: Exception')
+        LOG.exception('[lifecycle.operations] [start_job] Exception')
         return common.gen_response(500, 'Exception', 'data', str(body))

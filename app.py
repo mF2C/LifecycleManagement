@@ -13,12 +13,12 @@ Created on 18 oct. 2018
 @author: Roi Sucasas - ATOS
 """
 
-import config as config
+import config as cfg
 import app_funcs as lm
 # lm
 import lifecycle.init_config as lm_init_config
 # common
-from common.logs import LOG
+from lifecycle.logs import LOG
 # ext
 from flask_cors import CORS
 from flask import Flask, request, Response, json
@@ -41,6 +41,8 @@ REST API
                         
                 /lm/check-agent-um
                    (*)  GET:    checks if device can run more apps - UP & SM policies (from 'local' User Management module)      
+                /api/v2/lm/check-agent-swarm
+                   (*)  GET:    checks if device can run warm apps (from 'local' User Management module)      
                          
                 /lm/agent-um
                         GET:    get agent's current user-profile and sharing-model (from 'local' User Management module)
@@ -74,14 +76,14 @@ try:
     # API DOC
     api = swagger.docs(Api(app),
                        apiVersion='1.2.0',
-                       api_spec_url=config.dic['API_DOC_URL'],
+                       api_spec_url=cfg.dic['API_DOC_URL'],
                        produces=["application/json", "text/html"],
                        swaggerVersion="1.2",
-                       description='mF2C - Lifecycle Management REST API - version ' + config.dic['VERSION'],
-                       basePath='http://localhost:' + str(config.dic['SERVER_PORT']),
+                       description='mF2C - Lifecycle Management REST API - version ' + cfg.dic['VERSION'],
+                       basePath='http://localhost:' + str(cfg.dic['SERVER_PORT']),
                        resourcePath='/')
 except ValueError:
-    LOG.error('LIFECYCLE: app: Exception: Error while initializing app / api')
+    LOG.error('[app] Exception: Error while initializing app / api')
 
 
 ########################################################################################################################
@@ -100,8 +102,8 @@ def default_route():
     data = {
         'app': "Lifecycle Management REST API",
         'status': "Running",
-        'api_doc_json': "http://" + config.dic['HOST_IP'] + ":" + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'],
-        'api_doc_html': "http://" + config.dic['HOST_IP'] + ":" + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'] + ".html#!/spec"
+        'api_doc_json': "http://" + cfg.dic['HOST_IP'] + ":" + str(cfg.dic['SERVER_PORT']) + cfg.dic['API_DOC_URL'],
+        'api_doc_html': "http://" + cfg.dic['HOST_IP'] + ":" + str(cfg.dic['SERVER_PORT']) + cfg.dic['API_DOC_URL'] + ".html#!/spec"
     }
     resp = Response(json.dumps(data), status=200, mimetype='application/json')
     return resp
@@ -133,7 +135,6 @@ api.add_resource(InstanceConfig, '/api/v2/lm/agent-config')
 
 
 #
-# Service instance route: status, service events handler
 #
 #    '/api/v2/lm/check-agent-um'
 #
@@ -155,6 +156,30 @@ class CheckAgentUM(Resource):
         return lm.getCheckAgentUMInfo()
 
 api.add_resource(CheckAgentUM, '/api/v2/lm/check-agent-um')
+
+
+#
+#
+#    '/api/v2/lm/check-agent-swarm'
+#
+#         GET:    checks if device can run warm apps (from 'local' User Management module)
+#
+class CheckAgentSwarm(Resource):
+    # GET /api/v2/lm/check-agent-swarm
+    @swagger.operation(
+        summary="checks if device can run warm apps (from 'local' User Management module)",
+        notes="checks if device can run warm apps (from 'local' User Management module)",
+        produces=["application/json"],
+        authorizations=[],
+        parameters=[],
+        responseMessages=[{
+            "code": 500,
+            "message": "Exception processing request"
+        }])
+    def get(self):
+        return lm.getCheckAgentSwarm()
+
+api.add_resource(CheckAgentSwarm, '/api/v2/lm/check-agent-swarm')
 
 
 #
@@ -475,15 +500,15 @@ api.add_resource(LmEvents, '/api/v2/lm')
 ########################################################################################################################
 # MAIN
 def main():
-    LOG.info("LIFECYCLE: Starting Lifecycle Management application [version=" + str(config.dic['VERSION']) + "] ...")
-    LOG.info("LIFECYCLE: Swagger running on http://" + config.dic['HOST_IP'] + ":" + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'] + ".html")
-    LOG.info("LIFECYCLE: REST API running on http://" + config.dic['HOST_IP'] + ":" + str(config.dic['SERVER_PORT']) + config.dic['API_DOC_URL'])
+    LOG.info("[app] Starting Lifecycle Management application [version=" + str(cfg.dic['VERSION']) + "] ...")
+    LOG.info("[app] Swagger running on http://" + cfg.dic['HOST_IP'] + ":" + str(cfg.dic['SERVER_PORT']) + cfg.dic['API_DOC_URL'] + ".html")
+    LOG.info("[app] REST API running on http://" + cfg.dic['HOST_IP'] + ":" + str(cfg.dic['SERVER_PORT']) + cfg.dic['API_DOC_URL'])
     # START (SSL) SERVER
     # context = (config.dic['CERT_CRT'], config.dic['CERT_KEY'])
     # app.run(host='0.0.0.0', port=config.dic['SERVER_PORT'], ssl_context=context, threaded=True, debug=False)
 
     # START SERVER
-    app.run(host='0.0.0.0', port=config.dic['SERVER_PORT'], threaded=True, debug=False)
+    app.run(host='0.0.0.0', port=cfg.dic['SERVER_PORT'], threaded=True, debug=False)
 
 
 if __name__ == "__main__":

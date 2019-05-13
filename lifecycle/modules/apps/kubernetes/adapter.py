@@ -12,10 +12,10 @@ Created on 18 oct. 2018
 """
 
 import config
-import common.common as common
-import lifecycle.modules.apps.kubernetes.schemas as shemas
-from common.logs import LOG
-from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, STATUS_ERROR, STATUS_WAITING, STATUS_TERMINATED
+from lifecycle import common as common
+from lifecycle.modules.apps.kubernetes import schemas as shemas
+from lifecycle.logs import LOG
+from lifecycle.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, STATUS_ERROR, STATUS_WAITING, STATUS_TERMINATED
 import requests
 
 
@@ -51,7 +51,7 @@ import requests
 # IN: service, agent
 # OUT: status value
 def deploy_service(service, agent):
-    LOG.debug("Lifecycle-Management: K8s adapter: (1) deploy_service: " + str(service) + ", " + str(agent))
+    LOG.debug("[lifecycle.modules.apps.kubernetes.adapter] [deploy_service] " + str(service) + ", " + str(agent))
     try:
 
         '''
@@ -83,7 +83,7 @@ def deploy_service(service, agent):
         agent['status'] = STATUS_WAITING
 
     except:
-        LOG.exception('Lifecycle-Management: K8s adapter: deploy_service: Exception')
+        LOG.exception('[lifecycle.modules.apps.kubernetes.adapter] [deploy_service] Exception')
         return common.gen_response(500, 'Exception: deploy_service()', 'agent', str(agent), 'service', str(service))
 
 
@@ -92,7 +92,7 @@ def deploy_service(service, agent):
 
 # operation_service: service operation (start, stop...)
 def operation_service(agent, operation):
-    LOG.debug("Lifecycle-Management: K8s adapter: operation_service [" + operation + "]: " + str(agent))
+    LOG.debug("[lifecycle.modules.apps.kubernetes.adapter] [operation_service] [" + operation + "]: " + str(agent))
     try:
         if operation == OPERATION_TERMINATE or operation == OPERATION_STOP:
             # app name is stored in 'container_id' field
@@ -109,13 +109,13 @@ def operation_service(agent, operation):
             agent['status'] = STATUS_TERMINATED
 
         else:
-            LOG.warning("LIFECYCLE: K8s adapter: operation_service_agent [" + operation + "]: " + str(agent) + ": operation not supported")
+            LOG.warning("[lifecycle.modules.apps.kubernetes.adapter] [operation_service] [" + operation + "]: " + str(agent) + ": operation not supported")
 
         # return status
         return agent['status']
     except:
         agent['status'] = STATUS_ERROR
-        LOG.exception('Lifecycle-Management: K8s adapter: operation_service: Exception')
+        LOG.exception('[lifecycle.modules.apps.kubernetes.adapter] [operation_service] Exception. Returning STATUS_ERROR ...')
         return STATUS_ERROR
 
 

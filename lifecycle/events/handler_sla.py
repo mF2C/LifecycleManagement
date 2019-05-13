@@ -11,11 +11,9 @@ Created on 27 sept. 2017
 @author: Roi Sucasas - ATOS
 """
 
-
-from common.logs import LOG
-import common.common as common
-import threading
-import time
+import threading, time
+from lifecycle.logs import LOG
+from lifecycle import common as common
 
 
 ###############################################################################
@@ -36,22 +34,22 @@ import time
 # thread
 def thr(notification):
     try:
-        LOG.debug("LIFECYCLE: SLA Notifications Handler module: thr: Handling SLA violations [" + str(notification) + "] ...")
+        LOG.debug("[lifecycle.events.handler_sla] [thr] Handling SLA violations [" + str(notification) + "] ...")
 
         # TODO
         #...
 
         time.sleep(10)
 
-        LOG.debug("LIFECYCLE: SLA Notifications Handler module: thr: SLA violations handled")
+        LOG.debug("[lifecycle.events.handler_sla] [thr] SLA violations handled")
     except:
-        LOG.error('LIFECYCLE: SLA Notifications Handler module: thr: Exception')
+        LOG.error('[lifecycle.events.handler_sla] [thr] Exception')
 
 
 # Handle SLA violations
 def handle_sla_notification(notification):
     try:
-        LOG.info("LIFECYCLE: SLA Notifications Handler module: handle_sla_notification: service_instance_id: notification: " + str(notification))
+        LOG.info("[lifecycle.events.handler_sla] [handle_sla_notification] service_instance_id: notification: " + str(notification))
 
         # handle notification
         t = threading.Thread(target=thr, args=(notification,))
@@ -59,5 +57,5 @@ def handle_sla_notification(notification):
 
         return common.gen_response_ok('SLA Notification has been processed', 'notification', str(notification))
     except:
-        LOG.error('LIFECYCLE: SLA Notifications Handler module: handle_sla_notification: Exception')
+        LOG.error('[lifecycle.events.handler_sla] [handle_sla_notification] Exception')
         return common.gen_response(500, 'Exception', 'notification', str(notification))

@@ -12,13 +12,13 @@ Created on 18 oct. 2018
 """
 
 import docker, uuid
-import common.common as common
-import lifecycle.modules.apps.ports_mngr as pmngr
-from flask import json
-import lifecycle.modules.apps.docker.client as docker_client
-from common.logs import LOG
 import config
-from common.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, \
+from lifecycle import common as common
+from lifecycle.modules.apps import ports_mngr as pmngr
+from flask import json
+from lifecycle.modules.apps.docker import client as docker_client
+from lifecycle.logs import LOG
+from lifecycle.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, \
     STATUS_ERROR, STATUS_WAITING, STATUS_TERMINATED, STATUS_UNKNOWN
 
 
@@ -122,25 +122,25 @@ def replace_in_list(l, xvalue, newxvalue):
 # create_ports_dict:
 def create_ports_dict(ports):
     try:
-        LOG.debug("LIFECYCLE: Docker Swarm: create_ports_dict: Configuring ports [" + str(ports) + "]...")
+        LOG.debug("[lifecycle.modules.apps.swarm.adapter] [create_ports_dict] Configuring ports [" + str(ports) + "]...")
         l_ports = []
         for p in ports:
-            LOG.debug("LIFECYCLE: Docker Swarm: create_ports_dict: port [" + str(p) + "]...")
+            LOG.debug("[lifecycle.modules.apps.swarm.adapter] [create_ports_dict] port [" + str(p) + "]...")
             if pmngr.is_port_free(p):
                 l_ports.append({'Protocol': 'tcp', 'PublishedPort': p, 'TargetPort': p})
                 pmngr.take_port(p, p)
-                LOG.debug("LIFECYCLE: Docker Swarm: create_ports_dict: port free")
+                LOG.debug("[lifecycle.modules.apps.swarm.adapter] [create_ports_dict] port free")
             else:
                 np = pmngr.assign_new_port()
                 # original port : new port (exposed to host)
                 l_ports.append({'Protocol': 'tcp', 'PublishedPort': np, 'TargetPort': p}) # dict_ports.update({p: np})
                 pmngr.take_port(np, p)
                 replace_in_list(ports, p, np)
-                LOG.debug("LIFECYCLE: Docker Swarm: create_ports_dict: port not free: redirected to " + str(np))
+                LOG.debug("[lifecycle.modules.apps.swarm.adapter] [create_ports_dict] port not free: redirected to " + str(np))
 
         return l_ports
     except:
-        LOG.exception("LIFECYCLE: Docker Swarm: create_ports_dict: Error during the ports dict creation: " + str(ports))
+        LOG.exception("[lifecycle.modules.apps.swarm.adapter] [create_ports_dict] Error during the ports dict creation: " + str(ports))
         return {ports[0]:ports[0]}
 
 
@@ -148,28 +148,28 @@ def create_ports_dict(ports):
 # connect to docker api: Examples: base_url='tcp://192.168.252.42:2375'; base_url='unix://var/run/docker.sock'
 def get_client_agent_docker():
     global client
-    LOG.debug("LIFECYCLE: Docker Swarm: Connecting to DOCKER API [" + DOCKER_SOCKET + "], "
+    LOG.debug("[lifecycle.modules.apps.swarm.adapter] [get_client_agent_docker] Connecting to DOCKER API [" + DOCKER_SOCKET + "], "
               "[SWARM MASTER? " + str(False) + "] [client=" + str(client) + "],...")
     try:
         try:
             if client is not None:
                 client.version()
-                LOG.debug("LIFECYCLE: Docker Swarm: Returning existing client [" + json.dumps(client) + "] ...")
+                LOG.debug("[lifecycle.modules.apps.swarm.adapter] [get_client_agent_docker] Returning existing client [" + json.dumps(client) + "] ...")
                 return client
         except:
-            LOG.exception("LIFECYCLE: Docker Swarm: docker client gave an error. Trying to reconnect to docker...")
+            LOG.exception("[lifecycle.modules.apps.swarm.adapter] [get_client_agent_docker] docker client gave an error. Trying to reconnect to docker...")
 
         client = docker.APIClient(base_url=DOCKER_SOCKET)
-        LOG.debug("LIFECYCLE: Docker Swarm: Connected to DOCKER in [" + DOCKER_SOCKET + "]; version: " + json.dumps(client.version()))
+        LOG.debug("[lifecycle.modules.apps.swarm.adapter] [get_client_agent_docker] Connected to DOCKER in [" + DOCKER_SOCKET + "]; version: " + json.dumps(client.version()))
         return client
     except:
-        LOG.exception("LIFECYCLE: Docker Swarm: get_client_agent_docker: Error when connecting to DOCKER API: " + DOCKER_SOCKET)
+        LOG.exception("[lifecycle.modules.apps.swarm.adapter] [get_client_agent_docker] Error when connecting to DOCKER API: " + DOCKER_SOCKET)
         return None
 
 
 # create_docker_service
 def create_docker_service(service_image, service_name, service_command, prts, replicas, service, agent):
-    LOG.debug("LIFECYCLE: Docker Swarm: create_docker_service: [service_name=" + service_name + "], "
+    LOG.debug("[lifecycle.modules.apps.swarm.adapter] [create_docker_service] [service_name=" + service_name + "], "
               "[service_command=" + service_command + "], [service_image=" + service_image + "], [ports=" + str(prts) + "]")
 
     # connect to docker api
@@ -180,16 +180,16 @@ def create_docker_service(service_image, service_name, service_command, prts, re
             l_images = lclient.images(name=service_image)
             # if not, download image
             if not l_images or len(l_images) == 0:
-                LOG.debug("LIFECYCLE: Docker Swarm: create_docker_service: call to 'import_image' [" + service_image + "] ...")
+                LOG.debug("[lifecycle.modules.apps.swarm.adapter] [create_docker_service] call to 'import_image' [" + service_image + "] ...")
                 lclient.import_image(image=service_image)  # (tag="latest", image="ubuntu") # (tag="latest", image="ubuntu")
 
-            LOG.debug("LIFECYCLE: Docker Swarm: create_docker_service: Creating service ...")
+            LOG.debug("[lifecycle.modules.apps.swarm.adapter] [create_docker_service] Creating service ...")
 
             prts_list = list(prts)
             ports_list = create_ports_dict(prts)
-            LOG.debug("LIFECYCLE: Docker Swarm: create_docker_service: ports_list: " + str(ports_list))
-            LOG.debug("LIFECYCLE: Docker Swarm: create_docker_service: prts: " + str(prts))
-            LOG.debug("LIFECYCLE: Docker Swarm: create_docker_service: prts_list: " + str(prts_list))
+            LOG.debug("[lifecycle.modules.apps.swarm.adapter] [create_docker_service] ports_list: " + str(ports_list))
+            LOG.debug("[lifecycle.modules.apps.swarm.adapter] [create_docker_service] prts: " + str(prts))
+            LOG.debug("[lifecycle.modules.apps.swarm.adapter] [create_docker_service] prts_list: " + str(prts_list))
 
             # ContainerSpec:
             # (self, image, command=None, args=None, hostname=None, env=None,
@@ -202,7 +202,7 @@ def create_docker_service(service_image, service_name, service_command, prts, re
                                                         tty=True,
                                                         command=service_command)
 
-            LOG.debug("LIFECYCLE: Docker Swarm: create_docker_service: container_spec: " + str(container_spec))
+            LOG.debug("[lifecycle.modules.apps.swarm.adapter] [create_docker_service] container_spec: " + str(container_spec))
 
             # TaskTemplate:
             # (self, container_spec, resources=None, restart_policy=None,
@@ -210,13 +210,13 @@ def create_docker_service(service_image, service_name, service_command, prts, re
             #   force_update=None)
             task_tmpl = docker.types.TaskTemplate(container_spec, restart_policy=None)
 
-            LOG.debug("LIFECYCLE: Docker Swarm: create_docker_service: task_tmpl: " + str(task_tmpl))
+            LOG.debug("[lifecycle.modules.apps.swarm.adapter] [create_docker_service] task_tmpl: " + str(task_tmpl))
 
             # ServiceMode:
             #   (self, mode, replicas=None)
             serv_mode = docker.types.ServiceMode(mode="replicated", replicas=replicas)
 
-            LOG.debug("LIFECYCLE: Docker Swarm: create_docker_service: serv_mode: " + str(serv_mode))
+            LOG.debug("[lifecycle.modules.apps.swarm.adapter] [create_docker_service] serv_mode: " + str(serv_mode))
 
             # create a new service (DOCKER SWARM):
             # create_service(task_template, name=None, labels=None, mode=None, update_config=None, networks=None,
@@ -229,7 +229,7 @@ def create_docker_service(service_image, service_name, service_command, prts, re
                                                 #[{'Protocol': 'tcp', 'PublishedPort': 8013, 'TargetPort': 80}]
                                          }) # published_port: target_port
 
-            LOG.debug("LIFECYCLE: Docker Swarm: create_docker_service: res: " + str(res))
+            LOG.debug("[lifecycle.modules.apps.swarm.adapter] [create_docker_service] res: " + str(res))
 
             # update agent properties
             # service ID is stored in 'container_id' field
@@ -237,12 +237,25 @@ def create_docker_service(service_image, service_name, service_command, prts, re
             agent['status'] = STATUS_WAITING
             return common.gen_response_ok('Deploy service in agent (Docker Swarm)', 'agent', str(agent), 'service', str(service))
         else:
-            LOG.error("LIFECYCLE: Docker Swarm: create_docker_service: Could not connect to DOCKER API")
+            LOG.error("[lifecycle.modules.apps.swarm.adapter] [create_docker_service] Could not connect to DOCKER API")
             agent['status'] = STATUS_ERROR
             return common.gen_response(500, 'Error when connecting to DOCKER API', 'agent', str(agent), 'service', str(service))
     except:
-        LOG.exception('LIFECYCLE: Docker Swarm: create_docker_service: Exception')
+        LOG.exception('[lifecycle.modules.apps.swarm.adapter] [create_docker_service] Exception')
         return common.gen_response(500, 'Exception: deploy_docker_image()', 'agent', str(agent), 'service', str(service))
+
+
+# TODO
+def is_swarm_node():
+    try:
+        # connect to docker api
+        lclient = get_client_agent_docker()
+        if lclient:
+            l = lclient.services()
+            return common.gen_response_ok('docker swarm supported', 'is_swarm_node', True)
+        return common.gen_response_ok('docker client error', 'is_swarm_node', False)
+    except:
+        return common.gen_response_ok('docker swarm not supported', 'is_swarm_node', False)
 
 
 # deploy_service_agent
@@ -263,7 +276,7 @@ def deploy_service_agent(service, agent):
         if not service is None and not service['num_agents'] is None:
             replicas = service['num_agents']
     except:
-        LOG.exception('LIFECYCLE: Docker Swarm: deploy_service_agent: Exception: replicas set to 1')
+        LOG.exception('[lifecycle.modules.apps.swarm.adapter] [deploy_service_agent] Exception: replicas set to 1')
         replicas = 1
 
     create_docker_service(service_image, service_name, service_command, ports, replicas, service, agent)
@@ -271,14 +284,14 @@ def deploy_service_agent(service, agent):
 
 # update_docker_service
 def update_docker_service(service_id, service_image, service_name, replicas, version):
-    LOG.debug("LIFECYCLE: Docker Swarm: update_docker_service: [service_id=" + service_id + "], [service_name=" + service_name + "], "
+    LOG.debug("[lifecycle.modules.apps.swarm.adapter] [update_docker_service] [service_id=" + service_id + "], [service_name=" + service_name + "], "
               "[service_image=" + service_image + "], [version=" + str(version) + "]")
 
     # connect to docker api
     lclient = get_client_agent_docker()
     try:
         if lclient:
-            LOG.debug("LIFECYCLE: Docker Swarm: update_docker_service: Updating service ...")
+            LOG.debug("[lifecycle.modules.apps.swarm.adapter] [update_docker_service] Updating service ...")
 
             # ContainerSpec:
             # (self, image, command=None, args=None, hostname=None, env=None,
@@ -306,38 +319,38 @@ def update_docker_service(service_id, service_image, service_name, replicas, ver
             #            networks=None, endpoint_config=None,
             #            endpoint_spec=None, fetch_current_spec=False)
             if lclient.update_service(service_id, version, name=service_name, task_template=task_tmpl, mode=serv_mode):
-                LOG.info("LIFECYCLE: Docker Swarm: update_docker_service: Service '" + service_name + "' removed")
+                LOG.info("[lifecycle.modules.apps.swarm.adapter] [update_docker_service] Service '" + service_name + "' removed")
                 return True
             else:
-                LOG.error("LIFECYCLE: Docker Swarm: update_docker_service: Error updating service '" + service_name + "'")
+                LOG.error("[lifecycle.modules.apps.swarm.adapter] [update_docker_service] Error updating service '" + service_name + "'")
                 return False
         else:
-            LOG.error("LIFECYCLE: Docker Swarm: update_docker_service: Could not connect to DOCKER API")
+            LOG.error("[lifecycle.modules.apps.swarm.adapter] [update_docker_service] Could not connect to DOCKER API")
             return None
     except:
-        LOG.exception("LIFECYCLE: Docker Swarm: update_docker_service: Exception")
+        LOG.exception("[lifecycle.modules.apps.swarm.adapter] [update_docker_service] Exception. Returning None ...")
         return None
 
 
 # delete_docker_service
 def delete_docker_service(service_id):
-    LOG.debug("LIFECYCLE: Docker Swarm: delete_docker_service: [service_name=" + service_id + "]")
+    LOG.debug("[lifecycle.modules.apps.swarm.adapter] [delete_docker_service] [service_name=" + service_id + "]")
 
     # connect to docker api
     lclient = get_client_agent_docker()
     try:
         if lclient:
             if lclient.remove_service(service_id):
-                LOG.info("LIFECYCLE: Docker Swarm: delete_docker_service: Service '" + service_id + "' removed")
+                LOG.info("[lifecycle.modules.apps.swarm.adapter] [delete_docker_service] Service '" + service_id + "' removed")
                 return True
             else:
-                LOG.error("LIFECYCLE: Docker Swarm: delete_docker_service: Error removing service '" + service_id + "'")
+                LOG.error("[lifecycle.modules.apps.swarm.adapter] [delete_docker_service] Error removing service '" + service_id + "'")
                 return False
         else:
-            LOG.error("LIFECYCLE: Docker Swarm: delete_docker_service: Could not connect to DOCKER API")
+            LOG.error("[lifecycle.modules.apps.swarm.adapter] [delete_docker_service] Could not connect to DOCKER API")
             return None
     except:
-        LOG.exception("LIFECYCLE: Docker Swarm: delete_docker_service: Exception")
+        LOG.exception("[lifecycle.modules.apps.swarm.adapter] [delete_docker_service] Exception")
         return None
 
 
@@ -355,16 +368,16 @@ def operation_service_agent(agent, operation):
                 delete_docker_service(agent['container_id'])
                 agent['status'] = STATUS_TERMINATED
             else:
-                LOG.warning("LIFECYCLE: Docker Swarm: operation_service_agent [" + operation + "]: " + str(agent) + ": operation not supported")
+                LOG.warning("[lifecycle.modules.apps.swarm.adapter] [operation_service_agent] [" + operation + "]: " + str(agent) + ": operation not supported")
         # if error when connecting to agent...
         else:
-            LOG.error("LIFECYCLE: Docker Swarm: operation_service_agent: Could not connect to DOCKER API")
+            LOG.error("[lifecycle.modules.apps.swarm.adapter] [operation_service_agent] Could not connect to DOCKER API")
             agent['status'] = STATUS_UNKNOWN
         # return status
         return agent['status']
     except:
         agent['status'] = STATUS_ERROR
-        LOG.exception('LIFECYCLE: Docker Swarm: operation_service_agent: Exception')
+        LOG.exception('[lifecycle.modules.apps.swarm.adapter] [operation_service_agent] Exception. Returning STATUS_ERROR ...')
         return STATUS_ERROR
 
 

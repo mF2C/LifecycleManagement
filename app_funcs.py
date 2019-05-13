@@ -12,17 +12,19 @@ Created on 18 oct. 2018
 @author: Roi Sucasas - ATOS
 """
 
+
 import config as config
-import lifecycle.lifecycle_operations as lifecycle_ops
-import lifecycle.lifecycle_deployment as lifecycle_depl
-import lifecycle.data.mF2C.handler_um as handler_um
-import lifecycle.data.mF2C.handler_sla as handler_sla
-import lifecycle.data.mF2C.handler_qos as handler_qos
-import lifecycle.inter_lf_operations as operations
+import lifecycle.connectors.connector as connector
+import lifecycle.operations as lifecycle_ops
+import lifecycle.deployment as lifecycle_depl
+import lifecycle.events.handler_um as handler_um
+import lifecycle.events.handler_sla as handler_sla
+import lifecycle.events.handler_qos as handler_qos
+import lifecycle.int_operations as operations
 import lifecycle.data.data_adapter as data_adapter
-import common.common as common
-from common.common import OPERATION_START, OPERATION_STOP, OPERATION_RESTART, OPERATION_TERMINATE, OPERATION_START_JOB
-from common.logs import LOG
+from lifecycle import common as common
+from lifecycle.common import OPERATION_START, OPERATION_STOP, OPERATION_RESTART, OPERATION_TERMINATE, OPERATION_START_JOB
+from lifecycle.logs import LOG
 from flask import Response, json
 
 
@@ -67,7 +69,7 @@ def getAgentUMInfo():
 
 # getCheckAgentUMInfo
 def getCheckAgentUMInfo():
-    result = data_adapter.get_check_um()
+    result = connector.user_management_check_avialability() #data_adapter.get_check_um()
 
     if not result is None:
         agent_um = {
@@ -87,10 +89,34 @@ def getCheckAgentUMInfo():
     return resp
 
 
+# getCheckAgentSwarm
+def getCheckAgentSwarm():
+    result = data_adapter.get_check_swarm()
+
+    if not result is None:
+        agent_um = {
+            'device-id': 'not-defined',
+            'user-id': 'not-defined',
+            'message': result['message'],
+            'result': result['is_swarm_node']
+        }
+    else:
+        agent_um = {
+            'device-id': 'not-defined',
+            'user-id': 'not-defined',
+            'message': 'not-defined',
+            'result': False
+        }
+    resp = Response(json.dumps(agent_um), status=200, mimetype='application/json')
+    return resp
+
+
+
+
 # getServiceInstance
 def getServiceInstance(service_instance_id):
     if service_instance_id == "all":
-        LOG.debug("LIFECYCLE: REST API: getServiceInstance: get all ")
+        LOG.debug("[app_funcs] [getServiceInstance] Call to 'get all' ")
         try:
             obj_response_cimi = common.ResponseCIMI()
             service_instances = data_adapter.get_all_service_instances(obj_response_cimi)
@@ -100,10 +126,10 @@ def getServiceInstance(service_instance_id):
             else:
                 return common.gen_response(500, "Error in 'get_all' function", "Error_Msg", obj_response_cimi.msj)
         except:
-            LOG.exception('LIFECYCLE: REST API: getServiceInstance: Exception')
+            LOG.exception("[app_funcs] [getServiceInstance] Exception. Returning error 500 ...")
             return common.gen_response(500, 'Exception', 'get_all', "-")
     else:
-        LOG.debug("LIFECYCLE: REST API: getServiceInstance: " + service_instance_id)
+        LOG.debug("[app_funcs] [getServiceInstance] " + service_instance_id)
         try:
             obj_response_cimi = common.ResponseCIMI()
             service_instance = data_adapter.get_service_instance(service_instance_id, obj_response_cimi)
@@ -113,13 +139,13 @@ def getServiceInstance(service_instance_id):
             else:
                 return common.gen_response(500, "Error in 'get' function", "service_instance_id", service_instance_id, "Error_Msg", obj_response_cimi.msj)
         except:
-            LOG.exception('LIFECYCLE: REST API: getServiceInstance: Exception')
+            LOG.exception('[app_funcs] [getServiceInstance] Exception. Returning error 500 ...')
             return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
 
 
 # getServiceInstanceReport
 def getServiceInstanceReport(service_instance_id):
-    LOG.debug("LIFECYCLE: REST API: getServiceInstanceReport: " + service_instance_id)
+    LOG.debug("[app_funcs] [getServiceInstanceReport] " + service_instance_id)
     try:
         service_instance_report = data_adapter.get_service_instance_report(service_instance_id)
 
@@ -128,7 +154,7 @@ def getServiceInstanceReport(service_instance_id):
         else:
             return common.gen_response(500, "Error in 'get' function", "service_instance_id", service_instance_id)
     except:
-        LOG.exception('LIFECYCLE: REST API: getServiceInstanceReport: Exception')
+        LOG.exception('[app_funcs] [getServiceInstanceReport] Exception')
         return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)
 
 
@@ -136,7 +162,7 @@ def getServiceInstanceReport(service_instance_id):
 def postServiceInstanceEvent(request):
     body = request.get_json()
     if not body or 'type' not in body or 'data' not in body:
-        LOG.error('LIFECYCLE: REST API: postServiceInstanceEvent: Exception - parameter not found: type / data')
+        LOG.error('[app_funcs] [postServiceInstanceEvent] Exception - parameter not found: type / data')
         return Response(json.dumps({'error': True, 'message': 'parameter not found: type / data'}), status=406, content_type='application/json')
     else:
         if body['type'] == "sla_notification":
@@ -146,7 +172,7 @@ def postServiceInstanceEvent(request):
         elif body['type'] == "qos_enforcement":
             return handler_qos.handle_qos_notification(body['data'])
 
-    LOG.error("LIFECYCLE: REST API: postServiceInstanceEvent: type [" + body['type'] + "] not defined / implemented")
+    LOG.error("[app_funcs] [postServiceInstanceEvent] type [" + body['type'] + "] not defined / implemented")
     return Response(json.dumps({'error': True, 'message': 'type not defined / implemented'}), status=501, content_type='application/json')
 
 
@@ -154,7 +180,7 @@ def postServiceInstanceEvent(request):
 def putServiceInstance(request, service_instance_id):
     data = request.get_json()
     if 'operation' not in data:
-        LOG.error('LIFECYCLE: REST API: putServiceInstance: Parameter not found: operation')
+        LOG.error('[app_funcs] [putServiceInstance] Parameter not found: operation')
         return Response(json.dumps({'error': True, 'message': 'parameter not found: operation'}), status=406, content_type='application/json')
 
     # operations
@@ -165,7 +191,7 @@ def putServiceInstance(request, service_instance_id):
     elif data['operation'] == OPERATION_RESTART:
         return lifecycle_ops.start(service_instance_id)
     else:
-        LOG.error('LIFECYCLE: REST API: putServiceInstance: operation not defined / implemented')
+        LOG.error('[app_funcs] [putServiceInstance] operation not defined / implemented')
         return Response(json.dumps({'error': True, 'message': 'operation not defined / implemented'}), status=501, content_type='application/json')
 
 
@@ -173,18 +199,18 @@ def putServiceInstance(request, service_instance_id):
 def putServiceInstanceCOMPSs(request, service_instance_id):
     data = request.get_json()
     if 'operation' not in data or 'ceiClass' not in data or 'className' not in data or 'hasResult' not in data or 'methodName' not in data or 'parameters' not in data:
-        LOG.error('LIFECYCLE: REST API: putServiceInstanceCOMPSs: Parameter not found: operation / ceiClass / className / hasResult / methodName / parameters')
+        LOG.error('[app_funcs] [putServiceInstanceCOMPSs] Parameter not found: operation / ceiClass / className / hasResult / methodName / parameters')
         return Response(json.dumps({'error': True, 'message': 'Parameter not found: operation / ceiClass / className / hasResult / methodName / parameters'}),
                         status=406,
                         content_type='application/json')
     # operations
     if data['operation'] == OPERATION_START_JOB:
         if 'parameters' not in data:
-            LOG.error('LIFECYCLE: REST API: putServiceInstanceCOMPSs: Parameter not found: parameters')
+            LOG.error('[app_funcs] [putServiceInstanceCOMPSs] Parameter not found: parameters')
             return Response(json.dumps({'error': True, 'message': 'parameter not found: parameters'}), status=406, content_type='application/json')
         return lifecycle_ops.start_job(data, service_instance_id)
     else:
-        LOG.error('LIFECYCLE: REST API: putServiceInstanceCOMPSs: operation not defined / implemented')
+        LOG.error('[app_funcs] [putServiceInstanceCOMPSs] operation not defined / implemented')
         return Response(json.dumps({'error': True, 'message': 'operation not defined / implemented'}), status=501, content_type='application/json')
 
 
@@ -201,42 +227,42 @@ def postService(request):
     # 1. Parse and check input data
     data = request.get_json()
     LOG.info("***************************************************************************************")
-    LOG.info("LIFECYCLE: REST API: postService: Launching new service [" + str(data) + "] ...")
+    LOG.info("[app_funcs] [postService] Launching new service [" + str(data) + "] ...")
 
     # USER_ID:
     if 'user_id' not in data:
-        LOG.debug("LIFECYCLE: REST API: postService: Parameter not found: 'user_id'. Retrieving 'user_id' value from agent ...")
-        res = data_adapter.get_um_current("user")
+        LOG.debug("[app_funcs] [postService] Parameter not found: 'user_id'. Retrieving 'user_id' value from agent ...")
+        res = connector.user_management_get_current("user") #data_adapter.get_um_current("user")
         user_id = "ADMIN" # TODO
         try:
             if res is not None:
                 user_id = res['user_id']
         except:
-            LOG.exception("LIFECYCLE: REST API: postService: Exception; Error parsing 'res' variable")
+            LOG.exception("[app_funcs] [postService] Exception; Error parsing 'res' variable")
     else:
         user_id = data['user_id']
-    LOG.info("LIFECYCLE: REST API: postService: user: " + user_id)
+    LOG.info("[app_funcs] [postService] user: " + user_id)
 
     # SLA TEMPLATE
     #   (SERVICE) :sla_templates [{:href "sla-template/sla-template-id-1"}, {:href "sla-template/sla-template-id-2"}]
     if 'sla_template' not in data:
-        LOG.error("LIFECYCLE: REST API: postService: Parameter not found: 'sla_template'")
+        LOG.error("[app_funcs] [postService] Parameter not found: 'sla_template'")
         sla_template_id = "SLA_TEMPLATE_ID" # TODO
     else:
-        LOG.debug("LIFECYCLE: REST API: postService: Parameter found: 'sla_template': " + data['sla_template'])
+        LOG.debug("[app_funcs] [postService] Parameter found: 'sla_template': " + data['sla_template'])
         sla_template_id = data['sla_template']
-    LOG.info("LIFECYCLE: REST API: postService: sla_template: " + sla_template_id)
+    LOG.info("[app_funcs] [postService] sla_template: " + sla_template_id)
 
     # SERVICE:
     if 'service' not in data and 'service_id' not in data:
-        LOG.error('LIFECYCLE: REST API: postService: Exception - parameter not found: service / service_id')
+        LOG.error('[app_funcs] [postService] Exception - parameter not found: service / service_id')
         return Response(json.dumps({'error': True, 'message': 'parameter not found: service /  service_id'}),
                         status=406,
                         content_type='application/json')
 
     # SERVICE_INSTANCE_ID:
     if 'service_instance_id' in data:
-        LOG.info("LIFECYCLE: REST API: postService: This is a 'FORWARD REQUEST' from one child agent!")
+        LOG.info("[app_funcs] [postService] This is a 'FORWARD REQUEST' from one child agent!")
         service_instance_id = data['service_instance_id']
     else:
         service_instance_id = None
@@ -247,7 +273,7 @@ def postService(request):
         service = data['service']
     # OPTION: standalone mode (no mF2C)
     elif common.is_standalone_mode():
-        LOG.error("LIFECYCLE: REST API: postService: Exception - STANDALONE_MODE enabled: parameters are not valid: ")
+        LOG.error("[app_funcs] [postService] Exception - STANDALONE_MODE enabled: parameters are not valid: ")
         return Response(json.dumps({'error': True, 'message': 'STANDALONE_MODE enabled: parameters are not valid'}),
                         status=500,
                         content_type='application/json')
@@ -255,7 +281,7 @@ def postService(request):
     else:
         service = data_adapter.get_service(data['service_id'])
         if service is None:
-            LOG.error("LIFECYCLE: REST API: postService: Exception - service not found!")
+            LOG.error("[app_funcs] [postService] Exception - service not found!")
             return Response(json.dumps({"error": True, "message": "service not found; [id=" + data['service_id'] + "]"}),
                             status=500,
                             content_type='application/json')
@@ -288,7 +314,7 @@ def postServiceInt(request):
     data = request.get_json()
     # check input parameters
     if 'service' not in data or 'agent' not in data:
-        LOG.error('LIFECYCLE: REST API: postServiceInt: Exception - parameter not found: service / agent')
+        LOG.error('[app_funcs] [postServiceInt] Exception - parameter not found: service / agent')
         return Response(json.dumps({'error': True, 'message': 'parameter not found: service /  agent'}),
                         status=406,
                         content_type='application/json')
@@ -301,7 +327,7 @@ def putServiceInt(request):
     data = request.get_json()
     # check input parameters
     if 'service' not in data or 'operation' not in data or 'agent' not in data:
-        LOG.error('LIFECYCLE: REST API: putServiceInt: Exception - parameter not found: agent / operation')
+        LOG.error('[app_funcs] [putServiceInt] Exception - parameter not found: agent / operation')
         return Response(json.dumps({'error': True, 'message': 'parameter not found: agent / operation'}),
                         status=406,
                         content_type='application/json')
@@ -315,7 +341,7 @@ def putServiceInt(request):
     elif data['operation'] == OPERATION_TERMINATE:
         return operations.terminate(data['service'], data['agent'])
     else:
-        LOG.error('LIFECYCLE: REST API: putServiceInt: operation not defined / implemented')
+        LOG.error('[app_funcs] [putServiceInt] operation not defined / implemented')
         return Response(json.dumps({'error': True, 'message': 'operation not defined / implemented'}),
                         status=501,
                         content_type='application/json')

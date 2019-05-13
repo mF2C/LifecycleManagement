@@ -11,8 +11,7 @@ Created on 04 dic. 2018
 @author: Roi Sucasas - ATOS
 """
 
-
-from common.logs import LOG
+from lifecycle.logs import LOG
 
 
 # genDeploymentDict
@@ -62,7 +61,7 @@ def genDeploymentDict(appname):
 
         return dictDeployment
     except:
-        LOG.error("LIFECYCLE: Kubernetes schemas: genDeploymentDict: Error during the creation of the deployment dict")
+        LOG.error("[lifecycle.modules.apps.kubernetes.schemas] [genDeploymentDict] Error during the creation of the deployment dict")
 
 
 # genServiceDict
@@ -88,4 +87,4 @@ def genServiceDict(appname):
 
         return dictService
     except:
-        LOG.error("LIFECYCLE: Kubernetes schemas: genDeploymentDict: Error during the creation of the deployment dict")
+        LOG.error("[lifecycle.modules.apps.kubernetes.schemas] [genServiceDict] Error during the creation of the deployment dict")

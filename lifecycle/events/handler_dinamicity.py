@@ -11,12 +11,10 @@ Created on 27 sept. 2017
 @author: Roi Sucasas - ATOS
 """
 
-
-from common.logs import LOG
-import common.common as common
-import threading
-import time
-import lifecycle.modules.apps.compss.adapter as compss_adpt
+import threading, time
+from lifecycle.logs import LOG
+from lifecycle import common as common
+from lifecycle.modules.apps.compss import adapter as compss_adpt
 
 
 ###############################################################################
@@ -28,7 +26,7 @@ import lifecycle.modules.apps.compss.adapter as compss_adpt
 # warning = body['data']
 def thr(notification):
     try:
-        LOG.debug("LIFECYCLE: Dinamicity Handler module: thr: Handling event / notification [" + str(notification) + "] ...")
+        LOG.debug("[lifecycle.events.handler_dinamicity] [thr] Handling event / notification [" + str(notification) + "] ...")
 
         # TODO
         # Get agent information
@@ -45,15 +43,15 @@ def thr(notification):
 
         time.sleep(10)
 
-        LOG.debug("LIFECYCLE: Dinamicity Handler module: thr: Event / notification handled")
+        LOG.debug("[lifecycle.events.handler_dinamicity] [thr] Event / notification handled")
     except:
-        LOG.exception('LIFECYCLE: Dinamicity Handler module: thr: Exception')
+        LOG.exception('[lifecycle.events.handler_dinamicity] [thr] Exception')
 
 
 # Handle Dinamicity notifications
 def handle_dinamicity(notification):
     try:
-        LOG.info("LIFECYCLE: Dinamicity Handler module: handle_dinamicity: notification: " + str(notification))
+        LOG.info("[lifecycle.events.handler_dinamicity] [handle_dinamicity] notification: " + str(notification))
 
         # handle notification
         t = threading.Thread(target=thr, args=(notification,))
@@ -61,5 +59,5 @@ def handle_dinamicity(notification):
 
         return common.gen_response_ok('UM notification is being processed...', 'notification', str(notification))
     except:
-        LOG.exception('LIFECYCLE: Dinamicity Handler module: handle_dinamicity: Exception')
+        LOG.exception('[lifecycle.events.handler_dinamicity] [handle_dinamicity] Exception')
         return common.gen_response(500, 'Exception', 'notification', str(notification))

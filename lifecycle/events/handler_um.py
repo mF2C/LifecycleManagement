@@ -11,11 +11,9 @@ Created on 27 sept. 2017
 @author: Roi Sucasas - ATOS
 """
 
-
-from common.logs import LOG
-import common.common as common
 import threading
-import time
+from lifecycle.logs import LOG
+from lifecycle import common as common
 
 
 ###############################################################################
@@ -37,32 +35,32 @@ import time
 # warning = body['data']
 def thr(warning):
     try:
-        LOG.debug("LIFECYCLE: UM Warnings Handler module: thr: Handling UM notifications [" + str(warning) + "] ...")
+        LOG.debug("[lifecycle.events.handler_um] [thr] Handling UM notifications [" + str(warning) + "] ...")
 
         # battery_limit_violation
         if warning['result']['battery_limit_violation']:
-            LOG.warning("LIFECYCLE: UM Warnings Handler module: thr: battery_limit_violation")
+            LOG.warning("[lifecycle.events.handler_um] [thr] battery_limit_violation")
             # TODO
 
         # resource_contributor_violation
         elif warning['result']['resource_contributor_violation']:
-            LOG.warning("LIFECYCLE: UM Warnings Handler module: thr: resource_contributor_violation")
+            LOG.warning("[lifecycle.events.handler_um] [thr] resource_contributor_violation")
             # TODO
 
         # max_apps_violation
         elif warning['result']['max_apps_violation']:
-            LOG.warning("LIFECYCLE: UM Warnings Handler module: thr: max_apps_violation")
+            LOG.warning("[lifecycle.events.handler_um] [thr] max_apps_violation")
             # TODO
 
-        LOG.debug("LIFECYCLE: UM Warnings Handler module: thr: UM Notification handled")
+        LOG.debug("[lifecycle.events.handler_um] [thr] UM Notification handled")
     except:
-        LOG.exception('LIFECYCLE: UM Warnings Handler module: thr: Exception')
+        LOG.exception('[lifecycle.events.handler_um] [thr] Exception')
 
 
 # Handle UM warnings
 def handle_warning(warning):
     try:
-        LOG.info("LIFECYCLE: UM Warnings Handler module: handle_warning: warning: " + str(warning))
+        LOG.info("[lifecycle.events.handler_um] [handle_warning] warning: " + str(warning))
 
         # handle notification
         t = threading.Thread(target=thr, args=(warning,))
@@ -70,5 +68,5 @@ def handle_warning(warning):
 
         return common.gen_response_ok('UM Warning is being processed...', 'warning', str(warning))
     except:
-        LOG.exception('LIFECYCLE: UM Warnings Handler module: handle_warning: Exception')
+        LOG.exception('[lifecycle.events.handler_um] [handle_warning] Exception')
         return common.gen_response(500, 'Exception', 'warning', str(warning))

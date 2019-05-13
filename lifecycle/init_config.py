@@ -14,9 +14,9 @@ Created on 02 may 2018
 
 import config
 import os
-import common.common as common
-from common.logs import LOG
-import lifecycle.data.db as db
+from lifecycle import common as common
+from lifecycle.logs import LOG
+import lifecycle.data.data_adapter as data_adapter
 
 
 '''
@@ -46,7 +46,7 @@ ENV VARIABLES (lifecycle):
 def init():
     try:
         # CONFIGURATION / ENVIRONMENT VALUES
-        LOG.info('LIFECYCLE: config: Reading values from ENVIRONMENT...')
+        LOG.info('[lifecycle.init_config] [init] Reading values from ENVIRONMENT...')
 
         common.set_value_env('LM_WORKING_DIR_VOLUME')  # LM_WORKING_DIR_VOLUME from environment values:
         # STANDALONE_MODE
@@ -77,57 +77,57 @@ def init():
         common.set_value_env('URL_PM_RECOM_LANDSCAPER')
         common.set_value_env('CIMI_URL')
 
-        LOG.info('LIFECYCLE: config: Checking configuration...')
+        LOG.info('[lifecycle.init_config] [init] Checking configuration...')
 
         # CIMI URL
         if "/api" not in config.dic['CIMI_URL'] and not config.dic['CIMI_URL'].endswith("/api"):
-            LOG.debug("LIFECYCLE: Adding '/api' to CIMI_URL ...")
+            LOG.debug("[lifecycle.init_config] [init] Adding '/api' to CIMI_URL ...")
             if config.dic['CIMI_URL'].endswith("/"):
                 config.dic['CIMI_URL'] = config.dic['CIMI_URL'] + "api"
             else:
                 config.dic['CIMI_URL'] = config.dic['CIMI_URL'] + "/api"
-            LOG.debug('LIFECYCLE: [CIMI_URL=' + config.dic['CIMI_URL'] + ']')
+            LOG.debug('[lifecycle.init_config] [init] [CIMI_URL=' + config.dic['CIMI_URL'] + ']')
         else:
-            LOG.debug("LIFECYCLE: CIMI_URL ... " + config.dic['CIMI_URL'])
+            LOG.debug("[lifecycle.init_config] [init] CIMI_URL ... " + config.dic['CIMI_URL'])
 
-        LOG.info('LIFECYCLE: [HOST_IP=' + config.dic['HOST_IP'] + ']')
-        LOG.info('LIFECYCLE: [SERVER_PORT=' + str(config.dic['SERVER_PORT']) + ']')
-        LOG.info('LIFECYCLE: [DOCKER_SOCKET=' + config.dic['DOCKER_SOCKET'] + ']')
-        LOG.info('LIFECYCLE: [DOCKER_SWARM_=' + str(config.dic['DOCKER_SWARM']) + ']')
-        LOG.info('LIFECYCLE: [K8S_MASTER=' + str(config.dic['K8S_MASTER']) + ']')
-        LOG.info('LIFECYCLE: [API_DOC_URL=' + config.dic['API_DOC_URL'] + ']')
-        LOG.info('LIFECYCLE: [CERT_CRT=' + config.dic['CERT_CRT'] + ']')
-        LOG.info('LIFECYCLE: [CERT_KEY=' + config.dic['CERT_KEY'] + ']')
-        LOG.info('LIFECYCLE: [STANDALONE_MODE=' + str(config.dic['STANDALONE_MODE']) + ']')
-        LOG.info('LIFECYCLE: [LM_WORKING_DIR_VOLUME=' + config.dic['LM_WORKING_DIR_VOLUME'] + ']')
-        LOG.info('LIFECYCLE: [VERIFY_SSL=' + str(config.dic['VERIFY_SSL']) + ']')
-        LOG.info('LIFECYCLE: [CIMI_URL=' + config.dic['CIMI_URL'] + ']')
-        LOG.info('LIFECYCLE: [CIMI_USER=' + config.dic['CIMI_USER'] + ']')
-        LOG.info('LIFECYCLE: [WORKING_DIR_VOLUME=' + config.dic['WORKING_DIR_VOLUME'] + ']')
-        LOG.info('LIFECYCLE: [DOCKER_COMPOSE_IMAGE=' + config.dic['DOCKER_COMPOSE_IMAGE'] + ']')
-        LOG.info('LIFECYCLE: [DOCKER_COMPOSE_IMAGE_TAG=' + config.dic['DOCKER_COMPOSE_IMAGE_TAG'] + ']')
-        LOG.info('LIFECYCLE: [DOCKER_SOCKET_VOLUME=' + config.dic['DOCKER_SOCKET_VOLUME'] + ']')
-        LOG.info('LIFECYCLE: [DB_DOCKER_PORTS=' + config.dic['DB_DOCKER_PORTS'] + ']')
-        LOG.info('LIFECYCLE: [URL_PM_SLA_MANAGER=' + config.dic['URL_PM_SLA_MANAGER'] + ']')
-        LOG.info('LIFECYCLE: [URL_AC_SERVICE_MNGMT=' + config.dic['URL_AC_SERVICE_MNGMT'] + ']')
-        LOG.info('LIFECYCLE: [URL_AC_USER_MANAGEMENT=' + config.dic['URL_AC_USER_MANAGEMENT'] + ']')
-        LOG.info('LIFECYCLE: [URL_PM_RECOM_LANDSCAPER=' + config.dic['URL_PM_RECOM_LANDSCAPER'] + ']')
-        LOG.info('LIFECYCLE: [TIMEOUT_ANALYTICSENGINE=' + str(config.dic['TIMEOUT_ANALYTICSENGINE']) + ']')
-        LOG.info('LIFECYCLE: [PORT_COMPSs=' + str(config.dic['PORT_COMPSs']) + ']')
-        LOG.info('LIFECYCLE: [NETWORK_COMPSs=' + config.dic['NETWORK_COMPSs'] + ']')
-        LOG.info('LIFECYCLE: [DATACLAY_EP=' + config.dic['DATACLAY_EP'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [HOST_IP=' + config.dic['HOST_IP'] + ']')
+        LOG.info('[lifecycle.init_config] [init] SERVER_PORT=' + str(config.dic['SERVER_PORT']) + ']')
+        LOG.info('[lifecycle.init_config] [init] [DOCKER_SOCKET=' + config.dic['DOCKER_SOCKET'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [DOCKER_SWARM_=' + str(config.dic['DOCKER_SWARM']) + ']')
+        LOG.info('[lifecycle.init_config] [init] [K8S_MASTER=' + str(config.dic['K8S_MASTER']) + ']')
+        LOG.info('[lifecycle.init_config] [init] [API_DOC_URL=' + config.dic['API_DOC_URL'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [CERT_CRT=' + config.dic['CERT_CRT'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [CERT_KEY=' + config.dic['CERT_KEY'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [STANDALONE_MODE=' + str(config.dic['STANDALONE_MODE']) + ']')
+        LOG.info('[lifecycle.init_config] [init] [LM_WORKING_DIR_VOLUME=' + config.dic['LM_WORKING_DIR_VOLUME'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [VERIFY_SSL=' + str(config.dic['VERIFY_SSL']) + ']')
+        LOG.info('[lifecycle.init_config] [init] [CIMI_URL=' + config.dic['CIMI_URL'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [CIMI_USER=' + config.dic['CIMI_USER'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [WORKING_DIR_VOLUME=' + config.dic['WORKING_DIR_VOLUME'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [DOCKER_COMPOSE_IMAGE=' + config.dic['DOCKER_COMPOSE_IMAGE'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [DOCKER_COMPOSE_IMAGE_TAG=' + config.dic['DOCKER_COMPOSE_IMAGE_TAG'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [DOCKER_SOCKET_VOLUME=' + config.dic['DOCKER_SOCKET_VOLUME'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [DB_DOCKER_PORTS=' + config.dic['DB_DOCKER_PORTS'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [URL_PM_SLA_MANAGER=' + config.dic['URL_PM_SLA_MANAGER'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [URL_AC_SERVICE_MNGMT=' + config.dic['URL_AC_SERVICE_MNGMT'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [URL_AC_USER_MANAGEMENT=' + config.dic['URL_AC_USER_MANAGEMENT'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [URL_PM_RECOM_LANDSCAPER=' + config.dic['URL_PM_RECOM_LANDSCAPER'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [TIMEOUT_ANALYTICSENGINE=' + str(config.dic['TIMEOUT_ANALYTICSENGINE']) + ']')
+        LOG.info('[lifecycle.init_config] [init] [PORT_COMPSs=' + str(config.dic['PORT_COMPSs']) + ']')
+        LOG.info('[lifecycle.init_config] [init] [NETWORK_COMPSs=' + config.dic['NETWORK_COMPSs'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [DATACLAY_EP=' + config.dic['DATACLAY_EP'] + ']')
 
         if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
-            LOG.warning("LIFECYCLE: STANDALONE_MODE enabled")
+            LOG.warning("[lifecycle.init_config] [init] STANDALONE_MODE enabled")
         else:
-            LOG.info("LIFECYCLE: STANDALONE_MODE not enabled")
+            LOG.info("[lifecycle.init_config] [init] STANDALONE_MODE not enabled")
 
-        LOG.info('LIFECYCLE: init_config: init: Checking volume files ...')
+        LOG.info('[lifecycle.init_config] [init] Checking volume files ...')
         if os.path.exists(config.dic['LM_WORKING_DIR_VOLUME'] + config.dic['DB_DOCKER_PORTS']):
-            LOG.info("LIFECYCLE: The file exists: " + config.dic['LM_WORKING_DIR_VOLUME'] + config.dic['DB_DOCKER_PORTS'])
+            LOG.info("[lifecycle.init_config] [init] The file exists: " + config.dic['LM_WORKING_DIR_VOLUME'] + config.dic['DB_DOCKER_PORTS'])
         else:
-            LOG.info("LIFECYCLE: The file does not exist: " + config.dic['LM_WORKING_DIR_VOLUME'] + config.dic['DB_DOCKER_PORTS'])
+            LOG.info("[lifecycle.init_config] [init] The file does not exist: " + config.dic['LM_WORKING_DIR_VOLUME'] + config.dic['DB_DOCKER_PORTS'])
 
-        db.init()
+        data_adapter.db_init()
     except:
-        LOG.exception('LIFECYCLE: config: Exception: Error while initializing application')
+        LOG.exception('[lifecycle.init_config] [init] Exception: Error while initializing application')

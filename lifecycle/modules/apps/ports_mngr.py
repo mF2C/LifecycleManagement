@@ -12,8 +12,8 @@ Created on 09 feb. 2018
 """
 
 import socket
-import lifecycle.data.db as db
-from common.logs import LOG
+from lifecycle.data import data_adapter as data_adapter
+from lifecycle.logs import LOG
 
 
 PORT_MIN = 20001
@@ -30,7 +30,7 @@ def tryPort(port):
         #sock.connect_ex(('127.0.0.1', 80))
         result = True
     except:
-        LOG.warning("LIFECYCLE: tryPort: Port (" + str(port) + ") is in use")
+        LOG.warning("[lifecycle.modules.apps.ports_mngr] [tryPort] Port (" + str(port) + ") is in use")
     sock.close()
     return result
 
@@ -39,25 +39,25 @@ def tryPort(port):
 def is_port_free(port):
     try:
         if port < 10000:
-            LOG.warning("LIFECYCLE: ports_mngr: is_port_free: Ports (" + str(port) + ") under 10000 are nor allowed")
+            LOG.warning("[lifecycle.modules.apps.ports_mngr] [is_port_free] Ports (" + str(port) + ") under 10000 are nor allowed")
             return False
 
-        if db.get_from_DB_DOCKER_PORTS(port) is None and tryPort(port):
-            LOG.debug("LIFECYCLE: ports_mngr: is_port_free: Port (" + str(port) + ") is free")
+        if data_adapter.db_get_port_mapped(port) is None and tryPort(port):
+            LOG.debug("[lifecycle.modules.apps.ports_mngr] [is_port_free] Port (" + str(port) + ") is free")
             return True
     except:
-        LOG.exception("LIFECYCLE: ports_mngr: is_port_free [" + str(port) + "]: Exception")
+        LOG.exception("[lifecycle.modules.apps.ports_mngr] [is_port_free] [" + str(port) + "]: Exception")
     return False
 
 
 # take_port
 def take_port(port, mappedt_to):
-    return db.save_to_DB_DOCKER_PORTS(port, mappedt_to)
+    return data_adapter.db_save_port_mapped(port, mappedt_to)
 
 
 # release_port
 def release_port(port):
-    return db.del_from_DB_DOCKER_PORTS(port)
+    return data_adapter.db_delete_port(port)
 
 
 # take_port
@@ -80,22 +80,22 @@ def replace_in_list(l, xvalue, newxvalue):
 # create_ports_dict:
 def create_ports_dict(ports):
     try:
-        LOG.debug("LIFECYCLE: ports_mngr: create_ports_dict: Checking and configuring service instance ports [" + str(ports) + "] ...")
+        LOG.debug("[lifecycle.modules.apps.ports_mngr] [create_ports_dict] Checking and configuring service instance ports [" + str(ports) + "] ...")
         dict_ports = {}
         for p in ports:
             if is_port_free(p):
                 dict_ports.update({p:p})
                 take_port(p, p)
-                LOG.debug("LIFECYCLE: ports_mngr: create_ports_dict: port [ " + str(p) + " ] is free")
+                LOG.debug("[lifecycle.modules.apps.ports_mngr] [create_ports_dict] port [ " + str(p) + " ] is free")
             else:
                 np = assign_new_port()
                 # original port : new port (exposed to host)
                 dict_ports.update({p: np})
                 take_port(np, p)
                 replace_in_list(ports, p, np)
-                LOG.debug("LIFECYCLE: ports_mngr: create_ports_dict: port [ " + str(p) + " ] not free: redirected to " + str(np))
+                LOG.debug("[lifecycle.modules.apps.ports_mngr] [create_ports_dict] port [ " + str(p) + " ] not free: redirected to " + str(np))
 
         return dict_ports
     except:
-        LOG.exception("LIFECYCLE: ports_mngr: create_ports_dict: Error during the ports dict creation: " + str(ports))
+        LOG.exception("[lifecycle.modules.apps.ports_mngr] [create_ports_dict] Error during the ports dict creation: " + str(ports))
         return {ports[0]:ports[0]}

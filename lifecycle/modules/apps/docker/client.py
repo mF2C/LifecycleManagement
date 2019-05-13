@@ -1,5 +1,5 @@
 """
-Docker client
+Docker client. Used by other files: adapters from docker, swarm, compss...
 This is being developed for the MF2C Project: http://www.mf2c-project.eu/
 
 Copyright: Atos Research and Innovation, 2017.
@@ -11,12 +11,11 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-
 import docker, uuid
-import lifecycle.modules.apps.ports_mngr as pmngr
+from lifecycle.modules.apps import ports_mngr as pmngr
 import config
-from common.logs import LOG
-import lifecycle.data.db as db
+from lifecycle.logs import LOG
+from lifecycle.data import data_adapter as data_adapter
 
 
 # docker socket connection
@@ -30,22 +29,22 @@ client = None
 # connect to docker api: Examples: base_url='tcp://192.168.252.42:2375'; base_url='unix://var/run/docker.sock'
 def get_client_agent_docker():
     global client
-    LOG.debug("LIFECYCLE: Docker client: Connecting to DOCKER API [" + DOCKER_SOCKET + "], "
+    LOG.debug("[lifecycle.modules.apps.docker.client] [get_client_agent_docker] Connecting to DOCKER API [" + DOCKER_SOCKET + "], "
               "[client=" + str(client) + "]...")
     try:
         try:
             if client is not None:
                 client.version()
-                LOG.debug("LIFECYCLE: Docker client: Returning existing client [" + str(client) + "] ...")
+                LOG.debug("[lifecycle.modules.apps.docker.client] [get_client_agent_docker] Returning existing client [" + str(client) + "] ...")
                 return client
         except:
-            LOG.error("LIFECYCLE: Docker client: docker client gave an error. Trying to reconnect to docker...")
+            LOG.error("[lifecycle.modules.apps.docker.client] [get_client_agent_docker] docker client gave an error. Trying to reconnect to docker...")
 
         client = docker.APIClient(base_url=DOCKER_SOCKET)
-        LOG.debug("LIFECYCLE: Docker client: Connected to DOCKER in [" + DOCKER_SOCKET + "]; version: " + str(client.version()))
+        LOG.debug("[lifecycle.modules.apps.docker.client] [get_client_agent_docker] Connected to DOCKER in [" + DOCKER_SOCKET + "]; version: " + str(client.version()))
         return client
     except:
-        LOG.exception("LIFECYCLE: Docker client: get_client_agent_docker: Error when connecting to DOCKER API: " + DOCKER_SOCKET)
+        LOG.exception("[lifecycle.modules.apps.docker.client] [get_client_agent_docker] Error when connecting to DOCKER API: " + DOCKER_SOCKET)
         return None
 
 
@@ -55,7 +54,7 @@ def download_docker_image(lclient, service_image, service_image_tag=None):
     l_images = lclient.images(name=service_image)
     # if not, download image
     if not l_images or len(l_images) == 0:
-        LOG.debug("LIFECYCLE: Docker client: download_docker_image: call to 'import_image' [" + service_image + "] ...")
+        LOG.debug("[lifecycle.modules.apps.docker.client] [download_docker_image] call to 'import_image' [" + service_image + "] ...")
         if service_image_tag is not None:
             lclient.import_image(tag=service_image_tag, image=service_image) # (tag="latest", image="ubuntu")
         else:
@@ -64,7 +63,7 @@ def download_docker_image(lclient, service_image, service_image_tag=None):
 
 # create_docker_container
 def create_docker_container(service_image, service_name, service_command, prts):
-    LOG.debug("LIFECYCLE: Docker client: create_docker_container: [service_name=" + service_name + "], "
+    LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_container] [service_name=" + service_name + "], "
               "[service_command=" + service_command + "], [service_image=" + service_image + "], "
               "[ports=" + str(prts) + "]")
     # connect to docker api
@@ -74,13 +73,13 @@ def create_docker_container(service_image, service_name, service_command, prts):
             # check if image already exists in agent or download image
             download_docker_image(lclient, service_image)
 
-            LOG.debug("LIFECYCLE: Docker client: create_docker_container: Creating container ...")
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_container] Creating container ...")
 
             prts_list = list(prts)
             ports_dict = pmngr.create_ports_dict(prts)
-            LOG.debug("LIFECYCLE: Docker client: create_docker_container: ports_dict: " + str(ports_dict))
-            LOG.debug("LIFECYCLE: Docker client: create_docker_container: prts: " + str(prts))
-            LOG.debug("LIFECYCLE: Docker client: create_docker_container: prts_list: " + str(prts_list))
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_container] ports_dict: " + str(ports_dict))
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_container] prts: " + str(prts))
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_container] prts_list: " + str(prts_list))
 
             # create a new container: 'docker run'
             container = lclient.create_container(service_image,  # command=service_command,
@@ -90,16 +89,16 @@ def create_docker_container(service_image, service_name, service_command, prts):
                                                  host_config=lclient.create_host_config(port_bindings=ports_dict))
             return container
         else:
-            LOG.error("LIFECYCLE: Docker adapter: create_docker_container: Could not connect to DOCKER API")
+            LOG.error("[lifecycle.modules.apps.docker.client] [create_docker_container] Could not connect to DOCKER API")
             return None
     except:
-        LOG.exception("LIFECYCLE: Docker client: create_docker_container: Exception")
+        LOG.exception("[lifecycle.modules.apps.docker.client] [create_docker_container] Exception")
         return None
 
 
 # create_docker_compss_container
 def create_docker_compss_container(service_image, ip, prts, master=None):
-    LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: Creating COMPSs container [service_image=" +
+    LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] Creating COMPSs container [service_image=" +
               service_image + "], [ports=" + str(prts) + "], [ip=" + ip + "], [master=" + str(master) + "] ...")
     # connect to docker api
     lclient = get_client_agent_docker()
@@ -116,17 +115,17 @@ def create_docker_compss_container(service_image, ip, prts, master=None):
                 prts.remove(config.dic['PORT_COMPSs'])
                 prts.insert(0, config.dic['PORT_COMPSs'])
 
-            LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: prts: " + str(prts))
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] prts: " + str(prts))
 
             prts_list = list(prts)
             ports_dict = pmngr.create_ports_dict(prts)
-            LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: ports_dict: " + str(ports_dict))
-            LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: prts_list: " + str(prts_list))
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] ports_dict: " + str(ports_dict))
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] prts_list: " + str(prts_list))
 
-            LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: AGENT_HOST: " + config.dic['HOST_IP'])
-            LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: AGENT_PORT: " + str(db.get_COMPSs_port_DB_DOCKER_PORTS(prts)))
-            LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: DATACLAY_EP: " + config.dic['DATACLAY_EP'])
-            LOG.debug("LIFECYCLE: Docker client: create_docker_compss_container: REPORT_ADDRESS: " + config.dic['CIMI_URL'])
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] AGENT_HOST: " + config.dic['HOST_IP'])
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] AGENT_PORT: " + str(data_adapter.db_get_compss_port(prts)))
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] DATACLAY_EP: " + config.dic['DATACLAY_EP'])
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] REPORT_ADDRESS: " + config.dic['CIMI_URL'])
 
             # "docker run --rm -it --env MF2C_HOST=172.17.0.3 -p46100:46100 --env DEBUG=debug --name compss3123 mf2c/compss-test:latest"
             container = lclient.create_container(service_image,
@@ -134,7 +133,7 @@ def create_docker_compss_container(service_image, ip, prts, master=None):
                                                  environment={"MF2C_HOST": ip,
                                                               "DEBUG": "debug",
                                                               "AGENT_HOST": config.dic['HOST_IP'],
-                                                              "AGENT_PORT": db.get_COMPSs_port_DB_DOCKER_PORTS(prts),
+                                                              "AGENT_PORT": data_adapter.db_get_compss_port(prts),
                                                               "DATACLAY_EP": config.dic['DATACLAY_EP'],
                                                               "REPORT_ADDRESS": config.dic['CIMI_URL']},
                                                  tty=True,
@@ -144,16 +143,16 @@ def create_docker_compss_container(service_image, ip, prts, master=None):
 
             return container
         else:
-            LOG.error("LIFECYCLE: Docker adapter: create_docker_compss_container: Could not connect to DOCKER API")
+            LOG.error("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] Could not connect to DOCKER API")
             return None
     except:
-        LOG.exception("LIFECYCLE: Docker client: create_docker_compss_container: Exception")
+        LOG.exception("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] Exception")
         return None
 
 
 # create_docker_compose_container
 def create_docker_compose_container(service_name, service_command):
-    LOG.debug("LIFECYCLE: Docker client: create_docker_compose_container: Creating docker-compose containers [service_name=" +
+    LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compose_container] Creating docker-compose containers [service_name=" +
               service_name +"], [service_command=" + service_command + "] ...")
     try:
         # connect to docker api
@@ -183,10 +182,10 @@ def create_docker_compose_container(service_name, service_command):
                                                 working_dir=config.dic['WORKING_DIR_VOLUME'])
             return container
         else:
-            LOG.error("LIFECYCLE: Docker client: deploy_docker_compose: Could not connect to DOCKER API")
+            LOG.error("[lifecycle.modules.apps.docker.client] [create_docker_compose_container] Could not connect to DOCKER API")
             return None
     except:
-        LOG.exception("LIFECYCLE: Docker client: deploy_docker_compose: Exception")
+        LOG.exception("[lifecycle.modules.apps.docker.client] [create_docker_compose_container] Exception")
         return None
 
 
@@ -197,7 +196,7 @@ def stop_container(id):
         lclient.stop(id)
         return True
     except:
-        LOG.exception("LIFECYCLE: Docker client: stop_container [" + id + "]: Exception")
+        LOG.exception("[lifecycle.modules.apps.docker.client] [stop_container] [" + id + "]: Exception")
         return False
 
 
@@ -208,7 +207,7 @@ def start_container(id):
         lclient.start(id)
         return True
     except:
-        LOG.exception("LIFECYCLE: Docker client: start_container [" + id + "]: Exception")
+        LOG.exception("[lifecycle.modules.apps.docker.client] [start_container] [" + id + "]: Exception")
         return False
 
 
@@ -218,7 +217,7 @@ def remove_container_by_id(id):
         lclient = get_client_agent_docker()
         lclient.remove_container(id, force=True)
     except:
-        LOG.exception("LIFECYCLE: Docker client: remove_container_by_id [" + id + "]: Exception")
+        LOG.exception("[lifecycle.modules.apps.docker.client] [remove_container_by_id] [" + id + "]: Exception")
         return False
 
 
@@ -231,18 +230,18 @@ def remove_container(agent):
         for p in agent['ports']:
             pmngr.release_port(p)
     except:
-        LOG.exception("LIFECYCLE: Docker client: remove_container [" + str(agent) + "]: Exception")
+        LOG.exception("[lifecycle.modules.apps.docker.client] [remove_container] [" + str(agent) + "]: Exception")
         return False
 
 
 # start_container
 def add_container_to_network(id):
     try:
-        LOG.debug("LIFECYCLE: Docker client: add_container_to_network: "
+        LOG.debug("[lifecycle.modules.apps.docker.client] [add_container_to_network] "
                   "[NETWORK_COMPSs=" + config.dic['NETWORK_COMPSs'] + "], [id=" + id + "]")
         lclient = get_client_agent_docker()
-        LOG.debug("LIFECYCLE: Docker client: add_container_to_network: resp: " +
+        LOG.debug("[lifecycle.modules.apps.docker.client] [add_container_to_network] resp: " +
                   str(lclient.connect_container_to_network(id, config.dic['NETWORK_COMPSs'])))
     except:
-        LOG.exception("LIFECYCLE: Docker client: add_container_to_network [" + id + "]: Exception")
+        LOG.exception("[lifecycle.modules.apps.docker.client] [add_container_to_network] [" + id + "]: Exception")
         return False

@@ -11,11 +11,9 @@ Created on 28 feb. 2019
 @author: Roi Sucasas - ATOS
 """
 
-from common.logs import LOG
-from common.common import STATUS_CREATED_NOT_INITIALIZED, STATUS_STARTED
-from lifecycle.data import data_adapter
-import lifecycle.data.mF2C.cimi as cimi
-# import lifecycle.data.data_adapter as data_adapter
+from lifecycle.logs import LOG
+from lifecycle.common import STATUS_CREATED_NOT_INITIALIZED, STATUS_STARTED
+from lifecycle.data import data_adapter as data_adapter
 
 
 # new_service_instance: Creates a new service instance object
@@ -26,7 +24,7 @@ import lifecycle.data.mF2C.cimi as cimi
 #       4. agreement_id
 #   OUT: service_instance dict
 def new_service_instance(service, agents_list, user_id, agreement_id):
-    LOG.debug("LIFECYCLE: Data: Service Instance: new_service_instance: " + service['name'] + ", " + str(agents_list) + ", " + str(user_id) + ", " + str(agreement_id))
+    LOG.debug("[lifecycle.data.app.service_instance] [new_service_instance] " + service['name'] + ", " + str(agents_list) + ", " + str(user_id) + ", " + str(agreement_id))
 
     # create list of agents
     list_of_agents = []
@@ -36,7 +34,7 @@ def new_service_instance(service, agents_list, user_id, agreement_id):
     try:
         ports_l = service['exec_ports']
     except:
-        LOG.warning("LIFECYCLE: Data: Service Instance: new_service_instance: No ports values found in service definition")
+        LOG.warning("[lifecycle.data.app.service_instance] [new_service_instance] No ports values found in service definition")
 
     # AGENTs:
     i = 0
@@ -59,7 +57,7 @@ def new_service_instance(service, agents_list, user_id, agreement_id):
         i += 1
 
     # info from AGENT
-    cimi_agent = cimi.get_agent()
+    cimi_agent = data_adapter.get_agent()
     if cimi_agent is not None and cimi_agent != -1:
         if 'parent_device_id' not in cimi_agent:
             parent_device_id = "not-defined"
@@ -97,13 +95,13 @@ def new_service_instance(service, agents_list, user_id, agreement_id):
             "service_type":     service['exec_type'],
             "status":           STATUS_CREATED_NOT_INITIALIZED}
 
-    LOG.debug("LIFECYCLE: Data: Service Instance: new_service_instance: create_service_instance: service_intance=" + str(new_service_instance))
+    LOG.debug("[lifecycle.data.app.service_instance] [new_service_instance] service_intance=" + str(new_service_instance))
     return new_service_instance
 
 
 # new_empty_service_instance: Creates a new service instance object without agents
 def new_empty_service_instance(service, user_id, agreement_id):
-    LOG.debug("LIFECYCLE: Data: Service Instance: new_empty_service_instance: " + service['name'] + ", " + str(user_id) + ", " + str(agreement_id))
+    LOG.debug("[lifecycle.data.app.service_instance] [new_empty_service_instance] " + service['name'] + ", " + str(user_id) + ", " + str(agreement_id))
 
     # SERVICE_INSTANCE:
     new_service_instance = {"service":          service['id'],
@@ -117,13 +115,13 @@ def new_empty_service_instance(service, user_id, agreement_id):
                             "service_type":     service['exec_type'],
                             "status":           STATUS_CREATED_NOT_INITIALIZED}
 
-    LOG.debug("LIFECYCLE: Data: Service Instance: new_empty_service_instance: create_service_instance: " + str(new_service_instance))
+    LOG.debug("[lifecycle.data.app.service_instance] [new_empty_service_instance] new_service_instance=" + str(new_service_instance))
     return new_service_instance
 
 
 # add_agents_to_empty_service_instance: Adds a list of agents to the service instance
 def add_agents_to_empty_service_instance(service, user_id, agreement_id, agents_list):
-    LOG.debug("LIFECYCLE: Data: Service Instance: add_agents_to_empty_service_instance: " + service['name'] + ", " + str(user_id) + ", " + str(agreement_id))
+    LOG.debug("[lifecycle.data.app.service_instance] [add_agents_to_empty_service_instance] " + service['name'] + ", " + str(user_id) + ", " + str(agreement_id))
 
     # SERVICE_INSTANCE:
     new_service_instance = {"service":          service['id'],
@@ -137,15 +135,15 @@ def add_agents_to_empty_service_instance(service, user_id, agreement_id, agents_
                             "service_type":     service['exec_type'],
                             "status":           STATUS_CREATED_NOT_INITIALIZED}
 
-    LOG.debug("LIFECYCLE: Data: Service Instance: add_agents_to_empty_service_instance: create_service_instance: adding service_intance to CIMI ...")
-    LOG.debug("LIFECYCLE: Data: Service Instance: add_agents_to_empty_service_instance: create_service_instance: " + str(new_service_instance))
+    LOG.debug("[lifecycle.data.app.service_instance] [add_agents_to_empty_service_instance] adding service_intance to CIMI ...")
+    LOG.debug("[lifecycle.data.app.service_instance] [add_agents_to_empty_service_instance] new_service_instance=" + str(new_service_instance))
 
     return new_service_instance
 
 
 # is_agent_in_service_instance: check if an agent (url) is being used in a service_instance
 def is_agent_in_service_instance(service_instance, agent_url):
-    LOG.debug("LIFECYCLE: Data: Service Instance: is_agent_in_service_instance: " + service_instance['id'] + ", " + str(agent_url))
+    LOG.debug("[lifecycle.data.app.service_instance] [is_agent_in_service_instance] " + service_instance['id'] + ", " + str(agent_url))
     for agent in service_instance['agents']:
         if agent['url'] == agent_url:
             return True
@@ -153,43 +151,43 @@ def is_agent_in_service_instance(service_instance, agent_url):
 
 
 # set_master:
-def set_master(service_instance):
+def __set_master(service_instance):
     try:
-        LOG.debug("LIFECYCLE: Data: Service Instance: set_master: Update service instance: set master (COMPSs)")
+        LOG.debug("[lifecycle.data.app.service_instance] [__set_master] Update service instance: set master (COMPSs)")
         data_adapter.update_service_instance(service_instance['id'], service_instance)
     except:
-        LOG.exception("LIFECYCLE: Data: Service Instance: set_master: Exception")
+        LOG.exception("[lifecycle.data.app.service_instance] [__set_master] Exception")
 
 
 # find_master:
 def find_master(service_instance):
     try:
-        LOG.debug("LIFECYCLE: Data: Service Instance: find_master: Check if local agent has COMPSs and is included in the service instance ...")
+        LOG.debug("[lifecycle.data.app.service_instance] [find_master] Check if local agent has COMPSs and is included in the service instance ...")
 
         for agent in service_instance['agents']:
             if agent['master_compss'] and agent['status'] == STATUS_STARTED:
-                LOG.debug("LIFECYCLE: Data: Service Instance: find_master: Agent is master, status=STARTED: " + str(agent))
+                LOG.debug("[lifecycle.data.app.service_instance] [find_master] Agent is master, status=STARTED: " + str(agent))
                 return agent
 
         for agent in service_instance['agents']:
             if agent['status'] == STATUS_STARTED and agent['url'] == data_adapter.get_my_ip(): #common.get_local_ip():
-                LOG.debug("LIFECYCLE: Data: Service Instance: find_master: Local agent has COMPSs, status=STARTED and is included in the service instance!")
-                LOG.debug("LIFECYCLE: Data: Service Instance: find_master: agent: " + str(agent))
+                LOG.debug("[lifecycle.data.app.service_instance] [find_master] Local agent has COMPSs, status=STARTED and is included in the service instance!")
+                LOG.debug("[lifecycle.data.app.service_instance] [find_master] agent: " + str(agent))
                 agent['master_compss'] = True
-                set_master(service_instance)
+                __set_master(service_instance)
                 return agent
 
-        LOG.debug("LIFECYCLE: Data: Service Instance: Check agents included in the service instance and status=STARTED ...")
+        LOG.debug("[lifecycle.data.app.service_instance] [find_master] Check agents included in the service instance and status=STARTED ...")
         for agent in service_instance['agents']:
             if agent['status'] == STATUS_STARTED:
-                LOG.debug("LIFECYCLE: Data: Service Instance: find_master: agent: " + str(agent))
+                LOG.debug("[lifecycle.data.app.service_instance] [find_master] agent: " + str(agent))
                 agent['master_compss'] = True
-                set_master(service_instance)
+                __set_master(service_instance)
                 return agent
     except:
-        LOG.exception("LIFECYCLE: Data: Service Instance: find_master: Exception")
+        LOG.exception("[lifecycle.data.app.service_instance] [find_master] Exception")
 
-    LOG.warning("LIFECYCLE: Data: Service Instance: find_master: return service_instance['agents'][0]: " + str(service_instance['agents'][0]))
+    LOG.warning("[lifecycle.data.app.service_instance] [find_master] return service_instance['agents'][0]: " + str(service_instance['agents'][0]))
     return service_instance['agents'][0]
 
 
@@ -203,27 +201,27 @@ def is_master(agent):
 # store_appid_in_master:
 def store_appid_in_master(service_instance, appId):
     try:
-        LOG.debug("LIFECYCLE: Data: Service Instance: store_appid_in_master: Storing appId [" + str(appId) + "] in the service instance ...")
+        LOG.debug("[lifecycle.data.app.service_instance] [store_appid_in_master] Storing appId [" + str(appId) + "] in the service instance ...")
 
         for agent in service_instance['agents']:
             if agent['master_compss']:
-                LOG.debug("LIFECYCLE: Data: Service Instance: store_appid_in_master: Agent is master: " + str(agent))
+                LOG.debug("[lifecycle.data.app.service_instance] [store_appid_in_master] Agent is master: " + str(agent))
                 agent['agent_param'] = str(appId)
                 res = data_adapter.update_service_instance(service_instance['id'], service_instance)
-                LOG.debug("LIFECYCLE: Data: Service Instance: store_appid_in_master: res=" + res + ", agent=" + str(agent))
+                LOG.debug("[lifecycle.data.app.service_instance] [store_appid_in_master] res=" + res + ", agent=" + str(agent))
     except:
-        LOG.exception("LIFECYCLE: Data: Service Instance: store_appid_in_master: Exception")
+        LOG.exception("[lifecycle.data.app.service_instance] [store_appid_in_master] Exception")
 
 
 # get_appid_from_master:
 def get_appid_from_master(service_instance):
     try:
-        LOG.debug("LIFECYCLE: Data: Service Instance: get_appid_from_master: Getting (COMPSs) appId from the service instance ...")
+        LOG.debug("[lifecycle.data.app.service_instance] [get_appid_from_master] Getting (COMPSs) appId from the service instance ...")
 
         for agent in service_instance['agents']:
             if agent['master_compss']:
-                LOG.debug("LIFECYCLE: Data: Service Instance: get_appid_from_master: Agent is master: " + str(agent))
+                LOG.debug("[lifecycle.data.app.service_instance] [get_appid_from_master] Agent is master: " + str(agent))
                 return agent['agent_param']
     except:
-        LOG.exception("LIFECYCLE: Data: Service Instance: get_appid_from_master: Exception. Returning None ...")
+        LOG.exception("[lifecycle.data.app.service_instance] [get_appid_from_master] Exception. Returning None ...")
     return None
