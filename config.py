@@ -15,7 +15,8 @@ Created on 18 oct. 2018
 
 dic = { "VERSION":                      "1.2.4",
 
-        "LM_MODE":                      "MF2C", # "DEFAULT"  "MF2C"  "STANDALONE"
+        # LIFECYCLE MANAGER MODE: "DEFAULT", "MF2C" , "STANDALONE"
+        "LM_MODE":                      "MF2C",
 
         # SERVER - REST API:
         "SERVER_PORT":                  46000,
@@ -63,7 +64,7 @@ dic = { "VERSION":                      "1.2.4",
         # NETWORK_COMPSs
         "NETWORK_COMPSs":               "not-defined",
         # COMPSs - dataclay
-        "DATACLAY_EP":                  "dataclay",
+        "DATACLAY_EP":                  ":1034", #"dataclay", # TODO --env DATACLAY_EP=${lm_ip_address}:1034 \
         # URL_PM_RECOM_LANDSCAPER:
         "URL_PM_RECOM_LANDSCAPER":      "http://analytics_engine:46020/mf2c",
 
