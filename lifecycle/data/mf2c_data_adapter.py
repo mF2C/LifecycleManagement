@@ -28,6 +28,11 @@ class Mf2cDataAdapter:
         return data_mf2c.get_my_ip()
 
 
+    # get_host_ip: Get IP address from local
+    def get_host_ip(self):
+        return data_mf2c.get_my_ip()
+
+
     # get_leader_ip: Get IP address from Leader
     def get_leader_ip(self):
         return data_mf2c.get_leader_ip()

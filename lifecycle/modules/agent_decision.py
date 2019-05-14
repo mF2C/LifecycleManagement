@@ -68,7 +68,7 @@ def get_available_agents_resources(service):
             if not resources or len(resources) == 0:
                 LOG.warning("[lifecycle.modules.agent_decision] [get_available_agents_resources] temporal fix")
                 LOG.warning("[lifecycle.modules.agent_decision] [get_available_agents_resources] returning localhost")
-                return [{"agent_ip": config.dic['HOST_IP']}]
+                return [{"agent_ip": data_adapter.get_host_ip()}]
             else:
                 LOG.debug("[lifecycle.modules.agent_decision] [get_available_agents_resources] total=" + str(len(resources)))
                 return resources

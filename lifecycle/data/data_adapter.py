@@ -41,6 +41,11 @@ def get_my_ip():
     return adapter.get_my_ip()
 
 
+# get_host_ip: Get IP address from local
+def get_host_ip():
+    return adapter.get_my_ip()
+
+
 # get_leader_ip: Get IP address from Leader
 def get_leader_ip():
     return adapter.get_leader_ip()

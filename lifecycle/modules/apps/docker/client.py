@@ -122,20 +122,20 @@ def create_docker_compss_container(service_image, ip, prts, ip_leader):
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] ports_dict: " + str(ports_dict))
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] prts_list: " + str(prts_list))
 
-            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] AGENT_HOST: " + config.dic['HOST_IP'])
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] AGENT_HOST: " + data_adapter.get_host_ip())
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] AGENT_PORT: " + str(data_adapter.db_get_compss_port(prts)))
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] DATACLAY_EP: " + ip_leader + config.dic['DATACLAY_EP'])
-            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] REPORT_ADDRESS: " + config.dic['CIMI_URL'])
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] REPORT_ADDRESS: " + "http://" +  data_adapter.get_host_ip() + "/api") #config.dic['CIMI_URL'])
 
             # "docker run --rm -it --env MF2C_HOST=172.17.0.3 -p46100:46100 --env DEBUG=debug --name compss3123 mf2c/compss-test:latest"
             container = lclient.create_container(service_image,
                                                  name="compss-" + str(uuid.uuid4()),
                                                  environment={"MF2C_HOST": ip,
                                                               "DEBUG": "debug",
-                                                              "AGENT_HOST": config.dic['HOST_IP'],
+                                                              "AGENT_HOST": data_adapter.get_host_ip(),
                                                               "AGENT_PORT": data_adapter.db_get_compss_port(prts),
                                                               "DATACLAY_EP": ip_leader + config.dic['DATACLAY_EP'],
-                                                              "REPORT_ADDRESS": config.dic['CIMI_URL']},
+                                                              "REPORT_ADDRESS": "http://" +  data_adapter.get_host_ip() + "/api"}, #config.dic['CIMI_URL']},
                                                  tty=True,
                                                  ports=prts_list,
                                                  host_config=lclient.create_host_config(port_bindings=ports_dict,

@@ -34,7 +34,7 @@ def getAgentConfig():
         'app': "Lifecycle Management REST API",
         'name': "Lifecycle Management REST API",
         'version': config.dic['VERSION'],
-        'host': config.dic['HOST_IP'],
+        'host': data_adapter.get_host_ip(),
         'device-identifier': 'not-defined',
         'device-ip-address': 'not-defined',
         'user-identifier': 'not-defined',

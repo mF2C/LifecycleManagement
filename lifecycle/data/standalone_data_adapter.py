@@ -11,6 +11,7 @@ Created on 10 mayo 2019
 @author: Roi Sucasas - ATOS
 """
 
+import config
 from lifecycle.logs import LOG
 from lifecycle.data.app import db as db
 
@@ -25,6 +26,11 @@ class StandaloneDataAdapter:
     def get_my_ip(self):
         LOG.warning("[lifecycle.data.standalone_data_adapter] [get_my_ip] not implemented")
         return None
+
+
+    # get_host_ip: Get IP address from local
+    def get_host_ip(self):
+        return config.dic['HOST_IP']
 
 
     # get_leader_ip: Get IP address from Leader

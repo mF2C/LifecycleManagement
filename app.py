@@ -15,9 +15,8 @@ Created on 18 oct. 2018
 
 import config as cfg
 from lifecycle import app_funcs as lm
-# lm
-import lifecycle.init_config as lm_init_config
-# common
+from lifecycle.data import data_adapter as data_adapter
+from lifecycle import init_config as lm_init_config
 from lifecycle.logs import LOG
 # ext
 from flask_cors import CORS
@@ -102,8 +101,8 @@ def default_route():
     data = {
         'app': "Lifecycle Management REST API",
         'status': "Running",
-        'api_doc_json': "http://" + cfg.dic['HOST_IP'] + ":" + str(cfg.dic['SERVER_PORT']) + cfg.dic['API_DOC_URL'],
-        'api_doc_html': "http://" + cfg.dic['HOST_IP'] + ":" + str(cfg.dic['SERVER_PORT']) + cfg.dic['API_DOC_URL'] + ".html#!/spec"
+        'api_doc_json': "http://" + data_adapter.get_host_ip() + ":" + str(cfg.dic['SERVER_PORT']) + cfg.dic['API_DOC_URL'],
+        'api_doc_html': "http://" + data_adapter.get_host_ip() + ":" + str(cfg.dic['SERVER_PORT']) + cfg.dic['API_DOC_URL'] + ".html#!/spec"
     }
     resp = Response(json.dumps(data), status=200, mimetype='application/json')
     return resp
@@ -501,8 +500,8 @@ api.add_resource(LmEvents, '/api/v2/lm')
 # MAIN
 def main():
     LOG.info("[app] Starting Lifecycle Management application [version=" + str(cfg.dic['VERSION']) + "] ...")
-    LOG.info("[app] Swagger running on http://" + cfg.dic['HOST_IP'] + ":" + str(cfg.dic['SERVER_PORT']) + cfg.dic['API_DOC_URL'] + ".html")
-    LOG.info("[app] REST API running on http://" + cfg.dic['HOST_IP'] + ":" + str(cfg.dic['SERVER_PORT']) + cfg.dic['API_DOC_URL'])
+    LOG.info("[app] Swagger running on http://" + data_adapter.get_host_ip() + ":" + str(cfg.dic['SERVER_PORT']) + cfg.dic['API_DOC_URL'] + ".html")
+    LOG.info("[app] REST API running on http://" + data_adapter.get_host_ip() + ":" + str(cfg.dic['SERVER_PORT']) + cfg.dic['API_DOC_URL'])
 
     # START (SSL) SERVER
     # context = ('PATH_TO_CERT_CRT', 'PATH_TO_CERT_KEY')

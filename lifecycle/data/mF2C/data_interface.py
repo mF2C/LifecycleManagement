@@ -11,8 +11,9 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-import lifecycle.data.mF2C.cimi as cimi
-import lifecycle.data.app.service_instance as service_instance
+import config
+from lifecycle.data.mF2C import cimi as cimi
+from lifecycle.data.app import service_instance as service_instance
 from lifecycle.logs import LOG
 
 
@@ -52,6 +53,8 @@ def get_my_ip():
     if agent is not None:
         LOG.info("[lifecycle.data.mf2c.data_interface] [get_my_ip] IP from current agent = " + agent['device_ip'])
         return agent['device_ip']
+    if config.dic['HOST_IP'] is not None and config.dic['HOST_IP'] != "":
+        return config.dic['HOST_IP']
     else:
         LOG.error("[lifecycle.data.mf2c.data_interface] [get_my_ip] Error retrieving IP from agent. Returning None ...")
         return None
