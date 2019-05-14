@@ -25,7 +25,7 @@ dic = { "VERSION":                      "1.2.4",
         "STANDALONE_MODE":              False,
 
         # working dir
-        "LM_WORKING_DIR_VOLUME":        "/tmp/lm/", #"C://TMP/store/", # "/tmp/lm/", #
+        "LM_WORKING_DIR_VOLUME":        "/tmp/mf2c/lm/", #"C://TMP/store/", # "/tmp/lm/", #
 
         # DOCKER / SWARM / K8s:
         "DOCKER_SOCKET":                "unix://var/run/docker.sock",
@@ -43,7 +43,7 @@ dic = { "VERSION":                      "1.2.4",
 
         # docker:
         # working dir for docker compose applications / services
-        "WORKING_DIR_VOLUME":           "/home/atos/mF2C/compose_examples",
+        "WORKING_DIR_VOLUME":           "/tmp/mf2c/compose_files",
         # docker compose image: needed to deploy docker compose based services
         "DOCKER_COMPOSE_IMAGE":         "docker/compose:1.23.1", #1.21.0",
         "DOCKER_COMPOSE_IMAGE_TAG":     "1.23.1", #"1.21.0",
@@ -64,7 +64,7 @@ dic = { "VERSION":                      "1.2.4",
         # NETWORK_COMPSs
         "NETWORK_COMPSs":               "not-defined",
         # COMPSs - dataclay
-        "DATACLAY_EP":                  ":1034", #"dataclay", # TODO --env DATACLAY_EP=${lm_ip_address}:1034 \
+        "DATACLAY_EP":                  ":1034", # --env DATACLAY_EP=${lm_ip_address}:1034
         # URL_PM_RECOM_LANDSCAPER:
         "URL_PM_RECOM_LANDSCAPER":      "http://analytics_engine:46020/mf2c",
 
