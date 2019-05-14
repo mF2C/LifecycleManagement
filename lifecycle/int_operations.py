@@ -19,9 +19,9 @@ from lifecycle.logs import LOG
 # Deploy service in an agent
 # IN: - Service
 #    - Agent
-def deploy(service, agent):
-    LOG.debug("[lifecycle.int_operations] [deploy] " + str(service) + ", agent: " + str(agent))
-    return apps_adapter.deploy_service_agent(service, agent)
+def deploy(service, service_instance, agent):
+    LOG.debug("[lifecycle.int_operations] [deploy] " + str(service) + ", service_instance: " + str(service_instance) + ", agent: " + str(agent))
+    return apps_adapter.deploy_service_agent(service, service_instance, agent)
 
 
 # Service Operation: start

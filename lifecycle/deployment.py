@@ -93,11 +93,11 @@ def check_service_content(service):
 
 
 # thr_submit_local: deploy locally
-def thr_submit_local(service, agent):
+def thr_submit_local(service, service_instance, agent):
     try:
         LOG.debug("[lifecycle.deployment] [thr_submit_local] allocate service locally")
 
-        resp_deploy = apps_adapter.deploy_service_agent(service, agent)
+        resp_deploy = apps_adapter.deploy_service_agent(service, service_instance, agent)
         LOG.debug("[lifecycle.deployment] [thr_submit_local] allocate service locally: "
                   "[resp_deploy=" + str(resp_deploy) + "]")
         if agent['status'] == "waiting":
@@ -113,10 +113,10 @@ def thr_submit_local(service, agent):
 
 
 # thr_submit_remote: deploy in a remote agent
-def thr_submit_remote(service, agent):
+def thr_submit_remote(service, service_instance, agent):
     try:
         LOG.debug("[lifecycle.deployment] [thr_submit_remote] allocate service in remote agent [" + agent['url'] + "]")
-        resp_deploy = connector.lifecycle_deploy(service, agent)
+        resp_deploy = connector.lifecycle_deploy(service, service_instance, agent)
         if resp_deploy is not None:
             agent['status'] = resp_deploy['status']
             agent['container_id'] = resp_deploy['container_id']
@@ -148,10 +148,10 @@ def thr_submit_service_in_agents(service, service_instance, sla_template_id, use
             LOG.debug("[lifecycle.deployment] [thr_submit_service_in_agents] >>> AGENT >>> " + agent['url'] + " <<<")
             # LOCAL
             if agent['url'] == data_adapter.get_my_ip(): #common.get_local_ip():
-                thrs.append(threading.Thread(target=thr_submit_local, args=(service, agent,)))
+                thrs.append(threading.Thread(target=thr_submit_local, args=(service, service_instance, agent,)))
             # 'REMOTE' AGENT: calls to lifecycle from remote agent
             elif common.check_ip(agent['url']):
-                thrs.append(threading.Thread(target=thr_submit_remote, args=(service, agent,)))
+                thrs.append(threading.Thread(target=thr_submit_remote, args=(service, service_instance, agent,)))
             # NOT FOUND / NOT CONNECTED
             else:
                 agent['status'] = "error"

@@ -65,8 +65,8 @@ class Mf2cConnector:
 
 
     # lifecycle_deploy: call to lifceycle from other agent in order to deploy a service
-    def lifecycle_deploy(self, service, agent):
-        return lifecycle.deploy(service, agent)
+    def lifecycle_deploy(self, service, service_instance, agent):
+        return lifecycle.deploy(service, service_instance, agent)
 
 
     # lifecycle_operation: call to lifceycle from other agent in order to start/stop... a service

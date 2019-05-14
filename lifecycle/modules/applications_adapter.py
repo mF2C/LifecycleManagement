@@ -21,13 +21,13 @@ from lifecycle.common import SERVICE_KUBERNETES, SERVICE_DOCKER_SWARM, STATUS_ER
 
 # Deploy / allocate service
 # TODO k8s, swarm
-def deploy_service_agent(service, agent):
+def deploy_service_agent(service, service_instance, agent):
     if service['exec_type'] == SERVICE_KUBERNETES:
         return k8s_adpt.deploy_service(service, agent)
     elif service['exec_type'] == SERVICE_DOCKER_SWARM:
         return swarm_adpt.deploy_service_agent(service, agent)
     else: # SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS
-        return docker_adpt.deploy_service_agent(service, agent)
+        return docker_adpt.deploy_service_agent(service, service_instance, agent)
 
 
 # Stop service in agent

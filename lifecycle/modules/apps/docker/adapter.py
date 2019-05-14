@@ -88,7 +88,7 @@ def deploy_docker_image(service, agent):
 
 
 # deploy_docker_compss:
-def deploy_docker_compss(service, agent):
+def deploy_docker_compss(service, service_instance, agent):
     LOG.debug("[lifecycle.modules.apps.docker.adapter] [deploy_docker_compss] " + str(service) + ", " + str(agent))
     try:
         # service image / location. Examples: "mf2c/compss-agent:latest", "mf2c/compss-mf2c:1.0"
@@ -97,15 +97,10 @@ def deploy_docker_compss(service, agent):
         ports = agent['ports']
         # ip
         ip = agent['url']
-        # TODO master / agent
-        master = None
-        try:
-            if agent['master_compss']:
-                master = True
-        except:
-            LOG.error("[lifecycle.modules.apps.docker.adapter] [deploy_docker_compss] field 'master_compss' not found in agent")
+        # ip_leader
+        ip_leader = service_instance['device_ip'] # TODO create a 'exec_device_ip'
 
-        container1 = docker_client.create_docker_compss_container(service_image, ip, ports, master)
+        container1 = docker_client.create_docker_compss_container(service_image, ip, ports, ip_leader)
         if container1 is not None:
             SERVICE_INSTANCES_LIST.append({
                 "type": SERVICE_COMPSS,
@@ -198,7 +193,7 @@ def deploy_docker_compose(service, agent):
 # deploy_service_agent: Deploy service in an agent
 # IN: service, agent
 # OUT: status value
-def deploy_service_agent(service, agent):
+def deploy_service_agent(service, service_instance, agent):
     LOG.debug("[lifecycle.modules.apps.docker.adapter] [deploy_service_agent] " + str(service) + ", " + str(agent))
     try:
         # docker-compose
@@ -209,7 +204,7 @@ def deploy_service_agent(service, agent):
             return deploy_docker_image(service, agent)
         # compss (docker)
         elif service['exec_type'] == SERVICE_COMPSS:
-            return deploy_docker_compss(service, agent)
+            return deploy_docker_compss(service, service_instance, agent)
         # not defined
         else:
             LOG.warning("[lifecycle.modules.apps.docker.adapter] [deploy_service_agent] [" + service['exec_type'] + "] not defined")

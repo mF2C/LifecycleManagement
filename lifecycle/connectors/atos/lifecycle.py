@@ -43,12 +43,13 @@ def parent_deploy(leader_ip, service_id, user_id, sla_template_id, service_insta
 
 # DEPLOY A SERVICE
 # deploy: call to lifceycle from other agent in order to deploy a service
-def deploy(service, agent):
-    LOG.debug("[lifecycle.connectors.atos.lifecycle] [deploy] deploy service in agent: " + str(service) + ", " + str(agent))
+def deploy(service, service_instance, agent):
+    LOG.debug("[lifecycle.connectors.atos.lifecycle] [deploy] deploy service in agent: " + str(service) + ", " + str(service_instance) + ", " + str(agent))
     try:
         LOG.info("[lifecycle.connectors.atos.lifecycle] [deploy] HTTP POST: http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/service-instance-int")
         r = requests.post("http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/service-instance-int",
                           json={"service": service,
+                                "service_instance": service_instance,
                                 "agent": agent},
                           verify=config.dic['VERIFY_SSL'])
         LOG.debug("[lifecycle.connectors.atos.lifecycle] [deploy] response: " + str(r) + ", " + str(r.json()))

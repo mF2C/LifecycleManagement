@@ -97,9 +97,9 @@ def create_docker_container(service_image, service_name, service_command, prts):
 
 
 # create_docker_compss_container
-def create_docker_compss_container(service_image, ip, prts, master=None):
+def create_docker_compss_container(service_image, ip, prts, ip_leader):
     LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] Creating COMPSs container [service_image=" +
-              service_image + "], [ports=" + str(prts) + "], [ip=" + ip + "], [master=" + str(master) + "] ...")
+              service_image + "], [ports=" + str(prts) + "], [ip=" + ip + "] [ip_leader=" + ip_leader + "] ...")
     # connect to docker api
     lclient = get_client_agent_docker()
     try:
@@ -124,7 +124,7 @@ def create_docker_compss_container(service_image, ip, prts, master=None):
 
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] AGENT_HOST: " + config.dic['HOST_IP'])
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] AGENT_PORT: " + str(data_adapter.db_get_compss_port(prts)))
-            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] DATACLAY_EP: " + config.dic['DATACLAY_EP'])
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] DATACLAY_EP: " + ip_leader + config.dic['DATACLAY_EP'])
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] REPORT_ADDRESS: " + config.dic['CIMI_URL'])
 
             # "docker run --rm -it --env MF2C_HOST=172.17.0.3 -p46100:46100 --env DEBUG=debug --name compss3123 mf2c/compss-test:latest"
@@ -134,7 +134,7 @@ def create_docker_compss_container(service_image, ip, prts, master=None):
                                                               "DEBUG": "debug",
                                                               "AGENT_HOST": config.dic['HOST_IP'],
                                                               "AGENT_PORT": data_adapter.db_get_compss_port(prts),
-                                                              "DATACLAY_EP": config.dic['DATACLAY_EP'],
+                                                              "DATACLAY_EP": ip_leader + config.dic['DATACLAY_EP'],
                                                               "REPORT_ADDRESS": config.dic['CIMI_URL']},
                                                  tty=True,
                                                  ports=prts_list,

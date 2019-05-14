@@ -77,8 +77,8 @@ def lifecycle_parent_deploy(leader_ip, service_id, user_id, sla_template_id, ser
 
 
 # lifecycle_deploy: call to lifceycle from other agent in order to deploy a service
-def lifecycle_deploy(service, agent):
-    return conn.lifecycle_deploy(service, agent)
+def lifecycle_deploy(service, service_instance, agent):
+    return conn.lifecycle_deploy(service, service_instance, agent)
 
 
 # lifecycle_operation: call to lifceycle from other agent in order to start/stop... a service

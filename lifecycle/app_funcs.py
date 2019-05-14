@@ -313,13 +313,13 @@ def postService(request):
 def postServiceInt(request):
     data = request.get_json()
     # check input parameters
-    if 'service' not in data or 'agent' not in data:
-        LOG.error('[lifecycle.app_funcs] [postServiceInt] Exception - parameter not found: service / agent')
-        return Response(json.dumps({'error': True, 'message': 'parameter not found: service /  agent'}),
+    if 'service' not in data or 'service_instance' not in data or 'agent' not in data:
+        LOG.error('[lifecycle.app_funcs] [postServiceInt] Exception - parameter not found: service / service_instance / agent')
+        return Response(json.dumps({'error': True, 'message': 'parameter not found: service / service_instance / agent'}),
                         status=406,
                         content_type='application/json')
     # deploy operation (for internal calls - between LMs -)
-    return operations.deploy(data['service'], data['agent'])
+    return operations.deploy(data['service'], data['service_instance'], data['agent'])
 
 
 # putServiceInt
