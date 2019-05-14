@@ -201,6 +201,12 @@ def get_agent_info():
 
         LOG.warning("[lifecycle.data.mf2c.cimi] [get_agent_info] 'agent' not found; Returning -1 ...")
         return -1
+    except ConnectionRefusedError:
+        LOG.error("[lifecycle.data.mf2c.cimi] [get_agent_info] Connection Refused Error. Returning None ...")
+        return None
+    except ConnectionError:
+        LOG.error("[lifecycle.data.mf2c.cimi] [get_agent_info] Connection Error. Returning None ...")
+        return None
     except:
         LOG.exception("[lifecycle.data.mf2c.cimi] [get_agent_info] Exception; Returning None ...")
         return None

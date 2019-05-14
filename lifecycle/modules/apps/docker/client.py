@@ -125,7 +125,7 @@ def create_docker_compss_container(service_image, ip, prts, ip_leader):
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] AGENT_HOST: " + data_adapter.get_host_ip())
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] AGENT_PORT: " + str(data_adapter.db_get_compss_port(prts)))
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] DATACLAY_EP: " + ip_leader + config.dic['DATACLAY_EP'])
-            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] REPORT_ADDRESS: " + "http://" +  data_adapter.get_host_ip() + "/api") #config.dic['CIMI_URL'])
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] REPORT_ADDRESS: " + config.dic['CIMI_URL']) #"http://" +  data_adapter.get_host_ip() + "/api") #config.dic['CIMI_URL'])
 
             # "docker run --rm -it --env MF2C_HOST=172.17.0.3 -p46100:46100 --env DEBUG=debug --name compss3123 mf2c/compss-test:latest"
             container = lclient.create_container(service_image,
@@ -135,11 +135,23 @@ def create_docker_compss_container(service_image, ip, prts, ip_leader):
                                                               "AGENT_HOST": data_adapter.get_host_ip(),
                                                               "AGENT_PORT": data_adapter.db_get_compss_port(prts),
                                                               "DATACLAY_EP": ip_leader + config.dic['DATACLAY_EP'],
-                                                              "REPORT_ADDRESS": "http://" +  data_adapter.get_host_ip() + "/api"}, #config.dic['CIMI_URL']},
+                                                              "REPORT_ADDRESS": config.dic['CIMI_URL']}, #"http://" +  data_adapter.get_host_ip() + "/api"}, #config.dic['CIMI_URL']},
                                                  tty=True,
                                                  ports=prts_list,
+                                                 networking_config=None,
                                                  host_config=lclient.create_host_config(port_bindings=ports_dict,
                                                                                         auto_remove=False))
+
+            networks = lclient.networks(names=["mf2c_default"])
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] networks: " + str(networks))
+            if not networks is None and len(networks) > 0:
+                LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] networks[0]=" + str(networks[0]))
+                id_network = networks[0]['id']
+                LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] Connecting to network ...")
+                lclient.connect_container_to_network(container['Id'], id_network)
+
+            else:
+                LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] networks is empty / None")
 
             return container
         else:
