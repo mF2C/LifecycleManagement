@@ -15,6 +15,7 @@ import requests
 import datetime
 import config
 from lifecycle.logs import LOG
+from urllib3.exceptions import NewConnectionError
 
 
 '''
@@ -203,13 +204,13 @@ def get_agent_info():
         return -1
     except ConnectionRefusedError:
         LOG.error("[lifecycle.data.mf2c.cimi] [get_agent_info] Connection Refused Error. Returning None ...")
-        return None
     except ConnectionError:
         LOG.error("[lifecycle.data.mf2c.cimi] [get_agent_info] Connection Error. Returning None ...")
-        return None
+    except NewConnectionError:
+        LOG.error("[lifecycle.data.mf2c.cimi] [get_agent_info] New Connection Error. Returning None ...")
     except:
         LOG.exception("[lifecycle.data.mf2c.cimi] [get_agent_info] Exception; Returning None ...")
-        return None
+    return None
 
 
 # FUNCTION: get_id_from_device: get 'id' from device by 'deviceID'
