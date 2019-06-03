@@ -209,7 +209,7 @@ def get_agent_info():
     except NewConnectionError:
         LOG.error("[lifecycle.data.mf2c.cimi] [get_agent_info] New Connection Error. Returning None ...")
     except:
-        LOG.exception("[lifecycle.data.mf2c.cimi] [get_agent_info] Exception; Returning None ...")
+        LOG.error("[lifecycle.data.mf2c.cimi] [get_agent_info] Exception; Returning None ...")
     return None
 
 

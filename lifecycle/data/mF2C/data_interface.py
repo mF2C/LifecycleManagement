@@ -60,7 +60,7 @@ def get_my_ip():
     if agent is not None and agent['device_ip'] is not None and agent['device_ip'] != "":
         LOG.info("[lifecycle.data.mf2c.data_interface] [get_my_ip] IP from current agent = " + agent['device_ip'])
         return agent['device_ip']
-    if config.dic['HOST_IP'] is not None and config.dic['HOST_IP'] != "":
+    elif config.dic['HOST_IP'] is not None and config.dic['HOST_IP'] != "":
         return config.dic['HOST_IP']
     else:
         LOG.error("[lifecycle.data.mf2c.data_interface] [get_my_ip] Error retrieving IP from agent. Returning None ...")

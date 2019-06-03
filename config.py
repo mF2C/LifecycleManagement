@@ -69,7 +69,7 @@ dic = { "VERSION":                      "1.2.5",
         # COMPSs - dataclay
         "DATACLAY_EP":                  ":1034", # --env DATACLAY_EP=${lm_ip_address}:1034
         # URL_PM_RECOM_LANDSCAPER:
-        "URL_PM_RECOM_LANDSCAPER":      "http://analytics_engine:46020/mf2c",
+        "URL_PM_RECOM_LANDSCAPER":      "http://analytics-engine:46020/mf2c",
 
         # TODO fix/remove dependencies
         # PM-Lifecycle: /api/v1/lifecycle/<string:service_id>

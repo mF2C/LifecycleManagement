@@ -44,12 +44,12 @@ def new_service_instance(service, agents_list, user_id, agreement_id):
         else:
             master_compss = False
         # Add new AGENT to list
-        list_of_agents.append({"agent":         {"href": "agent/default-value"},
+        list_of_agents.append({"device_id":     "-",
                                "app_type":      service['exec_type'],
                                "ports":         ports_l,
                                "url":           agent['agent_ip'],
                                "status":        STATUS_CREATED_NOT_INITIALIZED,
-                               "num_cpus":      1,
+                               "compss_app_id": "-",
                                "allow":         True,
                                "container_id":  "-",
                                "master_compss": master_compss,  # TODO master_compss... selected / final master
