@@ -14,6 +14,7 @@ Created on 09 may. 2019
 import requests, json
 import config
 from lifecycle.logs import LOG
+from urllib3.exceptions import NewConnectionError
 
 
 # CALL TO LANDSCAPER & RECOMMENDER: get service's recipe / get available resources for a recipe
@@ -54,6 +55,8 @@ def get_optimal_resources():
             return list_of_agents
 
         LOG.error("[lifecycle.connectors.mf2c.analytics_engine] [get_optimal_resources] Error: status_code=" +  str(r.status_code) + "; Returning None ...")
+    except NewConnectionError:
+        LOG.error("[lifecycle.connectors.mf2c.analytics_engine] [get_optimal_resources] New Connection Error. Returning None ...")
     except:
         LOG.exception("[lifecycle.connectors.mf2c.analytics_engine] [get_optimal_resources] Exception; Returning None ...")
     return None

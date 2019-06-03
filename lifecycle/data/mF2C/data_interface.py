@@ -57,7 +57,7 @@ def __get_agent():
 # FUNCTION: get_my_ip: Get 'my' ip address
 def get_my_ip():
     agent = __get_agent()
-    if agent is not None:
+    if agent is not None and agent['device_ip'] is not None and agent['device_ip'] != "":
         LOG.info("[lifecycle.data.mf2c.data_interface] [get_my_ip] IP from current agent = " + agent['device_ip'])
         return agent['device_ip']
     if config.dic['HOST_IP'] is not None and config.dic['HOST_IP'] != "":
