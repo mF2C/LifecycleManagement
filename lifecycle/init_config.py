@@ -54,6 +54,7 @@ def init():
         common.set_value_env('LM_MODE')
         # STANDALONE_MODE
         common.set_value_env('STANDALONE_MODE')
+        common.set_value_env('DB_STANDALONE_MODE')
         # docker
         common.set_value_env('WORKING_DIR_VOLUME')
         common.set_value_env('DOCKER_COMPOSE_IMAGE')
@@ -94,8 +95,9 @@ def init():
             LOG.debug("[lifecycle.init_config] [init] CIMI_URL ... " + config.dic['CIMI_URL'])
 
         LOG.info('[lifecycle.init_config] [init] [LM_MODE=' + config.dic['LM_MODE'] + ']')
+        LOG.info('[lifecycle.init_config] [init] [DB_STANDALONE_MODE=' + config.dic['DB_STANDALONE_MODE'] + ']')
         LOG.info('[lifecycle.init_config] [init] [HOST_IP=' + config.dic['HOST_IP'] + ']')
-        LOG.info('[lifecycle.init_config] [init] SERVER_PORT=' + str(config.dic['SERVER_PORT']) + ']')
+        LOG.info('[lifecycle.init_config] [init] [SERVER_PORT=' + str(config.dic['SERVER_PORT']) + ']')
         LOG.info('[lifecycle.init_config] [init] [DOCKER_SOCKET=' + config.dic['DOCKER_SOCKET'] + ']')
         LOG.info('[lifecycle.init_config] [init] [DOCKER_SWARM_=' + str(config.dic['DOCKER_SWARM']) + ']')
         LOG.info('[lifecycle.init_config] [init] [K8S_MASTER=' + str(config.dic['K8S_MASTER']) + ']')
