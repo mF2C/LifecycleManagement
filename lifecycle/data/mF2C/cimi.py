@@ -289,7 +289,7 @@ def get_service_by_id(id):
 
         LOG.warning("[lifecycle.data.mf2c.cimi] [get_service_by_id] No service retrieved. Id=" + id + "; Returning None ...")
     except:
-        LOG.exception("[lifecycle.data.mf2c.cimi] [get_service_by_id] Exception (parameters: id=" + id + "); Returning None ...")
+        LOG.exception("[lifecycle.data.mf2c.cimi] [get_service_by_id] Exception; Returning None ...")
     return None
 
 
@@ -301,7 +301,7 @@ def get_service_instance_by_id(id):
                            verify=False)
         LOG.debug("[lifecycle.data.mf2c.cimi] [get_service_instance_by_id] [" + id + "] response: " + str(res) + ", " + str(res.json()))
 
-        if res.status_code == 200:
+        if res.status_code == 200 and res.json()['status'] > 200 and res.json()['status'] < 204:
             return res.json()
 
         LOG.warning("[lifecycle.data.mf2c.cimi] [get_service_instance_by_id] No service instance retrieved. Id=" + id + "; Returning None ...")
