@@ -212,6 +212,24 @@ def get_agent_info():
         return None
 
 
+# FUNCTION: get_id_from_device: get 'id' from device by 'deviceID'
+def get_id_from_device(deviceID):
+    try:
+        res = requests.get(config.dic['CIMI_URL'] + "/device?$filter=deviceID=\"" + deviceID + "\"",
+                           headers=CIMI_HEADER,
+                           verify=False)
+        LOG.debug("[lifecycle.data.mf2c.cimi] [get_id_from_device] response: " + str(res) + ", " + str(res.json()))
+
+        if res.status_code == 200 and len(res.json()['devices']) > 0:
+            return res.json()['devices'][0]['id']
+        else:
+            LOG.warning("[lifecycle.data.mf2c.cimi] [get_id_from_device] No device found; Returning -1 ...")
+            return -1
+    except:
+        LOG.exception("[lifecycle.data.mf2c.cimi] [get_id_from_device] Exception; Returning None ...")
+        return None
+
+
 ###############################################################################
 # UM
 

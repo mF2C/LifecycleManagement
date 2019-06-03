@@ -28,9 +28,16 @@ def __get_current_device_id():
     LOG.debug("[lifecycle.data.mf2c.data_interface] [__get_current_device_id] agent=" + str(agent))
 
     if not agent is None and agent != -1:
-        LOG.info("[lifecycle.data.mf2c.data_interface] [__get_current_device_id] Returning 'my' device ID = " + agent['device_id'] + " ...")
-        return agent['device_id']
+        LOG.info("[lifecycle.data.mf2c.data_interface] [__get_current_device_id] Getting device 'id' by 'deviceID'=" + agent['device_id'])
+        id = cimi.get_id_from_device(agent['device_id'])
+        if not id is None and id != -1:
+            LOG.info("[lifecycle.data.mf2c.data_interface] [__get_current_device_id] Returning 'my' device ID = " + id)
+            return id
+        else:
+            LOG.warning("[lifecycle.data.mf2c.data_interface] [__get_current_device_id] Device information not found. Returning -1 ...")
+            return -1
     else:
+        LOG.warning("[lifecycle.data.mf2c.data_interface] [__get_current_device_id] Agent information not found. Returning -1 ...")
         return -1
 
 
