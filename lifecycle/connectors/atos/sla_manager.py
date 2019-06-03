@@ -70,7 +70,7 @@ def stop_agreement(agreement_id):
         LOG.info("[lifecycle.connectors.atos.sla_manager] [stop_agreement] HTTP PUT: " + str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/stop")
         r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/stop",
                          verify=config.dic['VERIFY_SSL'])
-        LOG.debug("[lifecycle.connectors.atos.sla_manager] [stop_agreement] response: " + str(r) + ", " + str(r.json()))
+        LOG.debug("[lifecycle.connectors.atos.sla_manager] [stop_agreement] response: " + str(r)) # + ", " + str(r.json()))
 
         if r.status_code >= 200 and r.status_code <= 204:
             return True
@@ -90,7 +90,7 @@ def terminate_agreement(agreement_id):
         LOG.info("[lifecycle.connectors.atos.sla_manager] [terminate_agreement] HTTP PUT: " + str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/stop")
         r = requests.put(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements/" + agreement_id + "/terminate",
                          verify=config.dic['VERIFY_SSL'])
-        LOG.debug("[lifecycle.connectors.atos.sla_manager] [terminate_agreement] response: " + str(r) + ", " + str(r.json()))
+        LOG.debug("[lifecycle.connectors.atos.sla_manager] [terminate_agreement] response: " + str(r)) # + ", " + str(r.json()))
 
         if r.status_code >= 200 and r.status_code <= 204:
             return True
