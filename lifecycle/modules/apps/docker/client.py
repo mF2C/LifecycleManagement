@@ -146,7 +146,7 @@ def create_docker_compss_container(service_image, ip, prts, ip_leader):
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] networks: " + str(networks))
             if not networks is None and len(networks) > 0:
                 LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] networks[0]=" + str(networks[0]))
-                id_network = networks[0]['id']
+                id_network = networks[0]['Id']
                 LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] Connecting to network ...")
                 lclient.connect_container_to_network(container['Id'], id_network)
 

@@ -69,15 +69,20 @@ def new_service_instance(service, agents_list, user_id, agreement_id):
         else:
             parent_device_ip = cimi_agent['parent_device_ip']
 
+        if 'device_ip' not in cimi_agent or cimi_agent['device_ip'] == "":
+            device_ip = "not-defined"
+        else:
+            device_ip = cimi_agent['device_ip']
+
         # SERVICE_INSTANCE:
         new_service_instance = {
             "service": service['id'],
             "agreement": agreement_id,
             "user": user_id,
             "device_id": cimi_agent['device_id'],
-            "device_ip": cimi_agent['device_ip'],
-            "parent_device_id": parent_device_ip,
-            "parent_device_ip": parent_device_id,
+            "device_ip": device_ip,
+            "parent_device_id": parent_device_id,
+            "parent_device_ip": parent_device_ip,
             "agents": list_of_agents,
             "service_type": service['exec_type'],
             "status": STATUS_CREATED_NOT_INITIALIZED
