@@ -13,7 +13,7 @@ Created on 18 oct. 2018
 
 #!/usr/bin/python
 
-dic = { "VERSION":                      "1.2.4",
+dic = { "VERSION":                      "1.2.5",
 
         # LIFECYCLE MANAGER MODE: "DEFAULT", "MF2C" , "STANDALONE"
         "LM_MODE":                      "MF2C",
@@ -23,6 +23,9 @@ dic = { "VERSION":                      "1.2.4",
         "HOST_IP":                      "localhost",
         "API_DOC_URL":                  "/api/v2/lm",
         "STANDALONE_MODE":              False,
+
+        # STANDALONE_MODE db
+        "DB_STANDALONE_MODE":           "lm_db",
 
         # working dir
         "LM_WORKING_DIR_VOLUME":        "/tmp/mf2c/lm/", #"C://TMP/store/", # "/tmp/lm/", #
@@ -56,9 +59,9 @@ dic = { "VERSION":                      "1.2.4",
         # PM-SLA MANAGER
         "URL_PM_SLA_MANAGER":           "http://slalite:46030",
         # AC-QoS PROVIDING
-        "URL_AC_SERVICE_MNGMT":         "http://service-manager:46200/api/service-management",
+        "URL_AC_SERVICE_MNGMT":         "http://service-manager:46200/api",
         # TIMEOUT ANALYTICS ENGINE
-        "TIMEOUT_ANALYTICSENGINE":      25,
+        "TIMEOUT_ANALYTICSENGINE":      60,
         # PORT_COMPSs
         "PORT_COMPSs":                  46100,
         # NETWORK_COMPSs

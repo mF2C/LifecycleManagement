@@ -146,7 +146,7 @@ class Mf2cDataAdapter:
 
     # db_init: initialize elements
     def db_init(self):
-        return db.init()
+        db.init()
 
 
     # db_get_elem_from_list:

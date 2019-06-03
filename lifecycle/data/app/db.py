@@ -29,22 +29,18 @@ SERVICE_INSTANCES_LIST = {
 
 DB_DOCKER_PORTS = None
 SERVICE_INSTANCES_LIST = []
-#records = []
 
 
 # init: initialize elements
 def init():
     global DB_DOCKER_PORTS
     global SERVICE_INSTANCES_LIST
-    #global records
     try:
-        # SERVICE_INSTANCES_LIST
-        # "MEMORY DB"
+        # SERVICE_INSTANCES_LIST => "MEMORY DB"
         LOG.info('[lifecycle.data.app.db] [init] Initializing SERVICE_INSTANCES_LIST ...')
         SERVICE_INSTANCES_LIST = []
 
-        # DB_DOCKER_PORTS: PORTS DATABASE for each of the Lifecycles / agents
-        # "PHYSICAL DB"
+        # DB_DOCKER_PORTS: PORTS DATABASE for each of the Lifecycles / agents => "PHYSICAL DB"
         LOG.info('[lifecycle.data.app.db] [init] Initializing DB_DOCKER_PORTS ...')
         DB_DOCKER_PORTS = Base(config.dic['LM_WORKING_DIR_VOLUME'] + config.dic['DB_DOCKER_PORTS']) #Base(config.dic['DB_DOCKER_PORTS'])
         # create new base with field names
@@ -70,7 +66,7 @@ def __print_records(db):
     LOG.debug('[lifecycle.data.app.db] [__print_records] Retrieving records from db...')
     records = db()
     for r in records:
-        LOG.debug("> " + str(r))
+        LOG.debug("db> " + str(r))
 
 
 # save_to_DB_DOCKER_PORTS

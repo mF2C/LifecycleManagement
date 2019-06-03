@@ -14,6 +14,7 @@ Created on 10 mayo 2019
 import config
 from lifecycle.logs import LOG
 from lifecycle.data.app import db as db
+from lifecycle.data.standalone import data_interface as data_standalone
 
 
 # Data adapter class
@@ -80,8 +81,7 @@ class StandaloneDataAdapter:
 
     # get_service_instance: Gets the service instance
     def get_service_instance(self, service_instance_id, obj_response_cimi=None):
-        LOG.warning("[lifecycle.data.standalone_data_adapter] [get_service_instance] not implemented")
-        return None
+        return data_standalone.get_service_instance(service_instance_id)
 
 
     # get_service_instance_report: Gets the service instance report
@@ -92,14 +92,12 @@ class StandaloneDataAdapter:
 
     # get_all_service_instances: Gets all service instances
     def get_all_service_instances(self, obj_response_cimi=None):
-        LOG.warning("[lifecycle.data.standalone_data_adapter] [get_all_service_instances] not implemented")
-        return None
+        return data_standalone.get_all_service_instances()
 
 
     # del_service_instance: Deletes service instance
     def del_service_instance(self, service_instance_id, obj_response_cimi=None):
-        LOG.warning("[lifecycle.data.standalone_data_adapter] [del_service_instance] not implemented")
-        return None
+        return data_standalone.del_service_instance(service_instance_id)
 
 
     # del_all_service_instances: Deletes all service instances
@@ -110,8 +108,7 @@ class StandaloneDataAdapter:
 
     # create_service_instance: Creates a new service instance
     def create_service_instance(self, service, agents_list, user_id, agreement_id):
-        LOG.warning("[lifecycle.data.standalone_data_adapter] [create_service_instance] not implemented")
-        return None
+        return data_standalone.create_service_instance(service, agents_list, user_id, agreement_id)
 
 
     # update_service_instance: Updates a service instance
@@ -166,7 +163,8 @@ class StandaloneDataAdapter:
 
     # db_init: initialize elements
     def db_init(self):
-        return db.init()
+        lm_db.init()
+        db.init()
 
 
     # db_get_elem_from_list:
