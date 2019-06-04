@@ -2,7 +2,7 @@
 Platform Controller - Lifecycle Management module
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![version](https://img.shields.io/badge/version-1.2.5-blue.svg)]()
+[![version](https://img.shields.io/badge/version-1.2.6-blue.svg)]()
 
 &copy; Atos Spain S.A. 2017
 
