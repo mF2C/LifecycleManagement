@@ -136,6 +136,8 @@ def getServiceInstance(service_instance_id):
 
             if not service_instance is None and service_instance != -1:
                 return common.gen_response_ok('Service instance content', 'service_instance_id', service_instance_id, 'service_instance', service_instance)
+            elif service_instance == -1:
+                return common.gen_response_ok('Service instance not found', 'service_instance_id', service_instance_id, 'service_instance', {})
             else:
                 return common.gen_response(500, "Error in 'get' function", "service_instance_id", service_instance_id, "Error_Msg", obj_response_cimi.msj)
         except:
