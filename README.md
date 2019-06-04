@@ -83,13 +83,13 @@ Finally, to run the component without Docker, you will need **Python 3.4**.
 Run application and expose port `46000`:
 
 ```bash
-sudo docker run -p 46000:46000 mf2c/lifecycle
+sudo docker run -p 46000:46000 lifecycle
 ```
 
 To start the Lifecycle Management module with access to the docker socket ('-v /var/run/docker.sock:/var/run/docker.sock') run the following:
 
 ```bash
-sudo docker run -v /var/run/docker.sock:/var/run/docker.sock -p 46000:46000 mf2c/lifecycle
+sudo docker run -v /var/run/docker.sock:/var/run/docker.sock -p 46000:46000 lifecycle
 ```
 
 Available environment variables:
