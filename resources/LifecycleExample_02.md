@@ -1,4 +1,5 @@
 # LifecycleManagement - GitLab application
+[![version](https://img.shields.io/badge/status-deprecated-red.svg)]()
 
 Deployment of a [GitLab](https://github.com/sameersbn/docker-gitlab) application (docker compose) in a mF2C Agent. This is a service based on a **docker compose** file.
 
