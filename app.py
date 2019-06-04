@@ -40,7 +40,7 @@ REST API
                         
                 /lm/check-agent-um
                    (*)  GET:    checks if device can run more apps - UP & SM policies (from 'local' User Management module)      
-                /api/v2/lm/check-agent-swarm
+                /lm/check-agent-swarm
                    (*)  GET:    checks if device can run warm apps (from 'local' User Management module)      
                          
                 /lm/agent-um
