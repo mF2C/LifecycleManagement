@@ -6,7 +6,7 @@ Platform Controller - Lifecycle Management module
 
 &copy; Atos Spain S.A. 2017
 
-The Lifecycle Management module is a component of the European Project mF2C.
+The Lifecycle Management module is a component of the European Project [mF2C](https://www.mf2c-project.eu/).
 
 -----------------------
 
