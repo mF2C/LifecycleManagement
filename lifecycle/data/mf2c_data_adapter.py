@@ -79,7 +79,12 @@ class Mf2cDataAdapter:
 
     # get_service_instance_report: Gets the service instance report
     def get_service_instance_report(self, service_instance_id):
-        return data_mf2c.get_service_instance_report(service_instance_id)
+        service_instance = self.get_service_instance(service_instance_id)
+        if service_instance is not None:
+            appId = self.serv_instance_get_appid_from_master(service_instance)
+            if appId is not None:
+                return data_mf2c.get_service_instance_report(appId)
+        return None
 
 
     # get_all_service_instances: Gets all service instances

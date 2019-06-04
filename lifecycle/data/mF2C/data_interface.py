@@ -125,9 +125,9 @@ def get_service_instance(service_instance_id, obj_response_cimi=None):
 
 
 # get_service_instance: Get service instance
-def get_service_instance_report(service_instance_id):
-    LOG.debug("[lifecycle.data.mf2c.data_interface] [get_service_instance_report] " + service_instance_id)
-    return cimi.get_service_instance_report(service_instance_id)
+def get_service_instance_report(appId):
+    LOG.debug("[lifecycle.data.mf2c.data_interface] [get_service_instance_report] appId: " + appId)
+    return cimi.get_service_instance_report(appId)
 
 
 # get_all_service_instances: Get all service instances

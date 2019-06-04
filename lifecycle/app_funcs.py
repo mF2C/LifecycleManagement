@@ -152,6 +152,7 @@ def getServiceInstanceReport(service_instance_id):
         if not service_instance_report is None and service_instance_report != -1:
             return common.gen_response_ok('Service Operation Report content', 'service_instance_id', service_instance_id, 'report', service_instance_report)
         else:
+            LOG.warning("[lifecycle.app_funcs] [getServiceInstanceReport] service_instance_report is None")
             return common.gen_response(500, "Error in 'get' function", "service_instance_id", service_instance_id)
     except:
         LOG.exception('[lifecycle.app_funcs] [getServiceInstanceReport] Exception')

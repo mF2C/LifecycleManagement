@@ -211,7 +211,7 @@ def store_appid_in_master(service_instance, appId):
         for agent in service_instance['agents']:
             if agent['master_compss']:
                 LOG.debug("[lifecycle.data.app.service_instance] [store_appid_in_master] Agent is master: " + str(agent))
-                agent['agent_param'] = str(appId)
+                agent['compss_app_id'] = str(appId)
                 res = data_adapter.update_service_instance(service_instance['id'], service_instance)
                 LOG.debug("[lifecycle.data.app.service_instance] [store_appid_in_master] res=" + res + ", agent=" + str(agent))
                 return True
@@ -228,7 +228,7 @@ def get_appid_from_master(service_instance):
         for agent in service_instance['agents']:
             if agent['master_compss']:
                 LOG.debug("[lifecycle.data.app.service_instance] [get_appid_from_master] Agent is master: " + str(agent))
-                return agent['agent_param']
+                return agent['compss_app_id']
     except:
         LOG.exception("[lifecycle.data.app.service_instance] [get_appid_from_master] Exception. Returning None ...")
     return None
