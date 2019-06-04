@@ -314,7 +314,7 @@ def get_service_instance_by_id(id):
 # FUNCTION: get_service_instance_report: get service instance report
 def get_service_instance_report(id):
     try:
-        res = requests.get(config.dic['CIMI_URL'] + "/" + RSRC_SERVICE_INSTANCE_REPORT + "?$filter=requesting_application_id/href='service-instance/" + id + "'",
+        res = requests.get(config.dic['CIMI_URL'] + "/" + RSRC_SERVICE_INSTANCE_REPORT + "?$filter=operation_id='" + id + "'",
                            headers=CIMI_HEADER,
                            verify=False)
         LOG.debug("[lifecycle.data.mf2c.cimi] [get_service_instance_report] [" + id + "] response: " + str(res) + ", " + str(res.json()))

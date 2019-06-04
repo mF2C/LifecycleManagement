@@ -197,7 +197,7 @@ def operation_service(service_instance_id, operation):
     try:
         # 1. get service_instance object
         service_instance = data_adapter.get_service_instance(service_instance_id)
-        if not service_instance is None and service_instance != -1:
+        if service_instance is None or service_instance == -1:
             return common.gen_response(500, 'Error getting service instance object', 'service_instance_id', service_instance_id)
 
         # submit operation thread
@@ -234,7 +234,7 @@ def terminate(service_instance_id):
     try:
         # 1. get service_instance object
         service_instance = data_adapter.get_service_instance(service_instance_id)
-        if not service_instance is None and service_instance != -1:
+        if service_instance is None or service_instance == -1:
             return common.gen_response(500, 'Error getting service instance object', 'service_instance_id', service_instance_id)
 
         # 2. service instance status = Stopped
@@ -264,7 +264,7 @@ def start_job(body, service_instance_id):
     try:
         # service instance
         service_instance = data_adapter.get_service_instance(service_instance_id)
-        if not service_instance is None and service_instance != -1:
+        if service_instance is None or service_instance == -1:
             return common.gen_response(500, 'Error getting service instance object', 'service_instance_id', service_instance_id)
 
         LOG.debug("[lifecycle.operations] [start_job] service_instance=" + str(service_instance))
