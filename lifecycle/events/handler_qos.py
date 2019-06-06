@@ -46,7 +46,6 @@ def thr(notification):
             # get notification values
             service_instance_id = notification['service_instance_id']
             service_instance = data_adapter.get_service_instance(service_instance_id)
-            service = data_adapter.get_service(service_instance['id'])
             current_num_agents = len(service_instance['agents']) #service['num_agents']
             new_num_agents = notification['num_agents']
             appId = data_adapter.serv_instance_get_appid_from_master(service_instance)
@@ -59,7 +58,7 @@ def thr(notification):
                 if new_num_agents > current_num_agents:
                     LOG.debug("[lifecycle.events.handler_qos] [thr] Reconfiguring service instance: Adding more nodes to service instance (COMPSs) ...")
                     # Call to landscaper/recommender
-                    available_agents_list = agent_decision.get_available_agents_resources(service) # ==> [{"agent_ip": "192.168.252.41"}, ...]
+                    available_agents_list = agent_decision.get_available_agents_resources() # ==> [{"agent_ip": "192.168.252.41"}, ...]
                     if len(available_agents_list) > 0:
                         LOG.debug("[lifecycle.events.handler_qos] [thr] Reconfiguring service instance: Checking available resources ...")
                         for agent in available_agents_list:

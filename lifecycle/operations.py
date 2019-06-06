@@ -141,17 +141,17 @@ def thr_operation_service_remote(operation, service, agent):
 
 
 # thr_operation_service: start/stop/terminate service instance in agents
-def thr_operation_service(service_instance, operation):
-    LOG.debug("[lifecycle.operations] [thr_operation_service] operation=" + operation + ", service_instance_id=" + service_instance['id'])
+def __thr_operation_service(service_instance, operation):
+    LOG.debug("[lifecycle.operations] [__thr_operation_service] operation=" + operation + ", service_instance_id=" + service_instance['id'])
     try:
         # 1. get service
         service = data_adapter.get_service(service_instance['service'])
-        LOG.debug("[lifecycle.operations] [thr_operation_service] service: " + str(service))
+        LOG.debug("[lifecycle.operations] [__thr_operation_service] service: " + str(service))
 
         # 2. stop/start/terminate service in all agents
         thrs = []  # 1 thread per agent
         for agent in service_instance["agents"]:
-            LOG.info("[lifecycle.operations] [thr_operation_service] >>> AGENT >>> " + agent['url'] + " <<<")
+            LOG.info("[lifecycle.operations] [__thr_operation_service] >>> AGENT >>> " + agent['url'] + " <<<")
             # LOCAL
             if agent['url'] == data_adapter.get_my_ip(): #common.get_local_ip():
                 thrs.append(threading.Thread(target=thr_operation_service_local, args=(operation, service, agent,)))
@@ -161,7 +161,7 @@ def thr_operation_service(service_instance, operation):
             # NOT FOUND / NOT CONNECTED
             else:
                 agent['status'] = STATUS_ERROR
-                LOG.error("[lifecycle.operations] [thr_operation_service] agent [" + agent['url'] + "] cannot be reached")
+                LOG.error("[lifecycle.operations] [__thr_operation_service] agent [" + agent['url'] + "] cannot be reached")
 
         # start threads
         for x in thrs:
@@ -172,7 +172,7 @@ def thr_operation_service(service_instance, operation):
             x.join()
 
         # 3. save / update / terminate service_instance
-        LOG.debug("[lifecycle.operations] [thr_operation_service] Updating service_instance [" + operation + "]: " + str(service_instance))
+        LOG.debug("[lifecycle.operations] [__thr_operation_service] Updating service_instance [" + operation + "]: " + str(service_instance))
         if operation == OPERATION_START:
             service_instance['status'] = STATUS_STARTED
             data_adapter.update_service_instance(service_instance['id'], service_instance)          # cimi / db
@@ -188,7 +188,7 @@ def thr_operation_service(service_instance, operation):
             data_adapter.del_service_instance(service_instance['id'])                               # cimi / db
             connector.sla_terminate_agreement(service_instance['agreement'])                        # sla
     except:
-        LOG.exception('[lifecycle.operations] [thr_operation_service] Exception')
+        LOG.exception('[lifecycle.operations] [__thr_operation_service] Exception')
 
 
 # operation_service: start/stop/terminate service instance in agents
@@ -208,7 +208,7 @@ def operation_service(service_instance_id, operation):
         elif operation == OPERATION_TERMINATE:
             service_instance['status'] = STATUS_TERMINATING
 
-        t = threading.Thread(target=thr_operation_service, args=(service_instance, operation,))
+        t = threading.Thread(target=__thr_operation_service, args=(service_instance, operation,))
         t.start()
 
         # response

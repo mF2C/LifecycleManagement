@@ -248,7 +248,7 @@ def submit_service_in_agents(service, user_id, service_instance_id, sla_template
                 return common.gen_response(500, 'error creating service_instance', 'service', str(service))
 
         # 3. select from agents list
-        if 'num_agents' not in service:
+        if 'num_agents' not in service or service['num_agents'] == 0:
             num_agents = -1
         else:
             num_agents = service['num_agents']
@@ -292,7 +292,7 @@ def submit(service, user_id, service_instance_id, sla_template_id):
 
         # 2. get list of available agents / resources / VMs. Example: [{"agent_ip": "192.168.252.41"}, {...}]
         # Call to landscaper/recommender
-        available_agents_list = agent_decision.get_available_agents_resources(service)
+        available_agents_list = agent_decision.get_available_agents_resources()
         if not available_agents_list:
             # warning
             LOG.error("[lifecycle.deployment] [submit] available_agents_list is None. Forwarding to Leader...")

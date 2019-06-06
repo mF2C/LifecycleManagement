@@ -283,8 +283,8 @@ def postService(request):
     # OPTION: id service defined in the request
     else:
         service = data_adapter.get_service(data['service_id'])
-        if service is None:
-            LOG.error("[lifecycle.app_funcs] [postService] Exception - service not found!")
+        if service is None or service == -1:
+            LOG.error("[lifecycle.app_funcs] [postService] Service not found!")
             return Response(json.dumps({"error": True, "message": "service not found; [id=" + data['service_id'] + "]"}),
                             status=500,
                             content_type='application/json')

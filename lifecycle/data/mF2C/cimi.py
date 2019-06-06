@@ -284,10 +284,11 @@ def get_service_by_id(id):
                            verify=False)
         LOG.debug("[lifecycle.data.mf2c.cimi] [get_service_by_id] [" + resource_id + "] response: " + str(res) + ", " + str(res.json()))
 
-        if res.status_code == 200:
+        if res.status_code == 200 and 'id' in res.json():
             return res.json()
-
-        LOG.warning("[lifecycle.data.mf2c.cimi] [get_service_by_id] No service retrieved. Id=" + id + "; Returning None ...")
+        elif res.status_code == 200:
+            LOG.warning("[lifecycle.data.mf2c.cimi] [get_service_by_id] No service retrieved. Id=" + id + "; Returning -1 ...")
+            return -1
     except:
         LOG.exception("[lifecycle.data.mf2c.cimi] [get_service_by_id] Exception; Returning None ...")
     return None
