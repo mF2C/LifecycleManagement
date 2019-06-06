@@ -248,9 +248,10 @@ def submit_service_in_agents(service, user_id, service_instance_id, sla_template
                 return common.gen_response(500, 'error creating service_instance', 'service', str(service))
 
         # 3. select from agents list
-        num_agents = service['num_agents']
-        if not num_agents:
+        if 'num_agents' not in service:
             num_agents = -1
+        else:
+            num_agents = service['num_agents']
         LOG.debug("[lifecycle.deployment] [submit_service_in_agents] Selecting agents ... ")
         r, m = agent_decision.select_agents(service['exec_type'], num_agents, service_instance)
 
