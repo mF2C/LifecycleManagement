@@ -138,7 +138,7 @@ def create_docker_compss_container(service_image, ip, prts, ip_leader):
                                                               "REPORT_ADDRESS": config.dic['CIMI_URL']}, #"http://" +  data_adapter.get_host_ip() + "/api"}, #config.dic['CIMI_URL']},
                                                  tty=True,
                                                  ports=prts_list,
-                                                 networking_config=None,
+                                                 #networking_config=None,
                                                  host_config=lclient.create_host_config(port_bindings=ports_dict,
                                                                                         auto_remove=False))
 

@@ -162,6 +162,7 @@ The following methods are exposed by the Lifeycle REST API:
 
 View the following examples:
    - [COMPSs application](resources/LifecycleExample_01.md): Complete lifecycle of a service based on COMPSs
+   - [NGINX server](resources/LifecycleExample_03.md): Deployment and lifecycle of a nginx server (single docker application)
    - [GitLab application](resources/LifecycleExample_02.md): Deployment of a service based on a docker-compose file
 
 See also the user guide that can be found in _https://github.com/mF2C/Documentation/blob/master/documentation/user_guide/api.rst_

@@ -11,7 +11,6 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-import config as config
 from lifecycle.connectors import connector as connector
 from lifecycle.data import data_adapter as data_adapter
 from lifecycle import common as common
@@ -43,7 +42,7 @@ from lifecycle.common import SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COM
 # ==> [{"agent_ip": "192.168.252.41"}, {"agent_ip": "192.168.252.42"}]
 def get_available_agents_resources(service):
     try:
-        LOG.info("######## GET AVAILABLE AGENTS: ANALYTICS ENGINE / RECOMMENDER ################# (1) ###")
+        LOG.info("######## GET AVAILABLE AGENTS: ANALYTICS ENGINE / RECOMMENDER ################# (1) ###########")
         LOG.info("[lifecycle.modules.agent_decision] [get_available_agents_resources] Gets a list of available agents for service '" + service['name'] + "'" +
                  " [" + service['id'] + "] ...")
 
@@ -90,40 +89,40 @@ def get_available_agents_resources(service):
 #    }
 #
 
-# user_management: call to USER MANAGEMENT -> profiling and sharing model
-def user_management(service_instance):
+# __user_management: call to USER MANAGEMENT -> profiling and sharing model
+def __user_management(service_instance):
     try:
-        LOG.info("######## SELECT AGENTS: USER MANAGEMENT ####################################### (3) ###")
-        LOG.info("[lifecycle.modules.agent_decision] [user_management] Checking user-profile and sharing-model in selected agents " +
+        LOG.info("######## SELECT AGENTS: USER MANAGEMENT ####################################### (3) ###########")
+        LOG.info("[lifecycle.modules.agent_decision] [__user_management] Checking user-profile and sharing-model in selected agents " +
                  str(service_instance["agents"]) + " ...")
 
         l_filtered_agents = []
         for agent in service_instance["agents"]:
-            LOG.debug("[lifecycle.modules.agent_decision] [user_management] Getting user-profile and sharing-model policies result from " + agent['url'] + " ...")
+            LOG.debug("[lifecycle.modules.agent_decision] [__user_management] Getting user-profile and sharing-model policies result from " + agent['url'] + " ...")
             res = None
 
             # LOCAL
             if agent['url'] == data_adapter.get_my_ip(): #common.get_local_ip():
-                LOG.debug("[lifecycle.modules.agent_decision] [user_management] Getting LOCAL user-profile and sharing-model policies ...")
+                LOG.debug("[lifecycle.modules.agent_decision] [__user_management] Getting LOCAL user-profile and sharing-model policies ...")
                 res = connector.user_management_check_avialability() #data_adapter.get_check_um()
             # 'REMOTE' AGENT
             elif common.check_ip(agent['url']):
-                LOG.debug("[lifecycle.modules.agent_decision] [user_management] Getting REMOTE user-profile and sharing-model policies ...")
+                LOG.debug("[lifecycle.modules.agent_decision] [__user_management] Getting REMOTE user-profile and sharing-model policies ...")
                 res = connector.lifecycle_um_check_avialability(agent)
             else:
-                LOG.warning("[lifecycle.modules.agent_decision] [user_management] Could not get user-profile and sharing-model policies")
+                LOG.warning("[lifecycle.modules.agent_decision] [__user_management] Could not get user-profile and sharing-model policies")
 
-            LOG.debug("[lifecycle.modules.agent_decision] [user_management] res=" + str(res))
+            LOG.debug("[lifecycle.modules.agent_decision] [__user_management] res=" + str(res))
 
             # mantain agent in list if no user_profiling or user_sharing_model
             if res is None:
-                LOG.warning("[lifecycle.modules.agent_decision] [user_management] user-profile or sharing-model result is None")
+                LOG.warning("[lifecycle.modules.agent_decision] [__user_management] user-profile or sharing-model result is None")
                 l_filtered_agents.append(agent)
             # check content
             else:
-                LOG.debug("[lifecycle.modules.agent_decision] [user_management] Checking agents information ...")
+                LOG.debug("[lifecycle.modules.agent_decision] [__user_management] Checking agents information ...")
                 if not res['result']:
-                    LOG.debug("[lifecycle.modules.agent_decision] [user_management] agent not allowed: " + str(agent))
+                    LOG.debug("[lifecycle.modules.agent_decision] [__user_management] agent not allowed: " + str(agent))
                 else:
                     l_filtered_agents.append(agent)
 
@@ -131,7 +130,7 @@ def user_management(service_instance):
 
         return service_instance
     except:
-        LOG.exception('LIFECYCLE: agent_decision: user_management: Exception')
+        LOG.exception('[lifecycle.modules.agent_decision] [__user_management] Exception')
         return None
 
 
@@ -152,45 +151,161 @@ def user_management(service_instance):
 #   }
 
 
-# check_qos:
-def check_qos(agent_resp):
-    if not agent_resp['allow']:
+# __check_qos:
+def __check_qos(agent_resp):
+    if 'allow' not in agent_resp: #if not agent_resp['allow']:
         return True # TODO return False
-    return True
+    return agent_resp['allow'] #True
 
 
-# qos_providing: call to QoS PROVIDING
-def qos_providing(service_instance):
+# __qos_providing: call to QoS PROVIDING
+def __qos_providing(service_instance):
     try:
-        LOG.info("######## SELECT AGENTS: SERVICE MANAGEMENT (QoS) ############################## (2) ###")
-        LOG.debug("[lifecycle.modules.agent_decision] [qos_providing] Checking QoS of service instance [" + str(service_instance) + "] ...")
+        LOG.info("######## SELECT AGENTS: SERVICE MANAGEMENT (QoS) ############################## (2) ###########")
+        LOG.debug("[lifecycle.modules.agent_decision] [__qos_providing] Checking QoS of service instance [" + str(service_instance) + "] ...")
 
         service_instance_resp = connector.qos_providing(service_instance)
-        LOG.debug("[lifecycle.modules.agent_decision] [qos_providing] service_instance_resp: " + str(service_instance_resp))
+        LOG.debug("[lifecycle.modules.agent_decision] [__qos_providing] service_instance_resp: " + str(service_instance_resp))
 
         if service_instance_resp is not None:
+            l_filtered_agents = []
             try:
-                l_filtered_agents = []
-                LOG.debug("[lifecycle.modules.agent_decision] [qos_providing] processing response...")
+                LOG.debug("[lifecycle.modules.agent_decision] [__qos_providing] processing response...")
                 for agent_resp in service_instance_resp["agents"]:
                     for agent in service_instance["agents"]:
-                        if agent['url'] == agent_resp['url'] and check_qos(agent_resp):
+                        if agent['url'] == agent_resp['url'] and __check_qos(agent_resp):
                             l_filtered_agents.append(agent)
             except:
-                LOG.exception('[lifecycle.modules.agent_decision] [qos_providing] Exception while processing response')
+                LOG.exception('[lifecycle.modules.agent_decision] [__qos_providing] Exception while processing response')
                 return None
             service_instance['agents'] = l_filtered_agents
         else:
-            LOG.error("[lifecycle.modules.agent_decision] [qos_providing] mf2c.service_management_qos(service_instance) returned NONE")
+            LOG.error("[lifecycle.modules.agent_decision] [__qos_providing] mf2c.service_management_qos(service_instance) returned NONE")
 
-        LOG.debug("[lifecycle.modules.agent_decision] [qos_providing] service_instance=" + str(service_instance))
+        LOG.debug("[lifecycle.modules.agent_decision] [__qos_providing] service_instance=" + str(service_instance))
         return service_instance
     except:
-        LOG.exception('[lifecycle.modules.agent_decision] [qos_providing] Exception')
+        LOG.exception('[lifecycle.modules.agent_decision] [__qos_providing] Exception')
         return None
 
 
 ###############################################################################
+## SWARM SERVICE
+
+# __check_swarm:
+def __check_swarm(agent):
+    result = connector.lifecycle_check_agent_swarm(agent)
+    if not result is None:
+        return result['result']
+    return False
+
+
+# __filter_by_swarm: check if agents support swarm
+def __filter_by_swarm(service_instance):
+    try:
+        LOG.info("######## SELECT AGENTS: SWARM SERVICE ######################################### (4) ###########")
+        LOG.debug("[lifecycle.modules.agent_decision] [filter_by_swarm] Checking if agents support Docker Swarm ...")
+
+        l_filtered_agents = []
+        try:
+            for agent in service_instance["agents"]:
+                if __check_swarm(agent):
+                    LOG.debug("[lifecycle.modules.agent_decision] [filter_by_swarm] Docker Swarm supported by agent: " + str(agent))
+                    l_filtered_agents.append(agent)
+        except:
+            LOG.exception('[lifecycle.modules.agent_decision] [filter_by_swarm] Exception while processing response')
+            return None
+        service_instance['agents'] = l_filtered_agents
+
+        LOG.debug("[lifecycle.modules.agent_decision] [filter_by_swarm] service_instance=" + str(service_instance))
+        return service_instance
+    except:
+        LOG.exception('[lifecycle.modules.agent_decision] [filter_by_swarm] Exception')
+        return None
+
+
+
+###############################################################################
+
+# __service_compss: deploy COMPSs application
+def __service_compss(service_instance, num_agents):
+    # compss ==> deploy in all agents
+    if len(service_instance['agents']) > 0 and num_agents == -1:
+        LOG.debug("[lifecycle.modules.agent_decision] [__service_compss] [SERVICE_COMPSS] service will be deployed in all selected agents")
+
+    # compss ==> deploy in 'num_agents'
+    elif len(service_instance['agents']) > 0:
+        if len(service_instance['agents']) >= num_agents:
+            LOG.debug("[lifecycle.modules.agent_decision] [__service_compss] [SERVICE_COMPSS] service will be deployed in " + str(num_agents) + " agents")
+            list_of_agents = []
+            i = 0
+            while i < len(service_instance['agents']):
+                list_of_agents.append(service_instance['agents'][i])
+                i += 1
+            service_instance['agents'] = list_of_agents
+
+        else:
+            LOG.warning("[lifecycle.modules.agent_decision] [__service_compss] [SERVICE_COMPSS] service should be deployed in " + str(num_agents) +
+                        " agents, but only " + str(len(service_instance['agents'])) + " are available")
+            return service_instance, "not-enough-resources-found"
+
+    # compss: not-enough-resources-found
+    else:
+        return service_instance, "not-enough-resources-found"
+
+    LOG.debug("[lifecycle.modules.agent_decision] [__service_compss] agents FINAL list: " + str(service_instance['agents']))
+    return service_instance, "ok"
+
+
+# __service_compss: deploy DOCKER SWARM application
+def __service_docker_swarm(service_instance):
+    # docker swarm ==> deploy in first available agent
+    if len(service_instance['agents']) > 0:
+        list_of_agents = []
+        list_of_agents.append(service_instance['agents'][0])
+        LOG.debug("[lifecycle.modules.agent_decision] [__service_docker_swarm] first agent: " + str(list_of_agents))
+        service_instance['agents'] = list_of_agents
+
+    # docker swarm: not-enough-resources-found
+    else:
+        return service_instance, "not-enough-resources-found"
+
+    LOG.debug("[lifecycle.modules.agent_decision] [__service_docker_swarm] agents FINAL list: " + str(service_instance['agents']))
+    return service_instance, "ok"
+
+
+# __service_default: deploy DEFAULT application
+def __service_default(service_instance):
+    # docker swarm ==> deploy in first available agent
+    if len(service_instance['agents']) > 0:
+        list_of_agents = []
+        list_of_agents.append(service_instance['agents'][0])
+        LOG.debug("[lifecycle.modules.agent_decision] [__service_default] first agent: " + str(list_of_agents))
+        service_instance['agents'] = list_of_agents
+
+    # docker swarm: not-enough-resources-found
+    else:
+        return service_instance, "not-enough-resources-found"
+
+    LOG.debug("[lifecycle.modules.agent_decision] [__service_default] agents FINAL list: " + str(service_instance['agents']))
+    return service_instance, "ok"
+
+
+# __service_docker: deploy DOCKER application
+def __service_docker(service_instance, num_agents):
+    # docker ==> deploy in first available agent
+    if len(service_instance['agents']) > 0:
+        list_of_agents = []
+        list_of_agents.append(service_instance['agents'][0])
+        LOG.debug("[lifecycle.modules.agent_decision] [__service_docker] first agent: " + str(list_of_agents))
+        service_instance['agents'] = list_of_agents
+
+    # docker swarm: not-enough-resources-found
+    else:
+        return service_instance, "not-enough-resources-found"
+
+    LOG.debug("[lifecycle.modules.agent_decision] [__service_docker] agents FINAL list: " + str(service_instance['agents']))
+    return service_instance, "ok"
 
 
 # select_agents_list: Select from list of available agents
@@ -199,64 +314,53 @@ def select_agents(service_type, num_agents, service_instance):
     try:
         LOG.debug("[lifecycle.modules.agent_decision] [select_agents] [service_type=" + service_type + "], [agents=" + str(service_instance) + "]")
 
+        # STANDALONE MODE ################################
         if common.is_standalone_mode():
             LOG.warning("[lifecycle.modules.agent_decision] [select_agents] STANDALONE_MODE enabled")
             return service_instance, "ok"
+
+        # MF2C MODE ######################################
         else:
             LOG.debug("[lifecycle.modules.agent_decision] [select_agents] agents INITIAL list: " + str(service_instance['agents']))
-
-            # TODO check if swarm service
-
-            # 1. QoS PROVIDING
-            service_instance_res = qos_providing(service_instance)
+            # 1. FILTER LIST ###############
+            # 1.1. QoS PROVIDING
+            service_instance_res = __qos_providing(service_instance)
             if not service_instance_res is None:
                 service_instance = service_instance_res
 
-            # 2. USER MANAGEMENT -> profiling and sharing model
-            service_instance_res = user_management(service_instance)
+            # 1.2. USER MANAGEMENT -> profiling and sharing model
+            service_instance_res = __user_management(service_instance)
             if not service_instance_res is None:
                 service_instance = service_instance_res
+
+            # 1.3. check if service is a SWARM service and filter
+            if service_type == SERVICE_DOCKER_SWARM:
+                service_instance_res = __filter_by_swarm(service_instance)
+                if not service_instance_res is None:
+                    service_instance = service_instance_res
 
             LOG.debug("[lifecycle.modules.agent_decision] [select_agents] agents FILTERED list: " + str(service_instance['agents']))
 
-            # compss (docker) ==> deploy in all agents
-            if service_type == SERVICE_COMPSS and len(service_instance['agents']) > 0 and num_agents == -1:
-                LOG.debug("[lifecycle.modules.agent_decision] [select_agents] [SERVICE_COMPSS] service will be deployed in all selected agents")
-
-            # compss (docker) ==> deploy in 'num_agents'
-            if service_type == SERVICE_COMPSS and len(service_instance['agents']) > 0:
-                if len(service_instance['agents']) >= num_agents:
-                    LOG.debug("[lifecycle.modules.agent_decision] [select_agents] [SERVICE_COMPSS] service will be deployed in " + str(num_agents) + " agents")
-                    list_of_agents = []
-                    i = 0
-                    while i < len(service_instance['agents']):
-                        list_of_agents.append(service_instance['agents'][i])
-                        i += 1
-                    service_instance['agents'] = list_of_agents
-                else:
-                    LOG.warning("[lifecycle.modules.agent_decision] [select_agents] [SERVICE_COMPSS] service should be deployed in " + str(num_agents) +
-                                " agents, but only " + len(service_instance['agents']) + " are available")
-                    return service_instance, "not-enough-resources-found"
-
-            # other options ==> deploy in one agent
-            elif len(service_instance['agents']) > 0:
-                list_of_agents = []
-                list_of_agents.append(service_instance['agents'][0])
-                LOG.debug("[lifecycle.modules.agent_decision] [select_agents] [" + service_type + "] first agent: " + str(list_of_agents))
-
-                # docker-compose, docker, swarm, k8s
-                if service_type == SERVICE_DOCKER_COMPOSE or service_type == SERVICE_DOCKER \
-                        or service_type == SERVICE_DOCKER_SWARM or service_type == SERVICE_KUBERNETES:
-                    service_instance['agents'] = list_of_agents
-                # not defined
-                else:
-                    LOG.warning("[lifecycle.modules.agent_decision] [select_agents] [" + service_type + "] not defined")
-
-            LOG.debug("[lifecycle.modules.agent_decision] [select_agents] agents FINAL list: " + str(service_instance['agents']))
-
-            if len(service_instance['agents']) > 0:
-                return service_instance, "ok"
-            return service_instance, "not-enough-resources-found"
+            # 2. SELECT AGENTS FROM LIST ###
+            # 2.1. COMPSs
+            if service_type == SERVICE_COMPSS:
+                return __service_compss(service_instance, num_agents)
+            # 2.2. DOCKER_SWARM
+            elif service_type == SERVICE_DOCKER_SWARM:
+                return __service_docker_swarm(service_instance)
+            # 2.3. DOCKER_COMPOSE
+            elif service_type == SERVICE_DOCKER_COMPOSE:
+                return __service_default(service_instance)
+            # 2.4 KUBERNETES
+            elif service_type == SERVICE_KUBERNETES:
+                LOG.error('[lifecycle.modules.agent_decision] [select_agents] Service type not implemented') # TODO
+                return None, "error"
+            # 2.5 DOCKER
+            elif service_type == SERVICE_DOCKER:
+                return __service_docker(service_instance, num_agents)
+            else:
+                LOG.error('[lifecycle.modules.agent_decision] [select_agents] Service type not defined / unknown')
+                return None, "error"
     except:
         LOG.exception('[lifecycle.modules.agent_decision] [select_agents] Exception')
         return None, "error"

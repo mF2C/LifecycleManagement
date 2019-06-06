@@ -332,17 +332,17 @@ class ServiceInstanceCOMPSs(Resource):
                            "<font color='blue'>\"hasResult\":</font>false,<br/>"
                            "<font color='blue'>\"methodName\":</font>\"main\",<br/>"
                            "<font color='blue'>\"parameters\":</font>\""
-                           "    &lt;params paramId=\"0\"&gt;"
+                           "    &lt;params paramId=\\\"0\\\"&gt;"
                            "      &lt;direction&gt;IN&lt;/direction&gt;"
                            "      &lt;stream&gt;UNSPECIFIED&lt;/stream&gt;"
                            "      &lt;type&gt;OBJECT_T&lt;/type&gt;"
-                           "      &lt;array paramId=\"0\"&gt;"
+                           "      &lt;array paramId=\\\"0\\\"&gt;"
                            "        &lt;componentClassname&gt;java.lang.String&lt;/componentClassname&gt;"           
                            "        &lt;values&gt;"
-                           "          &lt;element paramId=\"0\"&gt;"
+                           "          &lt;element paramId=\\\"0\\\"&gt;"
                            "            &lt;className&gt;java.lang.String&lt;/className&gt;"
-                           "            &lt;value xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" "
-                           "                 xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xsi:type=\"xs:string\"&gt;3&lt;/value&gt;"
+                           "            &lt;value xmlns:xsi=\\\"http://www.w3.org/2001/XMLSchema-instance\\\" "
+                           "                 xmlns:xs=\\\"http://www.w3.org/2001/XMLSchema\\\" xsi:type=\\\"xs:string\\\"&gt;3&lt;/value&gt;"
                            "          &lt;/element&gt;"
                            "        &lt;/values&gt;"
                            "      &lt;/array&gt;"
@@ -406,7 +406,7 @@ class Service(Resource):
     # POST /api/v2/lm/service
     @swagger.operation(
         summary="Submits a <b>service</b> (deployment phase)</b>",
-        notes="Submits a service and returns a json with the content of a service instance:<br/>"
+        notes="Submits a service and returns a json with the content of a service instance. Types of services:<br/>"
               "<i>'exec_type'</i>=<b>'docker'</b> ... deploy a docker image<br/>"
               "<i>'exec_type'</i>=<b>'docker-compose'</b> ... deploy a docker compose service<br/>" 
               "<i>'exec_type'</i>=<b>'docker-swarm'</b> ... deploy a docker swarm service<br/>"
@@ -419,7 +419,6 @@ class Service(Resource):
             "description": "Parameters in JSON format.<br/>Service example: <br/>"
                            "{<br/>"
                            "\"service_id\": \"service/74dd7176-111e-412a-98ce-a6409d58b3ca\",<br/>"
-                           "\"user_id\": \"user/testuser\",<br/>"
                            "\"sla_template\": \"sla-templatet/12932af0ef123\"<br/>}",
             "required": True,
             "paramType": "body",
@@ -427,7 +426,7 @@ class Service(Resource):
         }],
         responseMessages=[{
             "code": 406,
-            "message": "'service_id' parameter not found"
+            "message": "'service_id' / 'sla_template' parameter not found"
         }, {
             "code": 500,
             "message": "Error processing request"

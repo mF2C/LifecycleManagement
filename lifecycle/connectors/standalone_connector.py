@@ -78,6 +78,11 @@ class StandaloneConnector:
         return lifecycle.um_check_avialability(agent)
 
 
+    # lifecycle_um_info: call to lifceycle from other agent in order to get sharing model and user profile
+    def lifecycle_check_agent_swarm(self, agent):
+        return lifecycle.check_agent_swarm(agent)
+
+
     # LANDSCAPER / RECOMMENDER
     # get_available_devices: Get available devices
     def get_available_devices(self):

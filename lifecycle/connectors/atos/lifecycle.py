@@ -109,3 +109,23 @@ def um_check_avialability(agent):
     except:
         LOG.exception("[lifecycle.connectors.atos.lifecycle] [um_check_avialability] Exception; Returning None ...")
     return None
+
+
+# check_agent_swarm: call to lifceycle from other agent to check if docker swarm is supported
+def check_agent_swarm(agent):
+    LOG.debug("[lifecycle.connectors.atos.lifecycle] [check_agent_swarm] " + str(agent))
+    try:
+        LOG.info("[lifecycle.connectors.atos.lifecycle] [check_agent_swarm] HTTP GET: http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/check-agent-swarm")
+        r = requests.get("http://" + agent['url'] + ":" + str(config.dic['SERVER_PORT']) + "/api/v2/lm/check-agent-swarm",
+                         verify=config.dic['VERIFY_SSL'])
+        LOG.debug("[lifecycle.connectors.atos.lifecycle] [check_agent_swarm] response: " + str(r) + ", " + str(r.json()))
+
+        if r.status_code == 200:
+            json_data = json.loads(r.text)
+            LOG.debug("[lifecycle.connectors.atos.lifecycle] [check_agent_swarm] json_data=" + str(json_data))
+            return json_data
+
+        LOG.error("[lifecycle.connectors.atos.lifecycle] [check_agent_swarm] Error: status_code=" +  str(r.status_code) + "; Returning None ...")
+    except:
+        LOG.exception("[lifecycle.connectors.atos.lifecycle] [check_agent_swarm] Exception; Returning None ...")
+    return None
