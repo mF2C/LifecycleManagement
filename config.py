@@ -48,8 +48,8 @@ dic = { "VERSION":                      "1.2.7",
         # working dir for docker compose applications / services
         "WORKING_DIR_VOLUME":           "/tmp/mf2c/compose_files",
         # docker compose image: needed to deploy docker compose based services
-        "DOCKER_COMPOSE_IMAGE":         "docker/compose:1.23.1", #1.21.0",
-        "DOCKER_COMPOSE_IMAGE_TAG":     "1.23.1", #"1.21.0",
+        "DOCKER_COMPOSE_IMAGE":         "docker/compose:1.24.0", #1.23.1",
+        "DOCKER_COMPOSE_IMAGE_TAG":     "1.24.0", #"1.23.1",
         # docker socket volume
         "DOCKER_SOCKET_VOLUME":         "/var/run/docker.sock",
         # ports db

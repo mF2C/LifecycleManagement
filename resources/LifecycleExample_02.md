@@ -1,5 +1,5 @@
 # LifecycleManagement - GitLab application
-[![version](https://img.shields.io/badge/status-deprecated-red.svg)]()
+[![version](https://img.shields.io/badge/version-1.2.7-blue.svg)]()
 
 Deployment of a [GitLab](https://github.com/sameersbn/docker-gitlab) application (docker compose) in a mF2C Agent. This is a service based on a **docker compose** file.
 
@@ -7,43 +7,115 @@ Service definition:
 
 ```json
 {
-	"id": "docker_compose_app_1",
-	"name": "docker_compose_app",
-	"description": "docker_compose Service",
-	"resourceURI": "/docker_compose_app",
+	"name": "docker_compose_app_1",
+	"description": "docker-compose application",
 	"exec": "https://raw.githubusercontent.com/sameersbn/docker-gitlab/master/docker-compose.yml",
+  "sla_templates": ["sla-template/083e1759-4b66-4295-b187-37997feec013"],
+	"os": "linux",
+	"disk": 100,
+	"category": 0,
+	"num_agents": 1,
 	"exec_type": "docker-compose",
-	"exec_ports": [],
-	"category": {
-		"cpu": "low",
-		"memory": "low",
-		"storage": "low",
-		"inclinometer": false,
-		"temperature": false,
-		"jammer": false,
-		"location": false
-	}
+	"exec_ports": [80],
+	"agent_type": "normal",
+	"cpu_arch": "x86-64",
+	"memory_min": 1000,
+	"storage_min": 100,
+	"req_resource": [],
+	"opt_resource": []
 }
-```
 
 --------------------------------------------------------------------------
 
-### Launch Lifecycle Management module (STANDALONE MODE)
+### Launch mF2C Agent in a device
 
 ```bash
-sudo docker run --env CIMI_URL=https://cimi_url/api --env STANDALONE_MODE=True --env CIMI_USER="user" --env --env HOST_IP="192.168.111.111" --env WORKING_DIR_VOLUME=/home/atos/mF2C/compose_examples -v /var/run/docker.sock:/var/run/docker.sock -v /home/user/mF2C/compose_examples:/home/user/mF2C/compose_examples -p 46000:46000 mf2c/lifecycle
+sudo docker-compose -p mf2c up
 ```
 
-Application URL: https://192.168.111.111:46000/api/v1/lifecycle.html
+Lifecycle URL: https://_HOST_:46000/api/v2/lm.html
 
-The lifecycle offers a Swagger UI that allows anyone to visualize and interact with the API’s resources without having any of the implementation logic in place.
+The Lifecycle offers a Swagger UI that allows anyone to visualize and interact with the API’s resources without having any of the implementation logic in place.
 
 ### Download docker images
 
-Download the following docker images (needed in this example) to save time:
+Download the docker images used in this example to save time:
 
 ```bash
-sudo docker pull docker/compose:1.21.0
+sudo docker pull sameersbn/gitlab:11.11.2
+sudo docker pull sameersbn/postgresql:10
+sudo docker pull sameersbn/redis:4.0.9-1
+sudo docker pull docker/compose:1.24.0
+```
+
+### Previous tasks
+
+Before deploying and launching the COMPSs application follow next steps:
+
+##### 1. create a User
+```bash
+curl -XPOST -k -H 'content-type:application/json' https://localhost/api/user -d '''
+{
+    "userTemplate": {
+        "href": "user-template/self-registration",
+        "password": "testpassword",
+        "passwordRepeat" : "testpassword",
+        "emailAddress": "your_email@",
+        "username": "user_name"
+    }
+}'''
+```
+
+##### 2. create a SLA template
+
+Use the resulting template id when creating the service (next step) and also when launching a service in mF2C.
+
+```bash
+curl -H "slipstream-authn-info: super ADMIN" -H "Content-type: application/json" -d "{
+	\"id\": \"template_01\",
+    \"name\": \"Template 01\",
+    \"state\": \"started\",
+    \"details\":{
+        \"id\": \"template_01\",
+        \"type\": \"template\",
+        \"name\": \"service_name\",
+        \"provider\": { \"id\": \"mf2c\", \"name\": \"mF2C Platform\" },
+        \"client\": { \"id\": \"{{.user}}\", \"name\": \"{{.user}}\" },
+        \"creation\": \"2018-01-16T17:09:45.01Z\",
+        \"expiration\": \"2021-01-16T17:09:45.01Z\",
+        \"guarantees\": [
+            {
+                \"name\": \"es.bsc.compss.agent.test.Test.main\",
+                \"constraint\": \"execution_time < 1000\"
+            }
+        ]
+    }
+}"  -X POST https://localhost/api/sla-template --insecure
+```
+
+##### 3. create the service
+
+Use the resulting service id when launching a service in mF2C.
+
+```bash
+curl -H "slipstream-authn-info: super ADMIN" -H "Content-type: application/json" -d "{
+	\"name\": \"docker_compose_app_1\",
+	\"description\": \"docker-compose application\",
+	\"exec\": \"https://raw.githubusercontent.com/sameersbn/docker-gitlab/master/docker-compose.yml\",
+  \"sla_templates\": [\"sla-template/461de863-75f4-453f-b60e-932be8df6e69\"],
+	\"os\": \"linux\",
+	\"disk\": 100,
+	\"category\": 0,
+	\"num_agents\": 1,
+	\"exec_type\": \"docker-compose\",
+	\"exec_ports\": [80],
+	\"agent_type\": \"normal\",
+	\"cpu_arch\": \"x86-64\",
+	\"memory_min\": 1000,
+	\"storage_min\": 100,
+	\"req_resource\": [],
+	\"opt_resource\": []
+}" -X POST https://localhost/api/service --insecure
 ```
 
 --------------------------------------------------------------------------
@@ -62,41 +134,46 @@ In order to submit a service, use the following method:
 REQUEST:
 
 ```
-POST /api/v1/lifecycle
+POST /api/v2/lm/service
 ```
 
 REQUEST BODY:
 
-The body of this request requires a `service` object, the `user` (user_id) that launches this service, and the list of `agents` (agents_list) where this service will be deployed. For docker-compose applications the service definition has to include the following properties:
-
-  - `exec` URL of the _docker-compose.yml_ file  
-  - `exec_type`_docker-compose_
+Use the service and sla template identifiers obtained in the previuos steps. The request body should look like that:
 
 ```json
 {
+	"service_id": "service/21c66db9-49b5-45cc-8e3a-1230a30435a0",
+	"sla_template": "sla-template/461de863-75f4-453f-b60e-932be8df6e69"
+}
+```
+
+If the `service id` is not included in the request body, then this body requires a `service` object. As an alternative you can specify a list of `agents` (agents_list) where this service will be deployed. For `DOCKER-COMPOSE applications` the service definition has to include the following properties:
+
+  - `exec` _YAML URL_ (URL of the Docker Compose file definition)
+```json
+{
 	"service": {
-		"id": "docker_compose_app_1",
-		"name": "docker_compose_app",
-		"description": "docker_compose Service",
-		"resourceURI": "/docker_compose_app",
+		"name": "docker_compose_app_1",
+		"description": "docker-compose application",
 		"exec": "https://raw.githubusercontent.com/sameersbn/docker-gitlab/master/docker-compose.yml",
+	  "sla_templates": ["sla-template/083e1759-4b66-4295-b187-37997feec013"],
+		"os": "linux",
+		"disk": 100,
+		"category": 0,
+		"num_agents": 1,
 		"exec_type": "docker-compose",
-		"exec_ports": [],
-		"category": {
-			"cpu": "low",
-			"memory": "low",
-			"storage": "low",
-			"inclinometer": false,
-			"temperature": false,
-			"jammer": false,
-			"location": false
-		}
+		"exec_ports": [80],
+		"agent_type": "normal",
+		"cpu_arch": "x86-64",
+		"memory_min": 1000,
+		"storage_min": 100,
+		"req_resource": [],
+		"opt_resource": []
 	},
-	"service_id": "docker_compose_app_1",
-	"user_id": "user",
-	"agreement_id": "not-defined",
-	"operation": "not-defined",
-	"agents_list": [{"agent_ip": "192.168.111.111", "num_cpus": 4}]
+	"sla_template": "sla-template/083e1759-4b66-4295-b187-37997feec013",
+	"agents_list": [
+		{"agent_ip": "192.168.252.41", "num_cpus": 4}, {"agent_ip": "192.168.252.42", "num_cpus": 4}]
 }
 ```
 
@@ -163,6 +240,8 @@ If deployment was successful, the response includes the id of the new **service 
 ```
 
 Check the values of the agents: the `status` of the containers should be 'started', and the content of `container_id` should be something like '8259ec5ce1c97c0ce0e12e671f532b6fe44c015ee422ec10320df180a0e6da38'.
+
+Service instance ID is needed for the following steps: `f1bcf627-99cb-4138-a429-b44c5645e6a6`
 
 --------------------------------------------------------------------------
 

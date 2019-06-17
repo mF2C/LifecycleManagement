@@ -1,5 +1,5 @@
 # LifecycleManagement - COMPSs application
-[![version](https://img.shields.io/badge/version-1.2.6-blue.svg)]()
+[![version](https://img.shields.io/badge/version-1.2.7-blue.svg)]()
 
 Deployment and lifecycle management of an application based on **COMPSs** (docker image that includes COMPSs and the application)
 
@@ -59,7 +59,7 @@ curl -XPOST -k -H 'content-type:application/json' https://localhost/api/user -d 
         "password": "testpassword",
         "passwordRepeat" : "testpassword",
         "emailAddress": "your_email@",
-        "username": "rsucasas"
+        "username": "user_name"
     }
 }'''
 ```
@@ -168,7 +168,7 @@ Use the service and sla template identifiers obtained in the previuos steps. The
 }
 ```
 
-If the `service id` is not included in the request body, then this body requires a `service` object. As an alternative you can specify the list of `agents` (agents_list) where this service will be deployed. For COMPSs applications the service definition has to include the following properties:
+If the `service id` is not included in the request body, then this body requires a `service` object. As an alternative you can specify the list of `agents` (agents_list) where this service will be deployed. For `COMPSs applications` the service definition has to include the following properties:
 
   - `exec` _mf2c/compss-test:it2.4_ or any other docker COMPSs image from a public docker hub
   - `exec_type`_compss_
