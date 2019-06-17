@@ -85,7 +85,7 @@ class StandaloneConnector:
 
     # LANDSCAPER / RECOMMENDER
     # get_available_devices: Get available devices
-    def get_available_devices(self):
+    def get_available_devices(self, service):
         LOG.warning("[lifecycle.connectors.standalone_connector] [get_available_devices] not implemented")
         return None
 

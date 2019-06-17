@@ -98,8 +98,8 @@ def lifecycle_check_agent_swarm(agent):
 
 # LANDSCAPER / RECOMMENDER
 # get_available_devices: Get available devices
-def get_available_devices():
-    return conn.get_available_devices()
+def get_available_devices(service):
+    return conn.get_available_devices(service)
 
 
 # SERVICE MANAGER

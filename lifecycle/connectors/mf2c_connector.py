@@ -86,8 +86,8 @@ class Mf2cConnector:
 
     # LANDSCAPER / RECOMMENDER
     # get_available_devices: Get available devices
-    def get_available_devices(self):
-        return analytics_engine.get_optimal_resources()
+    def get_available_devices(self, service):
+        return analytics_engine.get_optimal_resources(service)
 
 
     # SERVICE MANAGER

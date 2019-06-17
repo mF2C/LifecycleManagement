@@ -1,5 +1,5 @@
 """
-CIMI - Data management
+Data management
 This is being developed for the MF2C Project: http://www.mf2c-project.eu/
 
 Copyright: Atos Research and Innovation, 2017.

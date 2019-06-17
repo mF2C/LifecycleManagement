@@ -34,7 +34,7 @@ from lifecycle.common import SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COM
 #           ...
 #       ]
 # ==> [{"agent_ip": "192.168.252.41"}, {"agent_ip": "192.168.252.42"}]
-def get_available_agents_resources():
+def get_available_agents_resources(service):
     try:
         LOG.info("######## GET AVAILABLE AGENTS: ANALYTICS ENGINE / RECOMMENDER ################# (1) ###########")
         LOG.info("[lifecycle.modules.agent_decision] [get_available_agents_resources] Gets a list of available agents in the current cluster ...")
@@ -46,7 +46,7 @@ def get_available_agents_resources():
             # Call to ANALYTICS ENGINE (RECOMMENDER & LANDSCAPER)
             # The Lifecycle Management module calls the Recommender in order to get the optimal deployment configuration to run the service.
             # Based on this optimal configuration returned by the Recommender, the Lifecycle module asks the Landscaper for a list of resources that match this recommendation.
-            resources = connector.get_available_devices()
+            resources = connector.get_available_devices(service)
 
             # TODO release version - uncomment
             # if not resources:

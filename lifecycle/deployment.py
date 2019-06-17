@@ -292,7 +292,7 @@ def submit(service, user_id, service_instance_id, sla_template_id):
 
         # 2. get list of available agents / resources / VMs. Example: [{"agent_ip": "192.168.252.41"}, {...}]
         # Call to landscaper/recommender
-        available_agents_list = agent_decision.get_available_agents_resources()
+        available_agents_list = agent_decision.get_available_agents_resources(service)
         if not available_agents_list:
             # warning
             LOG.error("[lifecycle.deployment] [submit] available_agents_list is None. Forwarding to Leader...")

@@ -20,12 +20,64 @@ from urllib3.exceptions import NewConnectionError
 # CALL TO LANDSCAPER & RECOMMENDER: get service's recipe / get available resources for a recipe
 #   =>  POST 'http://localhost:46020/mf2c/optimal'
 # 	    BODY: service json
-def get_optimal_resources():
+#
+# category - meaning
+# 0 uncategorized
+# 1 [cpu]
+# 2 [memory]
+# 3 [disk]
+# 4 [network]
+# 5 [cpu, memory]
+# 6 [cpu, disk]
+# 7 [cpu, network]
+# 8 [memory, disk]
+# 9 [memory, network]
+# 10 [disk, network]
+# 11 [cpu, memory, disk]
+# 12 [cpu, memory, network]
+# 13 [cpu, disk, network]
+# 14 [memory, disk, network]
+# 15 [cpu, memory, disk, network]
+def get_optimal_resources(service):
     LOG.debug("[lifecycle.connectors.mf2c.analytics_engine] [get_optimal_resources] Getting list of devices ...")
     try:
         LOG.info("[lifecycle.connectors.mf2c.analytics_engine] [get_optimal_resources] HTTP POST: " + str(config.dic['URL_PM_RECOM_LANDSCAPER']) + "/optimal")
+
+        sort_order = []
+        category = service['category']
+        if category == 1:
+            sort_order = ["cpu"]
+        elif category == 2:
+            sort_order = ["memory"]
+        elif category == 3:
+            sort_order = ["disk"]
+        elif category == 4:
+            sort_order = ["network"]
+        elif category == 5:
+            sort_order = ["cpu", "memory"]
+        elif category == 6:
+            sort_order = ["cpu", "disk"]
+        elif category == 7:
+            sort_order = ["cpu", "network"]
+        elif category == 8:
+            sort_order = ["memory", "disk"]
+        elif category == 9:
+            sort_order = ["memory", "network"]
+        elif category == 10:
+            sort_order = ["disk", "network"]
+        elif category == 11:
+            sort_order = ["cpu", "memory", "disk"]
+        elif category == 12:
+            sort_order = ["cpu", "memory", "network"]
+        elif category == 13:
+            sort_order = ["cpu", "disk", "network"]
+        elif category == 14:
+            sort_order = ["memory", "disk", "network"]
+        elif category == 15:
+            sort_order = ["cpu""memory", "disk", "network"]
+
         r = requests.post(str(config.dic['URL_PM_RECOM_LANDSCAPER']) + "/optimal",
-                          json={"sort_order": ["cpu", "memory"],
+                          json={"sort_order": sort_order,
                                 "name":"test"},
                           headers={"Accept": "text/json", "Content-Type": "application/json"},
                           verify=config.dic['VERIFY_SSL'],
