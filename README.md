@@ -96,7 +96,6 @@ Available environment variables:
 - **STANDALONE_MODE** `False` if working in an agent with other mF2C components; `True` if working without external dependencies (except docker)
 - **CIMI_URL**
 - **HOST_IP** Machine's IP address: needed by the lifecycle when deploying services in a set of agents (to see if an agent is in local host or if it is in another machine)
-- **CIMI_USER** CIMI user
 - **WORKING_DIR_VOLUME** _docker-compose.yml_ folder
 - **URL_PM_SLA_MANAGER** URL of the Platform Manager - SLA Manager; e.g. https://192.168.192.192:46030
 - **URL_AC_SERVICE_MNGMT** URL of the Agent Controller - QoS Providing; e.g. https://192.168.192.192:46200/api/service-management

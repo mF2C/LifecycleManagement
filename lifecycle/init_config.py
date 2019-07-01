@@ -22,7 +22,6 @@ from lifecycle.connectors import connector as connector
 
 '''
 ENV VARIABLES (mF2C):
-    CIMI_USER=
     CIMI_API_KEY=
     CIMI_API_SECRET=
     CIMI_SSL_INSECURE=
@@ -68,8 +67,6 @@ def init():
         common.set_value_env('DOCKER_SOCKET')
         # DOCKER_SWARM
         common.set_value_env('DOCKER_SWARM')
-        # CIMI environment values:
-        common.set_value_env('CIMI_USER')
         # mF2C components: env variables
         common.set_value_env('TIMEOUT_ANALYTICSENGINE')
         common.set_value_env('PORT_COMPSs')
@@ -106,7 +103,6 @@ def init():
         LOG.info('[lifecycle.init_config] [init] [LM_WORKING_DIR_VOLUME=' + config.dic['LM_WORKING_DIR_VOLUME'] + ']')
         LOG.info('[lifecycle.init_config] [init] [VERIFY_SSL=' + str(config.dic['VERIFY_SSL']) + ']')
         LOG.info('[lifecycle.init_config] [init] [CIMI_URL=' + config.dic['CIMI_URL'] + ']')
-        LOG.info('[lifecycle.init_config] [init] [CIMI_USER=' + config.dic['CIMI_USER'] + ']')
         LOG.info('[lifecycle.init_config] [init] [WORKING_DIR_VOLUME=' + config.dic['WORKING_DIR_VOLUME'] + ']')
         LOG.info('[lifecycle.init_config] [init] [DOCKER_COMPOSE_IMAGE=' + config.dic['DOCKER_COMPOSE_IMAGE'] + ']')
         LOG.info('[lifecycle.init_config] [init] [DOCKER_COMPOSE_IMAGE_TAG=' + config.dic['DOCKER_COMPOSE_IMAGE_TAG'] + ']')

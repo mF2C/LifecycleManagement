@@ -13,7 +13,7 @@ Created on 18 oct. 2018
 
 #!/usr/bin/python
 
-dic = { "VERSION":                      "1.2.7",
+dic = { "VERSION":                      "1.2.8",
 
         # LIFECYCLE MANAGER MODE: "DEFAULT", "MF2C" , "STANDALONE"
         "LM_MODE":                      "MF2C",
@@ -42,7 +42,6 @@ dic = { "VERSION":                      "1.2.7",
 
         # CIMI:
         "CIMI_URL":                     "http://cimi:8201/api",
-        "CIMI_USER":                    "rsucasas",   # TODO remove
 
         # docker:
         # working dir for docker compose applications / services
