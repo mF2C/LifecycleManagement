@@ -28,15 +28,7 @@ SERVICE:
    "exec": "hello-world",
    "exec_type": "docker",
    "exec_ports": ["8080", "8081"],
-   "category": {
-       "cpu": "low",
-       "memory": "low",
-       "storage": "low",
-       "inclinometer": false,
-       "temperature": false,
-       "jammer": false,
-       "location": false
-   }
+   ...
 }
 
 SERVICE INSTANCE:
@@ -55,8 +47,7 @@ SERVICE INSTANCE:
    "agents": [
        {"agent": resource-link, "url": "192.168.1.31", "ports": [8081], "container_id": "10asd673f", "status": "waiting",
            "num_cpus": 3, "allow": true, "master_compss": true, "app_type": "swarm"},
-       {"agent": resource-link, "url": "192.168.1.34", "ports": [8081], "container_id": "99asd673f", "status": "waiting",
-           "num_cpus": 2, "allow": true, "master_compss": false, "app_type": "swarm"}
+       ...
   ]
 }
 
@@ -78,22 +69,13 @@ AGENT
 
 # SERVICE_INSTANCE CIMI RESOURCE
 RSRC_SERVICE_INSTANCE = "service-instance"
+
 # SERVICE CIMI RESOURCE
 RSRC_SERVICE = "service"
+
 # RSRC_SERVICE_INSTANCE_REPORT CIMI RESOURCE
 RSRC_SERVICE_INSTANCE_REPORT = "service-operation-report"
 
-# ACL
-ACL = {"owner":
-           {"principal": config.dic['CIMI_USER'], #"ADMIN",
-            "type": "ROLE"},
-       "rules": [{"principal": config.dic['CIMI_USER'], #"ADMIN",
-                  "type": "ROLE",
-                  "right": "ALL"},
-                 {"principal": "ANON",
-                  "type": "ROLE",
-                  "right": "ALL"}
-                 ]}
 # CIMI HEADER
 CIMI_HEADER = {'slipstream-authn-info': 'super ADMIN'}
 
@@ -103,7 +85,7 @@ def getACLforUser(user):
     ACL_USER = {"owner":
                    {"principal": user,
                     "type": "ROLE"},
-               "rules": [{"principal": "ADMIN",
+                "rules": [{"principal": "ADMIN",
                           "type": "ROLE",
                           "right": "ALL"},
                          {"principal": "ANON",
@@ -111,18 +93,6 @@ def getACLforUser(user):
                           "right": "ALL"}
                          ]}
     return ACL_USER
-
-
-# common_new_map_fields: generates a map with time and acl values
-def common_new_map_fields():
-    now = datetime.datetime.now()
-    default_map = {
-        "created": now.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-        "updated": now.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-        "resourceURI": {"href": "service-instance/1234579abcdef"},
-        "acl": ACL
-    }
-    return default_map
 
 
 # common_new_map_fields: generates a map with time and acl values
@@ -138,16 +108,6 @@ def common_new_map_fields_user(user):
 
 
 # FUNCTION: common_update_map_fields: generates a map with time and acl values
-def common_update_map_fields():
-    now = datetime.datetime.now()
-    default_map = {
-        "updated": now.strftime('%Y-%m-%dT%H:%M:%S.%fZ'),
-        "acl": ACL
-    }
-    return default_map
-
-
-# FUNCTION: common_update_map_fields: generates a map with time and acl values
 def common_update_map_fields_user(user):
     now = datetime.datetime.now()
     default_map = {
@@ -157,23 +117,9 @@ def common_update_map_fields_user(user):
     return default_map
 
 
-# FUNCTION: patch_update_map_fields: TODO remove after dataclay is updated
-def patch_update_map_fields():
-    now = datetime.datetime.now()
-    default_map = {
-        "device_id":        "not-defined",
-        "device_ip":        "not-defined",
-        "parent_device_id": "not-defined",
-        "parent_device_ip": "not-defined",
-        "service_type":     "not-defined"
-    }
-    return default_map
-
-
 ###############################################################################
 # COMMON
 
-# TODO get this information from new RESOURCE: AGENT
 # FUNCTION: get_agent_info: get 'agent' resource content
 # {
 #     "authenticated" : true,
@@ -430,26 +376,6 @@ def update_service_instance(resource_id, content):
 
 
 ###############################################################################
-
-
-# TODO get this information from new RESOURCE: AGENT
-# FUNCTION: get_parent
-def get_parent(device_id):
-    try:
-        device_id = device_id.replace('device/', '')
-        res = requests.get(config.dic['CIMI_URL'] + "/device-dynamic?$filter=myLeaderID/href='device/" + device_id + "'",
-                           headers=CIMI_HEADER,
-                           verify=False)
-        LOG.debug("[lifecycle.data.mf2c.cimi] [get_parent] response: " + str(res) + ", " + str(res.json()))
-
-        if res.status_code == 200:
-            return res.json()['deviceDynamics'][0]
-        else:
-            LOG.warning("[lifecycle.data.mf2c.cimi] [get_parent] 'device-dynamic' not found [device_id=" + device_id + "]; Returning -1 ...")
-            return -1
-    except:
-        LOG.exception("[lifecycle.data.mf2c.cimi] [get_parent] Exception; Returning None ...")
-        return None
 
 
 # FUNCTION: get_current_device_info: get 'agent' resource content
