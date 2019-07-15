@@ -27,11 +27,14 @@ Service definition:
 
 --------------------------------------------------------------------------
 
+
 ### Launch mF2C Agent in a device
+
 
 ```bash
 sudo docker-compose -p mf2c up
 ```
+
 
 Lifecycle URL: https://_HOST_:46000/api/v2/lm.html
 
