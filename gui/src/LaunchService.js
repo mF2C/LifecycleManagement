@@ -66,8 +66,8 @@ class LaunchService extends Component {
 
   render() {
     return (
-      <div>
-        <h2>Launch a Service</h2>
+      <div style={{margin: "-25px 0px 0px 0px"}}>
+        <h3><b>Launch a new service</b></h3>
         <p>Select a service and run it in mF2C</p>
         <form onSubmit={this.handleSubmit}>
           <div className="form-group row">
@@ -83,8 +83,7 @@ class LaunchService extends Component {
               </Dropdown.Menu>
             </Dropdown>
             <div className="col-sm-4">
-              <input type="text" className="form-control" id="service" value={this.state.selservice}
-                onChange={this.handleChange}/>
+              <input type="text" className="form-control" id="service" value={this.state.selservice} readonly/>
             </div>
           </div>
 

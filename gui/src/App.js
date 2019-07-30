@@ -20,11 +20,11 @@ class App extends Component {
   render() {
     return (
       <HashRouter>
-        <div>
+        <div style={{margin: "-25px 0px 0px 0px"}}>
           <font size="5"> <b>Apps Lifecycle Dashboard</b></font>
 
           <ul className="header">
-            <li><NavLink exact to="/">Home</NavLink></li>
+            <li><NavLink style={{color: "lightblue"}} exact to="/">Home</NavLink></li>
             <li style={{color: "gray"}}>|</li>
             <li><NavLink style={{color: "lightyellow"}} to="/launchservice">Launch new service</NavLink></li>
             <li><NavLink style={{color: "lightyellow"}} to="/serviceinstances">Service instances</NavLink></li>

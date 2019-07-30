@@ -1,7 +1,7 @@
 import React, { Component } from "react";
-
+import request from "request";
+import { Alert, Button, Dropdown, Badge } from 'react-bootstrap';
 import vis from "vis-network";
-import { Dropdown } from 'react-bootstrap';
 
 
 class LaunchJob extends Component {
@@ -12,7 +12,12 @@ class LaunchJob extends Component {
 
     this.state = {
       selservice: "",
-      value : ""
+      value : "",
+      start_si_button: false,
+      msg: "",
+      msg_content: "",
+      show_alert: false,
+      show_info: false
     };
 
     this.select = this.select.bind(this);
@@ -67,15 +72,47 @@ class LaunchJob extends Component {
 
 
   handleSubmit(event) {
-    alert('A new service was submitted: ' + this.state.value);
-    event.preventDefault();
+    //event.preventDefault();
+    console.log("Launching job in DER [service_instance=" + this.state.selservice + "] ...");
+
+    var uri = "/api/v2/lm/" + this.state.selservice;
+    // call to api
+    try {
+      request.put(uri)
+        .on('response', function(response) {
+          console.log(response.statusCode); // 200
+          this.setState({ show_info: true });
+          this.setState({ msg: "PUT " + uri + " : " + response.statusCode });
+          this.setState({ msg_content: "Response: " + response.toString() });
+        })
+        .on('error', function(err) {
+          console.error(err);
+          this.setState({ show_alert: true });
+          this.setState({ msg: "PUT " + uri });
+          this.setState({ msg_content: err.toString() });
+        })
+    }
+    catch(err) {
+      console.error(err);
+      this.setState({ show_alert: true });
+      this.setState({ msg: "PUT " + uri });
+      this.setState({ msg_content: err.toString() });
+    }
+  }
+
+
+  onDismiss() {
+    this.setState({ show_alert: false });
+    this.setState({ show_info: false });
+    this.setState({ msg: "" });
+    this.setState({ msg_content: "" });
   }
 
 
   render() {
     return (
-      <div>
-        <h2>Service Instances</h2>
+      <div style={{margin: "-25px 0px 0px 0px"}}>
+        <h3><b>Jobs / DER</b></h3>
         <form>
           <div className="form-group row">
             <div className="col-sm-6">DER instances managed by this agent</div>
@@ -84,47 +121,55 @@ class LaunchJob extends Component {
           <div className="form-group row">
             <div id="mynetwork"></div>
             <div className="col-sm-6">
-              <form onSubmit={this.handleSubmit}>
-                <div className="form-group row">
-                  <Dropdown className="col-sm-2">
-                    <Dropdown.Toggle variant="secondary" id="dropdown-basic">
-                      Service
-                    </Dropdown.Toggle>
+              <div className="form-group row">
+                <Dropdown className="col-sm-2">
+                  <Dropdown.Toggle variant="secondary" id="dropdown-basic">
+                    Service
+                  </Dropdown.Toggle>
 
-                    <Dropdown.Menu>
-                      <Dropdown.Item onClick={this.select}>COMPSs 1</Dropdown.Item>
-                      <Dropdown.Item onClick={this.select}>COMPSs 2</Dropdown.Item>
-                      <Dropdown.Item onClick={this.select}>COMPSs 3</Dropdown.Item>
-                    </Dropdown.Menu>
-                  </Dropdown>
-                  <div className="col-sm-6">
-                    <input type="text" className="form-control" id="service" value={this.state.selservice}
-                    onChange={this.handleChange}/>
-                  </div>
+                  <Dropdown.Menu>
+                    <Dropdown.Item onClick={this.select}>COMPSs 1</Dropdown.Item>
+                    <Dropdown.Item onClick={this.select}>COMPSs 2</Dropdown.Item>
+                    <Dropdown.Item onClick={this.select}>COMPSs 3</Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+                <div className="col-sm-6">
+                  <input type="text" className="form-control" id="service" value={this.state.selservice} readOnly/>
                 </div>
+              </div>
 
-                <div className="form-group row">
-                  <div className="col-sm-10">
-                    <textarea className="form-control" id="job" rows="10"/>
-                  </div>
+              <div className="form-group row">
+                <div className="col-sm-10">
+                  <textarea className="form-control" id="job" rows="10"/>
                 </div>
+              </div>
 
-                <button type="submit" value="Submit" className="btn btn-success">Launch</button>
-                <button className="btn btn-warning">Cancel</button>
-              </form>
+              <button type="submit" value="Submit" className="btn btn-success" onClick={this.handleSubmit}>Launch</button>
+              &nbsp;
+              <button className="btn btn-warning">Cancel</button>
             </div>
           </div>
-          <div className="form-group row">
-            <div className="col-sm-6">
-              <button type="submit" className="btn btn-primary">View</button>
-              <button type="submit" className="btn btn-success">Start</button>
-              <button type="submit" className="btn btn-warning">Stop</button>
-              <button type="submit" className="btn btn-danger">Delete</button>
-            </div>
-            <div className="col-sm-6">
 
+          <Alert variant="danger" toggle={this.onDismiss} show={this.state.show_alert}>
+            <p><b>{this.state.msg}</b></p>
+            <p className="mb-0">{this.state.msg_content}</p>
+            <div className="d-flex justify-content-end">
+              <Button onClick={() => this.setState({ show_alert: false })} variant="outline-danger">
+                Close
+              </Button>
             </div>
-          </div>
+          </Alert>
+
+          <Alert variant="primary" toggle={this.onDismiss} show={this.state.show_info}>
+            <p><b>{this.state.msg}</b></p>
+            <p className="mb-0">{this.state.msg_content}</p>
+            <div className="d-flex justify-content-end">
+              <Button onClick={() => this.setState({ show_info: false })} variant="outline-primary">
+                Close
+              </Button>
+            </div>
+          </Alert>
+          
         </form>
       </div>
     );
