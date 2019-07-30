@@ -47,15 +47,15 @@ REST API
                         GET:    get agent's current user-profile and sharing-model (from 'local' User Management module)
                         PUT:    updates user-profile current number of applications running
                         
-                /lm/service-instance/<string:service_instance_id>
+                /lm/service-instances/<string:service_instance_id>
                    (*)  GET:    get service instance / all service instances (from cimi)
                    (*)  PUT:    Starts / stops / restarts a service instance  //  starts a job in COMPSs
                    (*)  DELETE: terminates a service instance; deletes service instance (from cimi)
                         
-                /lm/service-instance/<string:service_instance_id>/compss
+                /lm/service-instances/<string:service_instance_id>/der
                    (*)  PUT:    starts a job in COMPSs
                         
-                /api/v2/lm/service-instances/<string:service_instance_id>/report
+                /lm/service-instances/<string:service_instance_id>/report
                    (*)  GET:    get service instance report
                         
                 /lm/service
@@ -304,7 +304,7 @@ api.add_resource(ServiceInstance, '/api/v2/lm/service-instances/<string:service_
 #
 # Service instance COMPSs route:
 #
-#                 /lm/service-instance/<string:service_instance_id>/compss
+#                 /lm/service-instance/<string:service_instance_id>/der
 #                        PUT:    starts a job in COMPSs
 #
 class ServiceInstanceCOMPSs(Resource):
@@ -359,7 +359,7 @@ class ServiceInstanceCOMPSs(Resource):
         return lm.putServiceInstanceCOMPSs(request, service_instance_id)
 
 
-api.add_resource(ServiceInstanceCOMPSs, '/api/v2/lm/service-instances/<string:service_instance_id>/compss')
+api.add_resource(ServiceInstanceCOMPSs, '/api/v2/lm/service-instances/<string:service_instance_id>/der')
 
 
 #
