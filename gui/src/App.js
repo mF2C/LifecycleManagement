@@ -5,6 +5,9 @@ import {
   NavLink,
   HashRouter
 } from "react-router-dom";
+
+import { Navbar, Nav, Button } from 'react-bootstrap';
+
 import Home from "./Home";
 import LaunchService from "./LaunchService";
 import ServiceInstances from "./ServiceInstances";
@@ -12,37 +15,53 @@ import SharingModel from "./SharingModel";
 import UserProfile from "./UserProfile";
 import User from "./User";
 import LaunchJob from "./LaunchJob";
-
 import './App.css';
 
 
 class App extends Component {
+
+
+  constructor(props, context) {
+    super(props, context);
+    //Setting up global variables
+    global.rest_api_lm = 'http://192.168.252.41:46000/api/v2/lm/';
+    global.rest_api_um = 'http://192.168.252.41:46300/api/v2/um/';
+    global.debug = true;
+  }
+
+
   render() {
     return (
       <HashRouter>
-        <div style={{margin: "-25px 0px 0px 0px"}}>
-          <font size="5"> <b>Apps Lifecycle Dashboard</b></font>
+        <Navbar style={{background: "#666666"}} fixed="top">
+          <Navbar.Brand href="/">
+            <img
+              src="img/mf2c_logo_mini.png"
+              width="50"
+              height="25"
+              className="d-inline-block align-top"
+              alt="React Bootstrap logo"
+            />
+          </Navbar.Brand>
+          <Nav className="mr-auto">
+            <Nav.Link style={{color: "#E0F2F7"}} exact href="#/"><b>Home</b></Nav.Link>
+            <Nav.Link style={{color: "#F5ECCE"}} href="#/launchservice"><b>Launch new service</b></Nav.Link>
+            <Nav.Link style={{color: "#F5ECCE"}} href="#/serviceinstances"><b>Service instances</b></Nav.Link>
+            <Nav.Link style={{color: "#F5ECCE"}} href="#/launchjob"><b>Launch job (DER)</b></Nav.Link>
+            <Nav.Link style={{color: "#D8D8D8"}} href="#/userprofile"><b>User-Profile</b></Nav.Link>
+            <Nav.Link style={{color: "#D8D8D8"}} href="#/sharingmodel"><b>Sharing-Model</b></Nav.Link>
+            <Nav.Link style={{color: "#D8D8D8"}} href="#/user"><b>User</b></Nav.Link>
+          </Nav>
+        </Navbar>
 
-          <ul className="header">
-            <li><NavLink style={{color: "lightblue"}} exact to="/">Home</NavLink></li>
-            <li style={{color: "gray"}}>|</li>
-            <li><NavLink style={{color: "lightyellow"}} to="/launchservice">Launch new service</NavLink></li>
-            <li><NavLink style={{color: "lightyellow"}} to="/serviceinstances">Service instances</NavLink></li>
-            <li><NavLink style={{color: "lightyellow"}} to="/launchjob">Launch job (DER)</NavLink></li>
-            <li style={{color: "gray"}}>|</li>
-            <li><NavLink style={{color: "lightgray"}} to="/userprofile">User-Profile</NavLink></li>
-            <li><NavLink style={{color: "lightgray"}} to="/sharingmodel">Sharing-Model</NavLink></li>
-            <li><NavLink style={{color: "lightgray"}} to="/user">User</NavLink></li>
-          </ul>
-          <div className="content">
-            <Route exact path="/" component={Home}/>
-            <Route path="/launchservice" component={LaunchService}/>
-            <Route path="/serviceinstances" component={ServiceInstances}/>
-            <Route path="/launchjob" component={LaunchJob}/>
-            <Route path="/userprofile" component={UserProfile}/>
-            <Route path="/sharingmodel" component={SharingModel}/>
-            <Route path="/user" component={User}/>
-          </div>
+        <div className="content">
+          <Route exact path="/" component={Home}/>
+          <Route path="/launchservice" component={LaunchService}/>
+          <Route path="/serviceinstances" component={ServiceInstances}/>
+          <Route path="/launchjob" component={LaunchJob}/>
+          <Route path="/userprofile" component={UserProfile}/>
+          <Route path="/sharingmodel" component={SharingModel}/>
+          <Route path="/user" component={User}/>
         </div>
       </HashRouter>
     );

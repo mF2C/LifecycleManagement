@@ -91,8 +91,8 @@ class User extends Component {
 
   render() {
     return (
-      <div style={{margin: "-25px 0px 0px 0px"}}>
-        <h3><b>User Profile</b></h3>
+      <div style={{margin: "25px 0px 0px 0px"}}>
+        <h3><b>User</b></h3>
         <p>MF2C user information:</p>
         <form>
           <div className="form-group row">

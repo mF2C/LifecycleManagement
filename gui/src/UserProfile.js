@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import request from "request";
-import { Alert, Button } from 'react-bootstrap';
+import { Alert, Button, Badge } from 'react-bootstrap';
 
 
 class UserProfile extends Component {
@@ -13,70 +13,99 @@ class UserProfile extends Component {
       msg: "",
       msg_content: "",
       show_alert: false,
-      show_info: false
+      show_info: false,
+      // user-profile properties
+      id_user_profile: "",
+      resource_contributor: false,
+      service_consumer: false
     };
 
     this.handleView = this.handleView.bind(this);
     this.handleSave = this.handleSave.bind(this);
     this.onDismiss = this.onDismiss.bind(this);
+    this.handleChange_resource_contributor = this.handleChange_resource_contributor.bind(this);
+    this.handleChange_service_consumer = this.handleChange_service_consumer.bind(this);
+  }
+
+
+  componentDidMount() {
+    this.handleView(null);
+  }
+
+
+  handleChange_resource_contributor(event) {
+    if (this.state.resource_contributor) {
+      this.setState({resource_contributor: false});
+    } else {
+      this.setState({resource_contributor: true});
+    }
+  }
+
+
+  handleChange_service_consumer(event) {
+    if (this.state.service_consumer) {
+      this.setState({service_consumer: false});
+    } else {
+      this.setState({service_consumer: true});
+    }
   }
 
 
   handleView(event) {
-    //event.preventDefault();
     console.log('Getting data from user-profile ...');
-
     // call to api
     try {
-      request.get('/api/v2/um/user-profile')
-        .on('response', function(response) {
-          console.log(response.statusCode); // 200
-          this.setState({ show_info: true });
-          this.setState({ msg: "GET /api/v2/um/user-profile : " + response.statusCode });
-          this.setState({ msg_content: "User-profile retrieved: response: " + response.toString() });
-        })
-        .on('error', function(err) {
+      var that = this;
+      request.get({url: global.rest_api_um + 'user-profile'}, function(err, resp, body) {
+        if (err) {
           console.error(err);
-          this.setState({ show_alert: true });
-          this.setState({ msg: "GET /api/v2/um/user-profile" });
-          this.setState({ msg_content: err.toString() });
-        })
+          that.setState({ show_alert: true, msg: "GET /api/v2/um/user-profile", msg_content: err.toString() });
+        }
+        else {
+          console.log('Getting data from user-profile ... ok');
+          if (global.debug) {
+            that.setState({ show_info: true, msg: "GET /api/v2/um/user-profile => " + resp.statusCode, msg_content: "User-profile retrieved: response: " + body });
+          }
+          // user-profile properties
+          body = JSON.parse(body);
+          that.setState({ resource_contributor: body['user_profile']['resource_contributor'], service_consumer: body['user_profile']['service_consumer'],
+                          id_user_profile: body['user_profile']['id']});
+        }
+      });
     }
     catch(err) {
       console.error(err);
-      this.setState({ show_alert: true });
-      this.setState({ msg: "GET /api/v2/um/user-profile" });
-      this.setState({ msg_content: err.toString() });
+      this.setState({ show_alert: true, msg: "GET /api/v2/um/user-profile", msg_content: err.toString() });
     }
   }
 
 
   handleSave(event) {
-    //event.preventDefault();
     console.log('Updating user-profile ...');
-
-    // call to api
     // call to api
     try {
-      request.put('/api/v2/um/user-profile')
-        .on('response', function(response) {
-          console.log(response.statusCode); // 200
-          this.setState({ show_info: true });
-          this.setState({ msg: "PUT /api/v2/um/user-profile : " + response.statusCode });
-          this.setState({ msg_content: "User-profile updated: response: " + response.toString() });
-        })
-        .on('error', function(err) {
+      var that = this;
+      var formData = {
+        id: this.state.id_user_profile,
+        service_consumer: this.state.service_consumer,
+        resource_contributor: this.state.resource_contributor,
+      };
+      console.log(formData);
+      request.put({ url: global.rest_api_um + this.state.id_user_profile, json: formData}, function(err, resp, body) {
+        if (err) {
           console.error(err);
-          this.setState({ show_alert: true });
-          this.setState({ msg: "PUT /api/v2/um/user-profile" });
-          this.setState({ msg_content: err.toString() });
-        })
+          that.setState({ show_alert: true, msg: "PUT /api/v2/um/" + that.state.id_user_profile, msg_content: err.toString() });
+        }
+        else {
+          console.log('Updating user-profile ... ok');
+          that.setState({ show_info: true, msg: "PUT /api/v2/um/" + that.state.id_user_profile + " => " + resp.statusCode,
+                          msg_content: "User-profile updated: response: " + JSON.stringify(body) });
+        }
+      });
     }
     catch(err) {
       console.error(err);
-      this.setState({ show_alert: true });
-      this.setState({ msg: "PUT /api/v2/um/user-profile" });
-      this.setState({ msg_content: err.toString() });
+      this.setState({ show_alert: true, msg: "PUT /api/v2/um/user-profile", msg_content: err.toString() });
     }
   }
 
@@ -91,7 +120,7 @@ class UserProfile extends Component {
 
   render() {
     return (
-      <div style={{margin: "-25px 0px 0px 0px"}}>
+      <div style={{margin: "25px 0px 0px 0px"}}>
         <h3><b>User Profile</b></h3>
         <p>How the agent will make use of mF2C:</p>
         <form>
@@ -99,7 +128,7 @@ class UserProfile extends Component {
             <div className="col-sm-2">Resource contributor</div>
             <div className="col-sm-10">
               <div className="form-check">
-                <input className="form-check-input" type="checkbox" id="RCCheck1"/>
+                <input className="form-check-input" type="checkbox" id="RCCheck1" checked={this.state.resource_contributor} onChange={this.handleChange_resource_contributor}/>
                 <small className="form-check-label text-muted" htmlFor="RCCheck1">
                   Allow other mF2C devices to use agent's resources (RAM, Battery ...)
                 </small>
@@ -111,13 +140,15 @@ class UserProfile extends Component {
             <div className="col-sm-2">Service Consumer</div>
             <div className="col-sm-10">
               <div className="form-check">
-                <input className="form-check-input" type="checkbox" id="SCCheck1"/>
+                <input className="form-check-input" type="checkbox" id="SCCheck1" checked={this.state.service_consumer} onChange={this.handleChange_service_consumer}/>
                 <small className="form-check-label text-muted" htmlFor="SCCheck1">
                   Check if you will launch services to be executed in mF2C
                 </small>
               </div>
             </div>
           </div>
+
+          <Badge variant="secondary">{this.state.id_user_profile}</Badge><br />
 
           <Alert variant="danger" toggle={this.onDismiss} show={this.state.show_alert}>
             <p><b>{this.state.msg}</b></p>

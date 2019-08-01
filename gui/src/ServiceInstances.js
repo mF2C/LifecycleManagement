@@ -12,17 +12,17 @@ class ServiceInstances extends Component {
 
     this.state = {
       sel_service_instance: "",
-      sel_service_instance_id: "",
       start_si_button: false,
       stop_si_button: false,
       delete_si_button: false,
       msg: "",
       msg_content: "",
       show_alert: false,
-      show_info: false
+      show_info: false,
+      sel_service_instance_id_1: "",
+      total_service_instances_1: 0
     };
 
-    this.handleView = this.handleView.bind(this);
     this.handleView2 = this.handleView2.bind(this);
     this.handleStart = this.handleStart.bind(this);
     this.handleStop = this.handleStop.bind(this);
@@ -30,278 +30,198 @@ class ServiceInstances extends Component {
   }
 
 
-  checkSelectedItem(id_item) {
+  checkSelectedItem_1(id_item) {
     if (id_item == null) {
       this.setState({ start_si_button: false, stop_si_button: false, delete_si_button: false });
-    } else if (id_item.startsWith("si_")) {
+    } else if (id_item.startsWith("service-instance/")) {
       this.setState({ start_si_button: true, stop_si_button: true, delete_si_button: true });
     } else {
       this.setState({ start_si_button: false, stop_si_button: false, delete_si_button: false });
     }
 
-    this.parseItemId(id_item);
+    this.parseItemId_1(id_item);
   }
 
 
-  parseItemId(id_item) {
+  parseItemId_1(id_item) {
     if (id_item == null) {
-      this.setState({sel_service_instance_id: ""});
-    } else if (id_item.startsWith("si_")) {
-      var item_id = id_item.substring(3);
-      var pos_f = item_id.indexOf("_");
-      item_id = item_id.substring(0, pos_f);
-      this.setState({sel_service_instance_id: item_id});
+      this.setState({sel_service_instance_id_1: ""});
+    } else if (id_item.startsWith("service-instance/")) {
+      var item_id = id_item.substring(17);
+      this.setState({sel_service_instance_id_1: item_id});
     } else {
-      this.setState({sel_service_instance_id: ""});
+      this.setState({sel_service_instance_id_1: ""});
     }
   }
 
 
-  componentDidMount() {
-    var uri = "/api/v2/lm/";
+  displaySIAgents() {
     // call to api
     try {
-      request.get(uri)
-        .on('response', function(response) {
-          console.log(response.statusCode); // 200
-          this.setState({ show_info: true });
-          this.setState({ msg: "GET " + uri + " : " + response.statusCode });
-          this.setState({ msg_content: "Response: " + response.toString() });
-        })
-        .on('error', function(err) {
+      var that = this;
+      request.get({url: global.rest_api_lm + 'service-instances/' + that.state.sel_service_instance_id_1}, function(err, resp, body) {
+        if (err) {
           console.error(err);
-          this.setState({ show_alert: true });
-          this.setState({ msg: "GET " + uri });
-          this.setState({ msg_content: err.toString() });
-        })
-    }
-    catch(err) {
-      console.error(err);
-      this.setState({ show_alert: true });
-      this.setState({ msg: "GET " + uri });
-      this.setState({ msg_content: err.toString() });
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // create an array with nodes
-    var nodes = new vis.DataSet([
-      {id: 'ag_1', label: 'local mF2C AGENT', image: './img/node_mini.png', shape: 'image', title: 'mF2C agent'},
-      {id: 'ag_2', label: '192.168.1.21', image: './img/node_mini.png', shape: 'image', title: 'mF2C agent'},
-      {id: 'ag_3', label: '192.168.1.25', image: './img/node_mini.png', shape: 'image', title: 'mF2C agent'},
-      {id: 'ag_4', label: '192.168.1.26', image: './img/node_mini.png', shape: 'image', title: 'mF2C agent'},
-      {id: 'si_a0fdd615-e5a5-4716-8612-7b4f78d090bf_1', label: 'Service Instance 1', image: 'img/apps_mini.png', shape: 'image', title: 'service instance'},
-      {id: 'si_a0fdd615-e5a5-4716-8612-7b4f78d090bf_2', label: 'Service Instance 1', image: 'img/apps_mini.png', shape: 'image', title: 'service instance'},
-      {id: 'si_a0fdd615-e5a5-4716-8612-7b4f78d090bf_3', label: 'Service Instance 1', image: 'img/apps_mini.png', shape: 'image', title: 'service instance'},
-      {id: 'si_fffdd615-e5a5-4716-8612-7b4f78d09aaa_1', label: 'Service Instance 2', image: './img/apps_mini.png', shape: 'image', title: 'service instance'},
-      {id: 'si_fffdd615-e5a5-4716-8612-7b4f78d09aaa_2', label: 'Service Instance 2', image: './img/apps_mini.png', shape: 'image', title: 'service instance'}
-    ]);
-
-    // create an array with edges
-    var edges = new vis.DataSet([
-      {from: 'ag_1', to: 'ag_2', dashes: true, color:{color:'#111111'}},
-      {from: 'ag_1', to: 'ag_3', dashes: true, color:{color:'#111111'}},
-      {from: 'ag_1', to: 'ag_4', dashes: true, color:{color:'#111111'}},
-      {from: 'ag_1', to: 'si_a0fdd615-e5a5-4716-8612-7b4f78d090bf_1', color:{color:'darkgreen'}},
-      {from: 'ag_1', to: 'si_fffdd615-e5a5-4716-8612-7b4f78d09aaa_1', color:{color:'darkgreen'}},
-      {from: 'ag_2', to: 'si_a0fdd615-e5a5-4716-8612-7b4f78d090bf_2', color:{color:'darkgreen'}},
-      {from: 'ag_3', to: 'si_a0fdd615-e5a5-4716-8612-7b4f78d090bf_3', color:{color:'darkgreen'}},
-      {from: 'ag_4', to: 'si_fffdd615-e5a5-4716-8612-7b4f78d09aaa_2', color:{color:'darkgreen'}}
-    ]);
-
-    // create a network
-    var container = document.getElementById('mynetwork');
-    var data = {
-      nodes: nodes,
-      edges: edges
-    };
-    var options = {};
-    var network = new vis.Network(container, data, options);
-
-    // EVENTS
-    var that = this;
-    network.on("click", function (params) {
-        console.log('params returns: ' + params);
-        if (params != null) {
-          that.setState({ sel_service_instance: params.nodes[0] });
-          that.checkSelectedItem(params.nodes[0]);
+          that.setState({ show_alert: true, msg: "GET /api/v2/lm/service-instances/" + that.state.sel_service_instance_id_1, msg_content: err.toString() });
         }
-    });
+        else {
+          if (resp.statusCode == 200) {
+            console.log('Getting data service instances ... ok');
+            if (global.debug) {
+              that.setState({ show_info: true, msg: "GET /api/v2/lm/service-instances/" + that.state.sel_service_instance_id_1 + " => " + resp.statusCode, msg_content: "Service instances retrieved: response: " + body });
+            }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // create an array with nodes
-    var nodes2 = new vis.DataSet([
-      {id: 'ag_1', label: 'local mF2C AGENT', image: './img/node_mini.png', shape: 'image'},
-      {id: 'si_1', label: 'Service Instance 1', image: 'img/apps_mini.png', shape: 'image'},
-      {id: 'si_2', label: 'Service Instance 2', image: './img/apps_mini.png', shape: 'image'},
-      {id: 'si_3', label: 'Service Instance 3', image: './img/apps_mini.png', shape: 'image'},
-      {id: 'si_4', label: 'Service Instance 4', image: './img/apps_mini.png', shape: 'image'}
-    ]);
+            body = JSON.parse(body);
+            console.log(body);
 
-    // create an array with edges
-    var edges2 = new vis.DataSet([
-      {from: 'ag_1', to: 'si_1', color:{color:'darkgreen'}, dashes: true},
-      {from: 'ag_1', to: 'si_2', color:{color:'darkgreen'}, dashes: true},
-      {from: 'ag_1', to: 'si_3', color:{color:'darkgreen'}, dashes: true},
-      {from: 'ag_1', to: 'si_4', color:{color:'darkgreen'}, dashes: true}
-    ]);
+            ////////////////////////////////////////////////////////////////////////////
+            if (body['service_instance'] != null && body['service_instance']['agents'].length > 0) {
+              // create an array with nodes
+              var nodes2 = new vis.DataSet([
+                {id: body['service_instance']['id'], label: body['service_instance']['id'], image: './img/apps_mini.png', shape: 'image'}
+              ]);
 
-    // create a network2
-    var container2 = document.getElementById('mynetwork2');
-    var data2 = {
-      nodes: nodes2,
-      edges: edges2
-    };
-    var options2 = {};
-    var network2 = new vis.Network(container2, data2, options2);
-  }
+              var edges2 = new vis.DataSet([]);
 
+              body['service_instance']['agents'].forEach(function(element) {
+                nodes2.add({id: element['url'], label: element['url'], image: './img/node_mini.png', shape: 'image'});
 
-  handleView(event) {
-    //event.preventDefault();
-    console.log('Updating instances graph ...');
+                edges2.add({from: body['service_instance']['id'], to: element['url'], color:{color:'darkgreen'}, dashes: true});
+              });
 
-    var uri = "/api/v2/lm/";
-    // call to api
-    try {
-      request.get(uri)
-        .on('response', function(response) {
-          console.log(response.statusCode); // 200
-          this.setState({ show_info: true });
-          this.setState({ msg: "GET " + uri + " : " + response.statusCode });
-          this.setState({ msg_content: "Response: " + response.toString() });
-        })
-        .on('error', function(err) {
-          console.error(err);
-          this.setState({ show_alert: true });
-          this.setState({ msg: "GET " + uri });
-          this.setState({ msg_content: err.toString() });
-        })
+              // create a network2
+              var container2 = document.getElementById('mynetwork');
+              var data2 = {
+                nodes: nodes2,
+                edges: edges2
+              };
+              var options2 = {};
+              var network2 = new vis.Network(container2, data2, options2);
+            }
+            ////////////////////////////////////////////////////////////////////////////
+          }
+          else {
+            that.setState({ show_alert: true, msg: "GET /api/v2/lm/service-instances/all", msg_content: JSON.stringify(body) + " => " + resp.statusCode });
+          }
+        }
+      });
     }
     catch(err) {
       console.error(err);
-      this.setState({ show_alert: true });
-      this.setState({ msg: "GET " + uri });
-      this.setState({ msg_content: err.toString() });
-    }
-  }
-
-
-  handleStart(event) {
-    //event.preventDefault();
-    console.log("Starting service instance [" + this.state.sel_service_instance_id + "] ...");
-
-    var uri = "/api/v2/lm/" + this.state.sel_service_instance_id;
-    // call to api
-    try {
-      request.put(uri)
-        .on('response', function(response) {
-          console.log(response.statusCode); // 200
-          this.setState({ show_info: true });
-          this.setState({ msg: "PUT " + uri + " : " + response.statusCode });
-          this.setState({ msg_content: "Response: " + response.toString() });
-        })
-        .on('error', function(err) {
-          console.error(err);
-          this.setState({ show_alert: true });
-          this.setState({ msg: "PUT " + uri });
-          this.setState({ msg_content: err.toString() });
-        })
-    }
-    catch(err) {
-      console.error(err);
-      this.setState({ show_alert: true });
-      this.setState({ msg: "PUT " + uri });
-      this.setState({ msg_content: err.toString() });
-    }
-  }
-
-
-  handleStop(event) {
-    //event.preventDefault();
-    console.log("Stopping service instance [" + this.state.sel_service_instance_id + "] ...");
-
-    var uri = "/api/v2/lm/" + this.state.sel_service_instance_id;
-    // call to api
-    try {
-      request.put(uri)
-        .on('response', function(response) {
-          console.log(response.statusCode); // 200
-          this.setState({ show_info: true });
-          this.setState({ msg: "PUT " + uri + " : " + response.statusCode });
-          this.setState({ msg_content: "Response: " + response.toString() });
-        })
-        .on('error', function(err) {
-          console.error(err);
-          this.setState({ show_alert: true });
-          this.setState({ msg: "PUT " + uri });
-          this.setState({ msg_content: err.toString() });
-        })
-    }
-    catch(err) {
-      console.error(err);
-      this.setState({ show_alert: true });
-      this.setState({ msg: "PUT " + uri });
-      this.setState({ msg_content: err.toString() });
-    }
-  }
-
-
-  handleDelete(event) {
-    //event.preventDefault();
-    console.log("Terminating service instance [" + this.state.sel_service_instance_id + "] ...");
-
-    var uri = "/api/v2/lm/" + this.state.sel_service_instance_id;
-    // call to api
-    try {
-      request.delete(uri)
-        .on('response', function(response) {
-          console.log(response.statusCode); // 200
-          this.setState({ show_info: true });
-          this.setState({ msg: "DELETE " + uri + " : " + response.statusCode });
-          this.setState({ msg_content: "Response: " + response.toString() });
-        })
-        .on('error', function(err) {
-          console.error(err);
-          this.setState({ show_alert: true });
-          this.setState({ msg: "DELETE " + uri });
-          this.setState({ msg_content: err.toString() });
-        })
-    }
-    catch(err) {
-      console.error(err);
-      this.setState({ show_alert: true });
-      this.setState({ msg: "DELETE " + uri });
-      this.setState({ msg_content: err.toString() });
+      this.setState({ show_alert: true, msg: "GET /api/v2/lm/service-instances/all", msg_content: err.toString() });
     }
   }
 
 
   handleView2(event) {
-    //event.preventDefault();
-    console.log('Updating instances graph ...');
-
-    var uri = "/api/v2/lm/";
+    console.log('Getting data service instances ...');
     // call to api
     try {
-      request.get(uri)
-        .on('response', function(response) {
-          console.log(response.statusCode); // 200
-          this.setState({ show_info: true });
-          this.setState({ msg: "GET " + uri + " : " + response.statusCode });
-          this.setState({ msg_content: "Response: " + response.toString() });
-        })
-        .on('error', function(err) {
+      var that = this;
+      request.get({url: global.rest_api_lm + 'service-instances/all'}, function(err, resp, body) {
+        if (err) {
           console.error(err);
-          this.setState({ show_alert: true });
-          this.setState({ msg: "GET " + uri });
-          this.setState({ msg_content: err.toString() });
-        })
+          that.setState({ show_alert: true, msg: "GET /api/v2/lm/service-instances/all", msg_content: err.toString() });
+        }
+        else {
+          if (resp.statusCode == 200) {
+            console.log('Getting data service instances ... ok');
+            if (global.debug) {
+              that.setState({ show_info: true, msg: "GET /api/v2/lm/service-instances/all => " + resp.statusCode, msg_content: "Service instances retrieved: response: " + body });
+            }
+
+            body = JSON.parse(body);
+            console.log(body);
+
+            ////////////////////////////////////////////////////////////////////////////
+            if (body['service_instances'] != null && body['service_instances'].length > 0) {
+              // create an array with nodes
+              var nodes2 = new vis.DataSet([
+                {id: 'ag_1', label: 'local mF2C AGENT', image: './img/node_mini.png', shape: 'image'}
+              ]);
+
+              var edges2 = new vis.DataSet([]);
+
+              body['service_instances'].forEach(function(element) {
+                nodes2.add({id: element['id'], label: element['id'], image: './img/apps_mini.png', shape: 'image'});
+
+                edges2.add({from: 'ag_1', to: element['id'], color:{color:'darkgreen'}, dashes: true});
+              });
+
+              // create a network2
+              var container2 = document.getElementById('mynetwork2');
+              var data2 = {
+                nodes: nodes2,
+                edges: edges2
+              };
+              var options2 = {};
+              var network2 = new vis.Network(container2, data2, options2);
+
+              that.setState({total_service_instances_1: body['service_instances'].length});
+
+              // EVENTS
+              network2.on("click", function (params) {
+                  console.log('params returns: ' + params);
+                  if (params != null) {
+                    that.setState({ sel_service_instance_1: params.nodes[0] });
+                    that.checkSelectedItem_1(params.nodes[0]);
+                    that.displaySIAgents();
+                  }
+              });
+            }
+            ////////////////////////////////////////////////////////////////////////////
+          }
+          else {
+            that.setState({ show_alert: true, msg: "GET /api/v2/lm/service-instances/all", msg_content: JSON.stringify(body) + " => " + resp.statusCode });
+          }
+        }
+      });
     }
     catch(err) {
       console.error(err);
-      this.setState({ show_alert: true });
-      this.setState({ msg: "GET " + uri });
-      this.setState({ msg_content: err.toString() });
+      this.setState({ show_alert: true, msg: "GET /api/v2/lm/service-instances/all", msg_content: err.toString() });
+    }
+  }
+
+
+  componentDidMount() {
+    this.handleView2(null)
+  }
+
+
+  handleStart(event) {
+    console.log("Starting service instance [" + this.state.sel_service_instance_id_1 + "] ...");
+
+  }
+
+
+  handleStop(event) {
+    console.log("Stopping service instance [" + this.state.sel_service_instance_id_1 + "] ...");
+
+  }
+
+
+  handleDelete(event) {
+    console.log('Deleting service instance ...');
+    // call to api
+    var that = this;
+    try {
+      request.delete({url: global.rest_api_lm + 'service-instances/' + this.state.sel_service_instance_id_1}, function(err, resp, body) {
+        if (err) {
+          console.error(err);
+          that.setState({ show_alert: true, msg: "DELETE /api/v2/lm/service-instances/" + that.state.sel_service_instance_id_1, msg_content: err.toString() });
+        }
+        else {
+          console.log('Deleting service instance ... ok');
+          if (global.debug) {
+            that.setState({ show_info: true, msg: "DELETE /api/v2/lm/service-instances/" + that.state.sel_service_instance_id_1 + " => " + resp.statusCode, msg_content: "Service instance deleted: response: " + body });
+          }
+        }
+      });
+    }
+    catch(err) {
+      console.error(err);
+      this.setState({ show_alert: true, msg: "GET /api/v2/um/sharing-model", msg_content: err.toString() });
     }
   }
 
@@ -316,19 +236,20 @@ class ServiceInstances extends Component {
 
   render() {
     return (
-      <div style={{margin: "-25px 0px 0px 0px"}}>
+      <div style={{margin: "25px 0px 0px 0px"}}>
         <h3><b>Service Instances</b></h3>
         <form>
           <div className="form-group row">
+            <div className="col-sm-6">Service Instances managed by this agent <Badge variant="secondary">{this.state.total_service_instances_1}</Badge></div>
             <div className="col-sm-6">
-              Service Instances launched by this agent
-
+              <Badge variant="secondary">selected service instance:</Badge>
+              &nbsp;
+              <Badge variant="primary">{this.state.sel_service_instance_id_1}</Badge>
             </div>
-            <div className="col-sm-6">Service Instances running in this agent</div>
           </div>
           <div className="form-group row">
-            <div id="mynetwork"></div>
             <div id="mynetwork2"></div>
+            <div id="mynetwork"></div>
           </div>
 
           <Alert variant="danger" toggle={this.onDismiss} show={this.state.show_alert}>
@@ -353,14 +274,7 @@ class ServiceInstances extends Component {
 
           <div className="form-group row">
             <div className="col-sm-6">
-              <Badge variant="secondary">selected service instance:</Badge>
-              &nbsp;
-              <Badge variant="primary">{this.state.sel_service_instance_id}</Badge>
-            </div>
-          </div>
-          <div className="form-group row">
-            <div className="col-sm-6">
-              <button className="btn btn-primary" onClick={this.handleView}>View</button>
+              <button className="btn btn-primary" onClick={this.handleView2}>View</button>
               &nbsp;
               <button className="btn btn-success" onClick={this.handleStart} disabled={!this.state.start_si_button}>Start</button>
               &nbsp;
@@ -369,7 +283,6 @@ class ServiceInstances extends Component {
               <button className="btn btn-danger" onClick={this.handleDelete} disabled={!this.state.delete_si_button}>Delete</button>
             </div>
             <div className="col-sm-6">
-              <button className="btn btn-primary" onClick={this.handleView2}>View</button>
             </div>
           </div>
         </form>

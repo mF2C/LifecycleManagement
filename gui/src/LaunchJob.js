@@ -111,7 +111,7 @@ class LaunchJob extends Component {
 
   render() {
     return (
-      <div style={{margin: "-25px 0px 0px 0px"}}>
+      <div style={{margin: "25px 0px 0px 0px"}}>
         <h3><b>Jobs / DER</b></h3>
         <form>
           <div className="form-group row">
@@ -169,7 +169,7 @@ class LaunchJob extends Component {
               </Button>
             </div>
           </Alert>
-          
+
         </form>
       </div>
     );

@@ -12,7 +12,8 @@ class LaunchService extends Component {
       selservice: "",
       username: 'wsvincent',
       dropdownOpen: false,
-      value : ""
+      value : "",
+      lservices: []
     };
 
     this.handleClick = this.handleClick.bind(this);
@@ -20,6 +21,13 @@ class LaunchService extends Component {
     this.select = this.select.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
+  }
+
+
+  componentDidMount() {
+    this.setState({
+      lservices: ['one', 'two', 'three', 'four']
+    });
   }
 
 
@@ -65,8 +73,13 @@ class LaunchService extends Component {
   */
 
   render() {
+    const items = []
+    for (const [index, value] of this.state.lservices.entries()) {
+      items.push(<Dropdown.Item onClick={this.select}>{value}</Dropdown.Item>)
+    }
+
     return (
-      <div style={{margin: "-25px 0px 0px 0px"}}>
+      <div style={{margin: "25px 0px 0px 0px"}}>
         <h3><b>Launch a new service</b></h3>
         <p>Select a service and run it in mF2C</p>
         <form onSubmit={this.handleSubmit}>
@@ -77,9 +90,10 @@ class LaunchService extends Component {
               </Dropdown.Toggle>
 
               <Dropdown.Menu>
-                <Dropdown.Item onClick={this.select}>Service 1</Dropdown.Item>
-                <Dropdown.Item onClick={this.select}>Service 2</Dropdown.Item>
-                <Dropdown.Item onClick={this.select}>Service 3</Dropdown.Item>
+                {items}
+                <Dropdown.Item onClick={this.select}>Service a</Dropdown.Item>
+                <Dropdown.Item onClick={this.select}>Service b</Dropdown.Item>
+                <Dropdown.Item onClick={this.select}>Service c</Dropdown.Item>
               </Dropdown.Menu>
             </Dropdown>
             <div className="col-sm-4">
