@@ -108,7 +108,7 @@ class SharingModel extends Component {
         else {
           console.log('Getting data from sharing model ... ok');
           if (global.debug) {
-            that.setState({ show_info: true, msg: "GET /api/v2/um/sharing-model => " + resp.statusCode, msg_content: "Sharing-model retrieved: response: " + body });
+            //that.setState({ show_info: true, msg: "GET /api/v2/um/sharing-model => " + resp.statusCode, msg_content: "Sharing-model retrieved: response: " + body });
           }
           // sharing-model properties
           body = JSON.parse(body);

@@ -23,9 +23,12 @@ class App extends Component {
 
   constructor(props, context) {
     super(props, context);
+
     //Setting up global variables
     global.rest_api_lm = 'http://192.168.252.41:46000/api/v2/lm/';
     global.rest_api_um = 'http://192.168.252.41:46300/api/v2/um/';
+    global.const_rest_api_lm = 'http://192.168.252.41:46000/api/v2/lm/';
+    global.const_rest_api_um = 'http://192.168.252.41:46300/api/v2/um/';
     global.debug = true;
   }
 
@@ -43,14 +46,30 @@ class App extends Component {
               alt="React Bootstrap logo"
             />
           </Navbar.Brand>
-          <Nav className="mr-auto">
-            <Nav.Link style={{color: "#E0F2F7"}} exact href="#/"><b>Home</b></Nav.Link>
-            <Nav.Link style={{color: "#F5ECCE"}} href="#/launchservice"><b>Launch new service</b></Nav.Link>
-            <Nav.Link style={{color: "#F5ECCE"}} href="#/serviceinstances"><b>Service instances</b></Nav.Link>
-            <Nav.Link style={{color: "#F5ECCE"}} href="#/launchjob"><b>Launch job (DER)</b></Nav.Link>
-            <Nav.Link style={{color: "#D8D8D8"}} href="#/userprofile"><b>User-Profile</b></Nav.Link>
-            <Nav.Link style={{color: "#D8D8D8"}} href="#/sharingmodel"><b>Sharing-Model</b></Nav.Link>
-            <Nav.Link style={{color: "#D8D8D8"}} href="#/user"><b>User</b></Nav.Link>
+          <Nav className="mr-auto" defaultActiveKey="#/" as="ul">
+            <Nav.Item as="li">
+              <Nav.Link style={{color: "#E0F2F7"}} exact href="#/"><b>Home</b></Nav.Link>
+            </Nav.Item>
+            <Nav.Item as="li"></Nav.Item>
+            <Nav.Item as="li">
+              <Nav.Link style={{color: "#F5ECCE"}} href="#/launchservice"><b>Launch new service</b></Nav.Link>
+            </Nav.Item>
+            <Nav.Item as="li">
+              <Nav.Link style={{color: "#F5ECCE"}} href="#/serviceinstances"><b>Service instances</b></Nav.Link>
+            </Nav.Item>
+            <Nav.Item as="li">
+              <Nav.Link style={{color: "#F5ECCE"}} href="#/launchjob"><b>Launch job (DER)</b></Nav.Link>
+            </Nav.Item>
+            <Nav.Item as="li"></Nav.Item>
+            <Nav.Item as="li">
+              <Nav.Link style={{color: "#D8D8D8"}} href="#/userprofile"><b>User-Profile</b></Nav.Link>
+            </Nav.Item>
+            <Nav.Item as="li">
+              <Nav.Link style={{color: "#D8D8D8"}} href="#/sharingmodel"><b>Sharing-Model</b></Nav.Link>
+            </Nav.Item>
+            <Nav.Item as="li">
+              <Nav.Link style={{color: "#D8D8D8"}} href="#/user"><b>User</b></Nav.Link>
+            </Nav.Item>
           </Nav>
         </Navbar>
 

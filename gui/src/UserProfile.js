@@ -64,7 +64,7 @@ class UserProfile extends Component {
         else {
           console.log('Getting data from user-profile ... ok');
           if (global.debug) {
-            that.setState({ show_info: true, msg: "GET /api/v2/um/user-profile => " + resp.statusCode, msg_content: "User-profile retrieved: response: " + body });
+            //that.setState({ show_info: true, msg: "GET /api/v2/um/user-profile => " + resp.statusCode, msg_content: "User-profile retrieved: response: " + body });
           }
           // user-profile properties
           body = JSON.parse(body);
@@ -125,8 +125,8 @@ class UserProfile extends Component {
         <p>How the agent will make use of mF2C:</p>
         <form>
           <div className="form-group row">
-            <div className="col-sm-2">Resource contributor</div>
-            <div className="col-sm-10">
+            <div className="col-sm-3">Resource contributor</div>
+            <div className="col-sm-9">
               <div className="form-check">
                 <input className="form-check-input" type="checkbox" id="RCCheck1" checked={this.state.resource_contributor} onChange={this.handleChange_resource_contributor}/>
                 <small className="form-check-label text-muted" htmlFor="RCCheck1">
@@ -137,8 +137,8 @@ class UserProfile extends Component {
           </div>
 
           <div className="form-group row">
-            <div className="col-sm-2">Service Consumer</div>
-            <div className="col-sm-10">
+            <div className="col-sm-3">Service Consumer</div>
+            <div className="col-sm-9">
               <div className="form-check">
                 <input className="form-check-input" type="checkbox" id="SCCheck1" checked={this.state.service_consumer} onChange={this.handleChange_service_consumer}/>
                 <small className="form-check-label text-muted" htmlFor="SCCheck1">

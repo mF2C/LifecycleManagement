@@ -11,63 +11,166 @@ class LaunchJob extends Component {
     super(props, context);
 
     this.state = {
+      isLoading: false,
+      total_service_instances_1: 0,
+      sel_service_instance_id_1: "",
+
       selservice: "",
       value : "",
       start_si_button: false,
+      report_si_button: false,
+      cancel_si_button: false,
       msg: "",
       msg_content: "",
       show_alert: false,
       show_info: false
     };
 
-    this.select = this.select.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.handleView2 = this.handleView2.bind(this);
+    this.viewReport = this.viewReport.bind(this);
+  }
+
+
+  checkSelectedItem_1(id_item) {
+    if (id_item == null) {
+      this.setState({ start_si_button: false, report_si_button: false, cancel_si_button: false });
+    } else if (id_item.startsWith("service-instance/")) {
+      this.setState({ start_si_button: true, report_si_button: true, cancel_si_button: true });
+    } else {
+      this.setState({ start_si_button: false, report_si_button: false, cancel_si_button: false });
+    }
+
+    this.parseItemId_1(id_item);
+  }
+
+
+  parseItemId_1(id_item) {
+    if (id_item == null) {
+      this.setState({sel_service_instance_id_1: ""});
+    } else if (id_item.startsWith("service-instance/")) {
+      var item_id = id_item.substring(17);
+      this.setState({sel_service_instance_id_1: item_id});
+    } else {
+      this.setState({sel_service_instance_id_1: ""});
+    }
+  }
+
+
+  /**
+   * Load initial graph with all service instances managed by the agent
+   */
+  viewReport(event) {
+
+  }
+
+
+  /**
+   * Load initial graph with all service instances managed by the agent
+   */
+  handleView2(event) {
+    this.setState({isLoading: true});
+    console.log('Getting data service instances ...');
+    // call to api
+    try {
+      var that = this;
+      request.get({url: global.rest_api_lm + 'service-instances/all'}, function(err, resp, body) {
+        if (err) {
+          console.error(err);
+          that.setState({ show_alert: true, msg: "GET /api/v2/lm/service-instances/all", msg_content: err.toString() });
+        }
+        else {
+          if (resp.statusCode == 200) {
+            console.log('Getting data service instances ... ok');
+            if (global.debug) {
+              //that.setState({ show_info: true, msg: "GET /api/v2/lm/service-instances/all => " + resp.statusCode, msg_content: "Service instances retrieved: response: " + body });
+            }
+
+            body = JSON.parse(body);
+            console.log(body);
+
+            ////////////////////////////////////////////////////////////////////////////
+            if (body['service_instances'] != null && body['service_instances'].length > 0) {
+              // create an array with nodes
+              var nodes2 = new vis.DataSet([
+                {id: 'ag_1', label: "<b>mf2c agent</b>", image: './img/node_mini.png', shape: 'image', title: "local mF2C agent",
+                 font: {size:13, multi: true, color: "black", strokeWidth:2, strokeColor: "#dddddd"}, level: 0}
+              ]);
+
+              var edges2 = new vis.DataSet([]);
+              var total_compss_services = 0;
+
+              body['service_instances'].forEach(function(element) {
+                var ncolor = "black";
+                if (element['status'] == "started") {
+                  ncolor = "#0B3B17";
+                } else if (element['status'] == "error") {
+                  ncolor = "darkred";
+                }
+
+                if (element['service_type'] == "compss") {
+                  nodes2.add({id: element['id'], label: element['id'].substring(17), image: './img/apps_compss_mini.png', shape: 'image',
+                              font: {size:11, multi: true, color: ncolor}, level: 1});
+                  total_compss_services++;
+                } else {
+                  nodes2.add({id: element['id'], label: element['id'], image: './img/apps_mini_disabled.png', shape: 'image',
+                              font: {size:11, multi: true, color: ncolor}, level: 1});
+                }
+
+                if (element['status'] == "started") {
+                  edges2.add({from: 'ag_1', to: element['id'], color:{color:"darkgreen"}, dashes: true});
+                } else if (element['status'] == "error") {
+                  edges2.add({from: 'ag_1', to: element['id'], color:{color:"darkred"}, dashes: true});
+                } else {
+                  edges2.add({from: 'ag_1', to: element['id'], color:{color:"black"}, dashes: [2,2,10,10]});
+                }
+              });
+
+              // create a network2
+              var container2 = document.getElementById('mynetwork3');
+              var data2 = {
+                nodes: nodes2,
+                edges: edges2
+              };
+              var options2 = {
+              };
+              var network2 = new vis.Network(container2, data2, options2);
+
+              that.setState({total_service_instances_1: total_compss_services});
+
+              // EVENTS
+              network2.on("click", function (params) {
+                  console.log('params returns: ' + params);
+                  if (params != null) {
+                    that.setState({ sel_service_instance_1: params.nodes[0] });
+                    that.checkSelectedItem_1(params.nodes[0]);
+                    if (that.state.sel_service_instance_id_1 != "") {
+
+                    } else {
+
+                    }
+                  }
+              });
+            }
+            ////////////////////////////////////////////////////////////////////////////
+          }
+          else {
+            that.setState({ show_alert: true, msg: "GET /api/v2/lm/service-instances/all", msg_content: JSON.stringify(body) + " => " + resp.statusCode });
+          }
+        }
+
+        that.setState({isLoading: false});
+      });
+    }
+    catch(err) {
+      console.error(err);
+      this.setState({ show_alert: true, msg: "GET /api/v2/lm/service-instances/all", msg_content: err.toString(), isLoading: false });
+    }
   }
 
 
   componentDidMount() {
-    ////////////////////////////////////////////////////////////////////////////
-    // create an array with nodes
-    var nodes = new vis.DataSet([
-      {id: 'ag_1', label: 'local mF2C AGENT', image: './img/node_mini.png', shape: 'image'},
-      {id: 'ag_2', label: '192.168.1.21', image: './img/node_mini.png', shape: 'image'},
-      {id: 'ag_3', label: '192.168.1.25', image: './img/node_mini.png', shape: 'image'},
-      {id: 'ag_4', label: '192.168.1.26', image: './img/node_mini.png', shape: 'image'},
-      {id: 'si_1_1', label: 'Service Instance 1', image: 'img/apps_mini.png', shape: 'image'},
-      {id: 'si_1_2', label: 'Service Instance 1', image: 'img/apps_mini.png', shape: 'image'},
-      {id: 'si_1_3', label: 'Service Instance 1', image: 'img/apps_mini.png', shape: 'image'},
-      {id: 'si_2_1', label: 'Service Instance 2', image: './img/apps_mini.png', shape: 'image'},
-      {id: 'si_2_2', label: 'Service Instance 2', image: './img/apps_mini.png', shape: 'image'}
-    ]);
-
-    // create an array with edges
-    var edges = new vis.DataSet([
-      {from: 'ag_1', to: 'ag_2', dashes: true, color:{color:'#111111'}},
-      {from: 'ag_1', to: 'ag_3', dashes: true, color:{color:'#111111'}},
-      {from: 'ag_1', to: 'ag_4', dashes: true, color:{color:'#111111'}},
-      {from: 'ag_1', to: 'si_1_1', color:{color:'darkgreen'}},
-      {from: 'ag_1', to: 'si_2_1', color:{color:'darkgreen'}},
-      {from: 'ag_2', to: 'si_1_2', color:{color:'darkgreen'}},
-      {from: 'ag_3', to: 'si_1_3', color:{color:'darkgreen'}},
-      {from: 'ag_4', to: 'si_2_2', color:{color:'darkgreen'}}
-    ]);
-
-    // create a network
-    var container = document.getElementById('mynetwork');
-    var data = {
-      nodes: nodes,
-      edges: edges
-    };
-    var options = {};
-    var network = new vis.Network(container, data, options);
-  }
-
-
-  select(event) {
-    this.setState({
-      value: event.target.innerText,
-      selservice: event.target.innerText
-    });
+    this.handleView2(null);
   }
 
 
@@ -115,38 +218,41 @@ class LaunchJob extends Component {
         <h3><b>Jobs / DER</b></h3>
         <form>
           <div className="form-group row">
-            <div className="col-sm-6">DER instances managed by this agent</div>
-            <div className="col-sm-6">Select a DER and launch a job</div>
+            <div className="col-sm-6">
+              DER instances managed by this agent <Badge variant="secondary">{this.state.total_service_instances_1}</Badge>
+            </div>
+            <div className="col-sm-6">Select a DER instance and launch a job</div>
           </div>
+
           <div className="form-group row">
-            <div id="mynetwork"></div>
+            <div className="col-sm-6">
+              <div id="mynetwork3"></div>
+            </div>
+
             <div className="col-sm-6">
               <div className="form-group row">
-                <Dropdown className="col-sm-2">
-                  <Dropdown.Toggle variant="secondary" id="dropdown-basic">
-                    Service
-                  </Dropdown.Toggle>
-
-                  <Dropdown.Menu>
-                    <Dropdown.Item onClick={this.select}>COMPSs 1</Dropdown.Item>
-                    <Dropdown.Item onClick={this.select}>COMPSs 2</Dropdown.Item>
-                    <Dropdown.Item onClick={this.select}>COMPSs 3</Dropdown.Item>
-                  </Dropdown.Menu>
-                </Dropdown>
-                <div className="col-sm-6">
-                  <input type="text" className="form-control" id="service" value={this.state.selservice} readOnly/>
+                <div className="col-sm-11">
+                  <input type="text" className="form-control" id="service" value={this.state.sel_service_instance_id_1} readOnly/>
                 </div>
               </div>
 
               <div className="form-group row">
-                <div className="col-sm-10">
-                  <textarea className="form-control" id="job" rows="10"/>
+                <div className="col-sm-11">
+                  <textarea className="form-control" id="job" rows="10">
+                  </textarea>
                 </div>
               </div>
 
-              <button type="submit" value="Submit" className="btn btn-success" onClick={this.handleSubmit}>Launch</button>
+              <button type="submit" value="Submit" className="btn btn-success" onClick={this.handleSubmit} disabled={!this.state.start_si_button}>Launch</button>
               &nbsp;
-              <button className="btn btn-warning">Cancel</button>
+              <button className="btn btn-warning" disabled={!this.state.cancel_si_button}>Cancel</button>
+            </div>
+          </div>
+
+          <div className="form-group row">
+            <div className="col-sm-12">
+              <Button variant="primary" onClick={this.viewReport} disabled={!this.state.report_si_button}>View report</Button>
+              <textarea className="form-control" id="result" rows="3"/>
             </div>
           </div>
 

@@ -97,7 +97,7 @@ class LaunchService extends Component {
               </Dropdown.Menu>
             </Dropdown>
             <div className="col-sm-4">
-              <input type="text" className="form-control" id="service" value={this.state.selservice} readonly/>
+              <input type="text" className="form-control" id="service" value={this.state.selservice} disabled/>
             </div>
           </div>
 
