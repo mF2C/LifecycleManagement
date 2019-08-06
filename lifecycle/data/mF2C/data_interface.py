@@ -70,7 +70,7 @@ def get_my_ip():
 # FUNCTION: get_leader_ip: Get leader ip address
 def get_leader_ip():
     agent = __get_agent()
-    if agent is not None:
+    if agent is not None and 'leader_ip' in agent and agent['leader_ip'].strip():
         LOG.info("[lifecycle.data.mf2c.data_interface] [get_leader_ip] LEADER IP from current agent = " + agent['leader_ip'])
         return agent['leader_ip']
     else:

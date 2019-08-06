@@ -111,8 +111,6 @@ def getCheckAgentSwarm():
     return resp
 
 
-
-
 # getServiceInstance
 def getServiceInstance(service_instance_id):
     if service_instance_id == "all":
@@ -238,7 +236,7 @@ def postService(request):
         res = connector.user_management_get_current("user") #data_adapter.get_um_current("user")
         user_id = "ADMIN" # TODO
         try:
-            if res is not None:
+            if res is not None and 'user_id' in res and res['user_id'].strip():
                 user_id = res['user_id']
         except:
             LOG.exception("[lifecycle.app_funcs] [postService] Exception; Error parsing 'res' variable")
@@ -288,6 +286,9 @@ def postService(request):
             return Response(json.dumps({"error": True, "message": "service not found; [id=" + data['service_id'] + "]"}),
                             status=500,
                             content_type='application/json')
+
+    LOG.info("[lifecycle.app_funcs] [postService] Deploying service ...")
+    LOG.info("[lifecycle.app_funcs] [postService] " + str(service))
 
     # 3. Submits the service
     # OPTION A: list of agents are defined in the request:

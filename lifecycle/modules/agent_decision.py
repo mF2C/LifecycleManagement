@@ -83,9 +83,9 @@ def get_available_agents_resources(service):
 #
 
 # FUNCTION: __user_management: call to USER MANAGEMENT -> profiling and sharing model
+# If any error is found when calling USER MANAGEMENT module, then the Lifecycle does not filter the list of agents
 def __user_management(service_instance):
     try:
-        LOG.info("######## SELECT AGENTS: USER MANAGEMENT ####################################### (3) ###########")
         LOG.info("[lifecycle.modules.agent_decision] [__user_management] Checking user-profile and sharing-model in selected agents " +
                  str(service_instance["agents"]) + " ...")
 
@@ -114,7 +114,7 @@ def __user_management(service_instance):
             # check content
             else:
                 LOG.debug("[lifecycle.modules.agent_decision] [__user_management] Checking agents information ...")
-                if not res['result']:
+                if 'result' in res and not res['result']:
                     LOG.debug("[lifecycle.modules.agent_decision] [__user_management] agent not allowed: " + str(agent))
                 else:
                     l_filtered_agents.append(agent)
@@ -146,9 +146,9 @@ def __check_qos(agent_resp):
 
 
 # FUNCTION: __qos_providing: call to QoS PROVIDING
+# If any error is found when calling QoS provider, then the Lifecycle does not filter the list of agents
 def __qos_providing(service_instance):
     try:
-        LOG.info("######## SELECT AGENTS: SERVICE MANAGEMENT (QoS) ############################## (2) ###########")
         LOG.debug("[lifecycle.modules.agent_decision] [__qos_providing] Checking QoS of service instance [" + str(service_instance) + "] ...")
 
         service_instance_resp = connector.qos_providing(service_instance)
@@ -190,7 +190,6 @@ def __check_swarm(agent):
 # FUNCTION: __filter_by_swarm: check if agents support swarm
 def __filter_by_swarm(service_instance):
     try:
-        LOG.info("######## SELECT AGENTS: SWARM SERVICE ######################################### (4) ###########")
         LOG.debug("[lifecycle.modules.agent_decision] [filter_by_swarm] Checking if agents support Docker Swarm ...")
 
         l_filtered_agents = []
@@ -330,18 +329,21 @@ def select_agents(service_type, num_agents, service_instance):
         else:
             LOG.debug("[lifecycle.modules.agent_decision] [select_agents] agents INITIAL list: " + str(service_instance['agents']))
             # 1. FILTER LIST ###############
+            LOG.info("######## SELECT AGENTS: SERVICE MANAGEMENT (QoS) ############################## (2) ###########")
             # 1.1. QoS PROVIDING
             service_instance_res = __qos_providing(service_instance)
             if not service_instance_res is None:
                 service_instance = service_instance_res
 
             # 1.2. USER MANAGEMENT -> profiling and sharing model
+            LOG.info("######## SELECT AGENTS: USER MANAGEMENT ####################################### (3) ###########")
             service_instance_res = __user_management(service_instance)
             if not service_instance_res is None:
                 service_instance = service_instance_res
 
             # 1.3. check if service is a SWARM service and filter
             if service_type == SERVICE_DOCKER_SWARM:
+                LOG.info("######## SELECT AGENTS: SWARM SERVICE ######################################### (4) ###########")
                 service_instance_res = __filter_by_swarm(service_instance)
                 if not service_instance_res is None:
                     service_instance = service_instance_res
@@ -349,6 +351,7 @@ def select_agents(service_type, num_agents, service_instance):
             LOG.debug("[lifecycle.modules.agent_decision] [select_agents] agents FILTERED list: " + str(service_instance['agents']))
 
             # 2. SELECT AGENTS FROM LIST ###
+            LOG.info("######## SELECT AGENTS: SELECT AGENTS FROM FILTERED LIST ######################################")
             # 2.1. COMPSs
             if service_type == SERVICE_COMPSS:
                 return __select_agents_service_compss(service_instance, num_agents)

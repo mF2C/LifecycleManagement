@@ -1,20 +1,26 @@
-# Changelog
+# Changelog (Lifecycle Manager)
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.7] - 2019-06-17
+## [1.3.2] - 2019-08-06
 ### Added
-- ...
+- gui added to repository
 
+### Changed
+- logs and exceptions updated
+- errors handling improved
+
+### Fixed
+-
+
+## [1.2.7] - 2019-06-17
 ### Changed
 - docker-compose base image updated
 - docker-compose example updated
 - use of service's category field when calling analytics engine
 
-### Fixed
-- ...
 
 ## [1.2.6] - 2019-06-04
 ### Added
