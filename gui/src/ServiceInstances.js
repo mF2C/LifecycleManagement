@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import request from "request";
-import { Alert, Button, Dropdown, Badge, Form, Row, Col } from 'react-bootstrap';
+import { Alert, Button, Badge, Form, Row, Col } from 'react-bootstrap';
 import vis from "vis-network";
 
 
@@ -25,6 +25,7 @@ class ServiceInstances extends Component {
       show_info: false,
       sel_service_instance_id_1: "",
       total_service_instances_1: 0,
+      img_icon_service_type: "img/apps_mini.png",
       // service instance
       si_id: "",
       si_status: "",
@@ -67,6 +68,9 @@ class ServiceInstances extends Component {
   }
 
 
+  /**
+   * Display agents running the selected service instance
+   */
   displaySIAgents() {
     // call to api
     try {
@@ -88,14 +92,33 @@ class ServiceInstances extends Component {
 
             ////////////////////////////////////////////////////////////////////////////
             // FORM
-            // service instance
-            that.setState({si_id: body['service_instance']['id'],
-                           si_status: body['service_instance']['status'],
-                           si_created: body['service_instance']['created'],
-                           si_service: body['service_instance']['service'],
-                           si_agreement: body['service_instance']['agreement'],
-                           si_type: body['service_instance']['service_type'],
-                           si_agents: body['service_instance']['agents'].length});
+            if (body['service_instance'] != null) {
+              // service instance
+              that.setState({si_id: body['service_instance']['id'],
+                             si_status: body['service_instance']['status'],
+                             si_created: body['service_instance']['created'],
+                             si_service: body['service_instance']['service'],
+                             si_agreement: body['service_instance']['agreement'],
+                             si_type: body['service_instance']['service_type']});
+
+              if (body['service_instance']['agents'] != null) {
+                that.setState({si_agents: body['service_instance']['agents'].length});
+              }
+
+              if (body['service_instance']['service_type'] != null) {
+                if (body['service_instance']['service_type'] == "docker") {
+                  that.setState({img_icon_service_type: "img/docker-logo.png"});
+                } else if (body['service_instance']['service_type'] == "docker-swarm") {
+                  that.setState({img_icon_service_type: "img/docker-swarm-logo.png"});
+                } else if (body['service_instance']['service_type'] == "compss") {
+                  that.setState({img_icon_service_type: "img/compss-logo.png"});
+                } else if (body['service_instance']['service_type'] == "docker-compose") {
+                  that.setState({img_icon_service_type: "img/docker-compose-logo.png"});
+                } else {
+                  that.setState({img_icon_service_type: "img/apps_mini.png"});
+                }
+              }
+            }
 
             ////////////////////////////////////////////////////////////////////////////
             if (body['service_instance'] != null && body['service_instance']['agents'].length > 0) {
@@ -114,7 +137,7 @@ class ServiceInstances extends Component {
               body['service_instance']['agents'].forEach(function(element) {
                 nodes2.add({id: element['url'], label: element['url'], image: './img/node_mini.png', shape: 'circularImage'});
 
-                edges2.add({from: body['service_instance']['id'], to: element['url'], color:{color:'black'}, dashes: true});
+                edges2.add({from: body['service_instance']['id'], to: element['url'], color:{color:'white'}, dashes: true});
               });
 
               // create a network2
@@ -123,7 +146,15 @@ class ServiceInstances extends Component {
                 nodes: nodes2,
                 edges: edges2
               };
-              var options2 = {};
+              var options2 = {
+                nodes: {
+                  size:15,
+                  font:{color:'#ffffff', size:10}
+                },
+                edges: {
+                  color: 'lightgray'
+                }
+              };
               var network2 = new vis.Network(container2, data2, options2);
             }
             ////////////////////////////////////////////////////////////////////////////
@@ -176,36 +207,36 @@ class ServiceInstances extends Component {
               var edges2 = new vis.DataSet([]);
 
               body['service_instances'].forEach(function(element) {
-                var ncolor = "black";
+                var ncolor = "white";
                 if (element['status'] == "started") {
-                  ncolor = "#0B3B17";
+                  ncolor = "lightgreen";
                 } else if (element['status'] == "error") {
-                  ncolor = "darkred";
+                  ncolor = "lightred";
                 }
 
                 if (element['service_type'] == "docker") {
-                  nodes2.add({id: element['id'], label: element['id'].substring(17), image: './img/apps_docker_mini.png', shape: 'image',
+                  nodes2.add({id: element['id'], label: element['id'].substring(17), image: './img/apps_docker_mini.png', shape: 'circularImage',
                               font: {size:11, multi: true, color: ncolor}, level: 1});
                 } else if (element['service_type'] == "docker-swarm") {
-                  nodes2.add({id: element['id'], label: element['id'].substring(17), image: './img/apps_docker_swarm_mini.png', shape: 'image',
+                  nodes2.add({id: element['id'], label: element['id'].substring(17), image: './img/apps_docker_swarm_mini.png', shape: 'circularImage',
                               font: {size:11, multi: true, color: ncolor}, level: 1});
                 } else if (element['service_type'] == "docker-compose") {
-                  nodes2.add({id: element['id'], label: element['id'].substring(17), image: './img/apps_docker_compose_mini.png', shape: 'image',
+                  nodes2.add({id: element['id'], label: element['id'].substring(17), image: './img/apps_docker_compose_mini.png', shape: 'circularImage',
                               font: {size:11, multi: true, color: ncolor}, level: 1});
                 } else if (element['service_type'] == "compss") {
-                  nodes2.add({id: element['id'], label: element['id'].substring(17), image: './img/apps_compss_mini.png', shape: 'image',
+                  nodes2.add({id: element['id'], label: element['id'].substring(17), image: './img/apps_compss_mini.png', shape: 'circularImage',
                               font: {size:11, multi: true, color: ncolor}, level: 1});
                 } else {
-                  nodes2.add({id: element['id'], label: element['id'], image: './img/apps_mini.png', shape: 'image',
+                  nodes2.add({id: element['id'], label: element['id'], image: './img/apps_mini.png', shape: 'circularImage',
                               font: {size:11, multi: true, color: ncolor}, level: 1});
                 }
 
                 if (element['status'] == "started") {
-                  edges2.add({from: 'ag_1', to: element['id'], color:{color:"darkgreen"}, dashes: true});
+                  edges2.add({from: 'ag_1', to: element['id'], color:{color:"lightgreen"}, dashes: true});
                 } else if (element['status'] == "error") {
-                  edges2.add({from: 'ag_1', to: element['id'], color:{color:"darkred"}, dashes: true});
+                  edges2.add({from: 'ag_1', to: element['id'], color:{color:"lightred"}, dashes: true});
                 } else {
-                  edges2.add({from: 'ag_1', to: element['id'], color:{color:"black"}, dashes: [2,2,10,10]});
+                  edges2.add({from: 'ag_1', to: element['id'], color:{color:"white"}, dashes: [2,2,10,10]});
                 }
               });
 
@@ -216,6 +247,12 @@ class ServiceInstances extends Component {
                 edges: edges2
               };
               var options2 = {
+                nodes: {
+                  size:20
+                },
+                edges: {
+                  color: 'lightgray'
+                }
               };
               var network2 = new vis.Network(container2, data2, options2);
 
@@ -237,7 +274,8 @@ class ServiceInstances extends Component {
                                      si_service: "",
                                      si_agreement: "",
                                      si_type: "",
-                                     si_agents: ""});
+                                     si_agents: "",
+                                     img_icon_service_type: "img/apps_mini.png"});
                     }
                   }
               });
@@ -259,11 +297,15 @@ class ServiceInstances extends Component {
   }
 
 
+  /**
+   * after components are ready: load graph
+   */
   componentDidMount() {
     this.handleView2(null);
   }
 
 
+  // sleep
   sleep(milliseconds) {
     var start = new Date().getTime();
     for (var i = 0; i < 1e7; i++) {
@@ -274,6 +316,7 @@ class ServiceInstances extends Component {
   }
 
 
+  // start service instance
   handleStart(event) {
     this.setState({isStarting: true});
     console.log("Starting service instance [" + this.state.sel_service_instance_id_1 + "] ...");
@@ -308,6 +351,7 @@ class ServiceInstances extends Component {
   }
 
 
+  // stop service instance
   handleStop(event) {
     this.setState({isStopping: true});
     console.log("Stopping service instance [" + this.state.sel_service_instance_id_1 + "] ...");
@@ -342,6 +386,7 @@ class ServiceInstances extends Component {
   }
 
 
+  // delete service instance
   handleDelete(event) {
     this.setState({isDeleting: true});
     console.log("Deleting service instance [" + this.state.sel_service_instance_id_1 + "] ...");
@@ -380,6 +425,7 @@ class ServiceInstances extends Component {
   }
 
 
+  // alert messages
   onDismiss() {
     this.setState({ show_alert: false });
     this.setState({ show_info: false });
@@ -388,6 +434,9 @@ class ServiceInstances extends Component {
   }
 
 
+  /**
+   * render component
+   */
   render() {
     return (
       <div style={{margin: "25px 0px 0px 0px"}}>
@@ -396,9 +445,10 @@ class ServiceInstances extends Component {
           <div className="form-group row">
             <div className="col-sm-6">Service Instances managed by this agent <Badge variant="secondary">{this.state.total_service_instances_1}</Badge></div>
             <div className="col-sm-6">
-              <Badge variant="secondary">selected service instance:</Badge>
+              <img src={this.state.img_icon_service_type} alt="service type" height="25" width="25" />
               &nbsp;
-              <Badge variant="primary">{this.state.sel_service_instance_id_1}</Badge>
+              &nbsp;
+              <Badge variant="info">{this.state.sel_service_instance_id_1}</Badge>
             </div>
           </div>
 
@@ -407,18 +457,22 @@ class ServiceInstances extends Component {
               <div id="mynetwork2"></div>
 
               <Button variant="primary" onClick={this.handleView2} disabled={this.state.isLoading}>
+                <i class="fa fa-search" aria-hidden="true"></i>&nbsp;
                 {this.state.isLoading ? "Loading ..." : "View"}
               </Button>
               &nbsp;
               <Button variant="success" onClick={this.handleStart} disabled={!this.state.start_si_button && !this.state.isStarting}>
+                <i class="fa fa-rocket" aria-hidden="true"></i>&nbsp;
                 {this.state.isStarting ? "Starting ..." : "Start"}
               </Button>
               &nbsp;
               <Button variant="warning" onClick={this.handleStop} disabled={!this.state.stop_si_button && !this.state.isStopping}>
+                <i class="fa fa-hand-paper-o" aria-hidden="true"></i>&nbsp;
                 {this.state.isStopping ? "Stopping ..." : "Stop"}
               </Button>
               &nbsp;
               <Button variant="danger" onClick={this.handleDelete} disabled={!this.state.delete_si_button && !this.state.isDeleting}>
+                <i class="fa fa-trash" aria-hidden="true"></i>&nbsp;
                 {this.state.isDeleting ? "Deleting ..." : "Delete"}
               </Button>
             </div>

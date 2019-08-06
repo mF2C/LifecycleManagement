@@ -67,9 +67,14 @@ class UserProfile extends Component {
             //that.setState({ show_info: true, msg: "GET /api/v2/um/user-profile => " + resp.statusCode, msg_content: "User-profile retrieved: response: " + body });
           }
           // user-profile properties
-          body = JSON.parse(body);
-          that.setState({ resource_contributor: body['user_profile']['resource_contributor'], service_consumer: body['user_profile']['service_consumer'],
-                          id_user_profile: body['user_profile']['id']});
+          try {
+            body = JSON.parse(body);
+            that.setState({ resource_contributor: body['user_profile']['resource_contributor'], service_consumer: body['user_profile']['service_consumer'],
+                            id_user_profile: body['user_profile']['id']});
+          }
+          catch(err) {
+            console.error(err);
+          }
         }
       });
     }
@@ -140,7 +145,7 @@ class UserProfile extends Component {
             <div className="col-sm-3">Service Consumer</div>
             <div className="col-sm-9">
               <div className="form-check">
-                <input className="form-check-input" type="checkbox" id="SCCheck1" checked={this.state.service_consumer} onChange={this.handleChange_service_consumer}/>
+                <input className="form-check-input" type="checkbox" id="SCCheck1" disabled checked={this.state.service_consumer} onChange={this.handleChange_service_consumer}/>
                 <small className="form-check-label text-muted" htmlFor="SCCheck1">
                   Check if you will launch services to be executed in mF2C
                 </small>
@@ -170,9 +175,9 @@ class UserProfile extends Component {
             </div>
           </Alert>
 
-          <button type="submit" className="btn btn-primary" onClick={this.handleView}>View</button>
+          <button type="submit" className="btn btn-primary" onClick={this.handleView}><i class="fa fa-search" aria-hidden="true"></i>&nbsp;View</button>
           &nbsp;
-          <button className="btn btn-success" onClick={this.handleSave}>Save</button>
+          <button className="btn btn-success" onClick={this.handleSave}><i class="fa fa-floppy-o" aria-hidden="true"></i>&nbsp;Save</button>
         </form>
       </div>
     );

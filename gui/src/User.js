@@ -10,7 +10,7 @@ class User extends Component {
     super(props, context);
 
     this.state = {
-      username: "username",
+      username: "",
       msg: "",
       msg_content: "",
       show_alert: false,
@@ -20,64 +20,73 @@ class User extends Component {
     this.handleView = this.handleView.bind(this);
     this.handleRemove = this.handleRemove.bind(this);
     this.onDismiss = this.onDismiss.bind(this);
+    this.handleChangeUsername = this.handleChangeUsername.bind(this);
   }
 
 
   handleView(event) {
-    //event.preventDefault();
     console.log('Getting data from user [' + this.state.username + '] ...');
-
     // call to api
     try {
-      request.get('/api/v2/um/user/' + this.state.username)
-        .on('response', function(response) {
-          console.log(response.statusCode); // 200
-          this.setState({ show_info: true });
-          this.setState({ msg: "GET /api/v2/um/user/" + this.state.username + " : " + response.statusCode });
-          this.setState({ msg_content: "User removed from mF2C: response: " + response.toString() });
-        })
-        .on('error', function(err) {
+      var that = this;
+      request.get({url: global.rest_api_um + 'user/' + this.state.username}, function(err, resp, body) {
+        if (err) {
           console.error(err);
-          this.setState({ show_alert: true });
-          this.setState({ msg: "GET /api/v2/um/user/" + this.state.username});
-          this.setState({ msg_content: err.toString() });
-        })
+          that.setState({ show_alert: true, msg: "GET /api/v2/um/", msg_content: err.toString() });
+        }
+        else {
+          console.log('Getting data from user ... ok');
+          if (global.debug) {
+            that.setState({ show_info: true, msg: "GET /api/v2/um/l => " + resp.statusCode, msg_content: "User retrieved: response: " + JSON.stringify(body) });
+          }
+          // user properties
+          try {
+            body = JSON.parse(body);
+
+          }
+          catch(err) {
+            console.error(err);
+          }
+        }
+      });
     }
     catch(err) {
       console.error(err);
-      this.setState({ show_alert: true });
-      this.setState({ msg: "GET /api/v2/um/user/" + this.state.username});
-      this.setState({ msg_content: err.toString() });
+      this.setState({ show_alert: true, msg: "GET /api/v2/um/", msg_content: err.toString() });
     }
   }
 
 
   handleRemove(event) {
-    //event.preventDefault();
-    console.log('Removing user [' + this.state.username + '] ...');
-
+    console.log('Removing user [' + this.state.username + '] from mF2C...');
     // call to api
     try {
-      request.delete('/api/v2/um/user/' + this.state.username)
-        .on('response', function(response) {
-          console.log(response.statusCode); // 200
-          this.setState({ show_info: true });
-          this.setState({ msg: "DELETE /api/v2/um/user/" + this.state.username + " : " + response.statusCode });
-          this.setState({ msg_content: "User removed from mF2C: response: " + response.toString() });
-        })
-        .on('error', function(err) {
+      var that = this;
+      var formData = {
+        user_id: this.state.username
+      };
+      request.delete({url: global.rest_api_um + 'user', json: formData}, function(err, resp, body) {
+        if (err) {
           console.error(err);
-          this.setState({ show_alert: true });
-          this.setState({ msg: "DELETE /api/v2/um/user/" + this.state.username});
-          this.setState({ msg_content: err.toString() });
-        })
+          that.setState({ show_alert: true, msg: "DELETE /api/v2/um/", msg_content: err.toString() });
+        }
+        else {
+          console.log('Removing user from mF2C... ok');
+          if (global.debug) {
+            that.setState({ show_info: true, msg: "DELETE /api/v2/um/l => " + resp.statusCode, msg_content: "User removed: response: " + JSON.stringify(body) });
+          }
+        }
+      });
     }
     catch(err) {
       console.error(err);
-      this.setState({ show_alert: true });
-      this.setState({ msg: "DELETE /api/v2/um/user/" + this.state.username});
-      this.setState({ msg_content: err.toString() });
+      this.setState({ show_alert: true, msg: "DELETE /api/v2/um/", msg_content: err.toString() });
     }
+  }
+
+
+  handleChangeUsername(event) {
+    this.setState({username: event.target.value});
   }
 
 
@@ -98,7 +107,7 @@ class User extends Component {
           <div className="form-group row">
             <label htmlFor="cpuUsageLbl" className="col-sm-2 col-form-label">Username</label>
             <div className="col-sm-4">
-              <input type="text" className="form-control" id="username" value={this.state.username} readOnly/>
+              <input type="text" className="form-control" id="username" value={this.state.username} onChange={this.handleChangeUsername} placeholder="Username"/>
             </div>
           </div>
 
@@ -122,9 +131,11 @@ class User extends Component {
             </div>
           </Alert>
 
-          <button type="submit" className="btn btn-primary" onClick={this.handleView}>View</button>
+          <button type="submit" className="btn btn-primary" onClick={this.handleView} disabled={this.state.username.length == 0}>
+            <i class="fa fa-search" aria-hidden="true"></i>&nbsp;View</button>
           &nbsp;
-          <button className="btn btn-danger" onClick={this.handleRemove}>Remove</button>
+          <button className="btn btn-danger" onClick={this.handleRemove} disabled={this.state.username.length == 0}>
+            <i class="fa fa-trash" aria-hidden="true"></i>&nbsp;Remove</button>
         </form>
       </div>
     );

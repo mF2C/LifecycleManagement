@@ -101,8 +101,9 @@ class LaunchService extends Component {
             </div>
           </div>
 
-          <button type="submit" value="Submit" className="btn btn-success">Launch</button>
-          <button className="btn btn-warning" onClick={this.handleCancel}>Cancel</button>
+          <button type="submit" value="Submit" className="btn btn-success"><i class="fa fa-rocket" aria-hidden="true"></i>&nbsp;Launch</button>
+          &nbsp;
+          <button className="btn btn-warning" onClick={this.handleCancel}><i class="fa fa-times" aria-hidden="true"></i>&nbsp;Cancel</button>
         </form>
       </div>
     );

@@ -2,11 +2,10 @@ import React, { Component } from 'react';
 
 import {
   Route,
-  NavLink,
   HashRouter
 } from "react-router-dom";
 
-import { Navbar, Nav, Button } from 'react-bootstrap';
+import { Navbar, Nav } from 'react-bootstrap';
 
 import Home from "./Home";
 import LaunchService from "./LaunchService";
@@ -36,11 +35,11 @@ class App extends Component {
   render() {
     return (
       <HashRouter>
-        <Navbar style={{background: "#666666"}} fixed="top">
+        <Navbar style={{background: "#777777"}} fixed="top">
           <Navbar.Brand href="/">
             <img
               src="img/mf2c_logo_mini.png"
-              width="50"
+              width="45"
               height="25"
               className="d-inline-block align-top"
               alt="React Bootstrap logo"
@@ -48,29 +47,48 @@ class App extends Component {
           </Navbar.Brand>
           <Nav className="mr-auto" defaultActiveKey="#/" as="ul">
             <Nav.Item as="li">
-              <Nav.Link style={{color: "#E0F2F7"}} exact href="#/"><b>Home</b></Nav.Link>
+              <Nav.Link style={{color: "#E0F2F7"}} exact href="#/">
+                <i class="fa fa-home" aria-hidden="true"></i>&nbsp;<b>Home</b>
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item as="li"></Nav.Item>
             <Nav.Item as="li">
-              <Nav.Link style={{color: "#F5ECCE"}} href="#/launchservice"><b>Launch new service</b></Nav.Link>
+              <Nav.Link style={{color: "#F5ECCE"}} href="#/launchservice">
+                <i class="fa fa-file-text-o" aria-hidden="true"></i>&nbsp;<b>Services</b>
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item as="li">
-              <Nav.Link style={{color: "#F5ECCE"}} href="#/serviceinstances"><b>Service instances</b></Nav.Link>
+              <Nav.Link style={{color: "#F5ECCE"}} href="#/serviceinstances">
+                <i class="fa fa-tasks" aria-hidden="true"></i>&nbsp;<b>Service instances</b>
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item as="li">
-              <Nav.Link style={{color: "#F5ECCE"}} href="#/launchjob"><b>Launch job (DER)</b></Nav.Link>
+              <Nav.Link style={{color: "#F5ECCE"}} href="#/launchjob">
+                <i class="fa fa-cogs" aria-hidden="true"></i>&nbsp;<b>Jobs (DER)</b>
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item as="li"></Nav.Item>
             <Nav.Item as="li">
-              <Nav.Link style={{color: "#D8D8D8"}} href="#/userprofile"><b>User-Profile</b></Nav.Link>
+              <Nav.Link style={{color: "#D8D8D8"}} href="#/userprofile">
+                <i class="fa fa-address-card-o" aria-hidden="true"></i>&nbsp;<b>User-Profile</b>
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item as="li">
-              <Nav.Link style={{color: "#D8D8D8"}} href="#/sharingmodel"><b>Sharing-Model</b></Nav.Link>
+              <Nav.Link style={{color: "#D8D8D8"}} href="#/sharingmodel">
+                <i class="fa fa-share-alt" aria-hidden="true"></i>&nbsp;<b>Sharing-Model</b>
+              </Nav.Link>
             </Nav.Item>
             <Nav.Item as="li">
-              <Nav.Link style={{color: "#D8D8D8"}} href="#/user"><b>User</b></Nav.Link>
+              <Nav.Link style={{color: "#D8D8D8"}} href="#/user">
+                <i class="fa fa-user" aria-hidden="true"></i>&nbsp;<b>User</b>
+              </Nav.Link>
             </Nav.Item>
           </Nav>
+          <Navbar.Collapse className="justify-content-end">
+            <Navbar.Text>
+              <font color="lightgray" size="1"><i>v1.0.0</i></font>
+            </Navbar.Text>
+          </Navbar.Collapse>
         </Navbar>
 
         <div className="content">

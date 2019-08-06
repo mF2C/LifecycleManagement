@@ -111,11 +111,16 @@ class SharingModel extends Component {
             //that.setState({ show_info: true, msg: "GET /api/v2/um/sharing-model => " + resp.statusCode, msg_content: "Sharing-model retrieved: response: " + body });
           }
           // sharing-model properties
-          body = JSON.parse(body);
-          that.setState({ max_cpu: body['sharing_model']['max_cpu_usage'], max_mem: body['sharing_model']['max_memory_usage'],
-                          max_sto: body['sharing_model']['max_storage_usage'], max_ban: body['sharing_model']['max_bandwidth_usage'],
-                          bat_lev: body['sharing_model']['battery_limit'], gps_allowed: body['sharing_model']['gps_allowed'],
-                          max_apps: body['sharing_model']['max_apps'], id_sharing_model: body['sharing_model']['id']});
+          try {
+            body = JSON.parse(body);
+            that.setState({ max_cpu: body['sharing_model']['max_cpu_usage'], max_mem: body['sharing_model']['max_memory_usage'],
+                            max_sto: body['sharing_model']['max_storage_usage'], max_ban: body['sharing_model']['max_bandwidth_usage'],
+                            bat_lev: body['sharing_model']['battery_limit'], gps_allowed: body['sharing_model']['gps_allowed'],
+                            max_apps: body['sharing_model']['max_apps'], id_sharing_model: body['sharing_model']['id']});
+          }
+          catch(err) {
+            console.error(err);
+          }
         }
       });
     }
@@ -268,9 +273,9 @@ class SharingModel extends Component {
             </div>
           </Alert>
 
-          <button type="submit" className="btn btn-primary" onClick={this.handleView}>View</button>
+          <button type="submit" className="btn btn-primary" onClick={this.handleView}><i class="fa fa-search" aria-hidden="true"></i>&nbsp;View</button>
           &nbsp;
-          <button className="btn btn-success" onClick={this.handleSave}>Save</button>
+          <button className="btn btn-success" onClick={this.handleSave}><i class="fa fa-floppy-o" aria-hidden="true"></i>&nbsp;Save</button>
         </form>
       </div>
     );

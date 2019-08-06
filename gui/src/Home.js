@@ -1,6 +1,5 @@
 import React, { Component } from "react";
-import request from "request";
-import { Alert, Button, Badge, Card, CardColumns, InputGroup, FormControl } from 'react-bootstrap';
+import { Button, Card, CardColumns, InputGroup, FormControl } from 'react-bootstrap';
 
 
 class Home extends Component {
@@ -54,8 +53,9 @@ class Home extends Component {
             <Card.Img variant="top" src="img/mf2c_logo.png" fluid />
             <Card.Body>
               <Card.Title>Lifecycle Manager</Card.Title>
+              <Card.Subtitle className="mb-2 text-muted"><i>version 1.3.4</i></Card.Subtitle>
               <Card.Text>
-                This module is responsible for managing the deployment and execution of the applications in mF2C.
+                This module is responsible for managing the deployment and execution of applications in mF2C.
               </Card.Text>
               <Card.Text>
                 The Lifecycle Manager can deploy services in agents with Docker and Docker Swarm.
@@ -67,8 +67,9 @@ class Home extends Component {
             <Card.Img variant="top" src="img/mf2c_logo.png" fluid />
             <Card.Body>
               <Card.Title>User Management module</Card.Title>
+              <Card.Subtitle className="mb-2 text-muted"><i>version 1.3.4</i></Card.Subtitle>
               <Card.Text>
-                The User Management module is responsible for managing the user’s profile and the definition of the user’s device resources that will be shared in mF2C. It also checks that the mF2C applications act according to these properties.
+                The User Management module is responsible for managing the user’s profile and the definition of the device's resources that will be shared in mF2C. It also checks that the mF2C applications act according to these properties.
               </Card.Text>
             </Card.Body>
           </Card>
@@ -90,9 +91,9 @@ class Home extends Component {
                     onChange={this.handleChange_rest_api_um} style={{ backgroundColor: "#E0F2F7" }}/>
                 </InputGroup>
               </Card.Text>
-              <Button variant="info" size="sm" onClick={this.handleSave}>Save</Button>
+              <Button variant="info" size="sm" onClick={this.handleSave}><i class="fa fa-floppy-o" aria-hidden="true"></i>&nbsp;Save</Button>
               &nbsp;
-              <Button variant="light" size="sm" onClick={this.handleRestore}>Restore default</Button>
+              <Button variant="light" size="sm" onClick={this.handleRestore}><i class="fa fa-eraser" aria-hidden="true"></i>&nbsp;Restore default</Button>
             </Card.Body>
           </Card>
         </CardColumns>

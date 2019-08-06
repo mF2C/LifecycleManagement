@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import request from "request";
-import { Alert, Button, Dropdown, Badge } from 'react-bootstrap';
+import { Alert, Button, Badge } from 'react-bootstrap';
 import vis from "vis-network";
 
 
@@ -32,19 +32,6 @@ class LaunchJob extends Component {
   }
 
 
-  checkSelectedItem_1(id_item) {
-    if (id_item == null) {
-      this.setState({ start_si_button: false, report_si_button: false, cancel_si_button: false });
-    } else if (id_item.startsWith("service-instance/")) {
-      this.setState({ start_si_button: true, report_si_button: true, cancel_si_button: true });
-    } else {
-      this.setState({ start_si_button: false, report_si_button: false, cancel_si_button: false });
-    }
-
-    this.parseItemId_1(id_item);
-  }
-
-
   parseItemId_1(id_item) {
     if (id_item == null) {
       this.setState({sel_service_instance_id_1: ""});
@@ -58,10 +45,52 @@ class LaunchJob extends Component {
 
 
   /**
-   * Load initial graph with all service instances managed by the agent
+   *
    */
   viewReport(event) {
 
+  }
+
+
+  /**
+   * Get service instance info
+   */
+  getSIinfo() {
+    // call to api
+    try {
+      var that = this;
+      request.get({url: global.rest_api_lm + 'service-instances/' + that.state.sel_service_instance_id_1}, function(err, resp, body) {
+        if (err) {
+          console.error(err);
+          that.setState({ show_alert: true, msg: "GET /api/v2/lm/service-instances/" + that.state.sel_service_instance_id_1, msg_content: err.toString() });
+        }
+        else {
+          if (resp.statusCode == 200) {
+            console.log('Getting data service instances ... ok');
+            if (global.debug) {
+              //that.setState({ show_info: true, msg: "GET /api/v2/lm/service-instances/" + that.state.sel_service_instance_id_1 + " => " + resp.statusCode, msg_content: "Service instances retrieved: response: " + body });
+            }
+
+            body = JSON.parse(body);
+            if (body['service_instance'] != null) {
+              console.log(body['service_instance']);
+              if (body['service_instance']['service_type'] == "compss") {
+                that.setState({ start_si_button: true, report_si_button: true, cancel_si_button: true });
+              } else {
+                that.setState({ start_si_button: false, report_si_button: false, cancel_si_button: false });
+              }
+            }
+          }
+          else {
+            that.setState({ show_alert: true, msg: "GET /api/v2/lm/service-instances/all", msg_content: JSON.stringify(body) + " => " + resp.statusCode });
+          }
+        }
+      });
+    }
+    catch(err) {
+      console.error(err);
+      this.setState({ show_alert: true, msg: "GET /api/v2/lm/service-instances/all", msg_content: err.toString() });
+    }
   }
 
 
@@ -101,28 +130,22 @@ class LaunchJob extends Component {
               var total_compss_services = 0;
 
               body['service_instances'].forEach(function(element) {
-                var ncolor = "black";
+                var ncolor = "white";
                 if (element['status'] == "started") {
-                  ncolor = "#0B3B17";
+                  ncolor = "lightgreen";
                 } else if (element['status'] == "error") {
-                  ncolor = "darkred";
+                  ncolor = "lightred";
                 }
 
                 if (element['service_type'] == "compss") {
-                  nodes2.add({id: element['id'], label: element['id'].substring(17), image: './img/apps_compss_mini.png', shape: 'image',
+                  nodes2.add({id: element['id'], label: element['id'].substring(17), image: './img/apps_compss_mini.png', shape: 'circularImage',
                               font: {size:11, multi: true, color: ncolor}, level: 1});
+                  edges2.add({from: 'ag_1', to: element['id'], color:{color:ncolor}, dashes: true});
                   total_compss_services++;
                 } else {
                   nodes2.add({id: element['id'], label: element['id'], image: './img/apps_mini_disabled.png', shape: 'image',
-                              font: {size:11, multi: true, color: ncolor}, level: 1});
-                }
-
-                if (element['status'] == "started") {
-                  edges2.add({from: 'ag_1', to: element['id'], color:{color:"darkgreen"}, dashes: true});
-                } else if (element['status'] == "error") {
-                  edges2.add({from: 'ag_1', to: element['id'], color:{color:"darkred"}, dashes: true});
-                } else {
-                  edges2.add({from: 'ag_1', to: element['id'], color:{color:"black"}, dashes: [2,2,10,10]});
+                              font: {size:11, multi: true, color:"gray"}, level: 1});
+                  edges2.add({from: 'ag_1', to: element['id'], color:{color:"gray"}, dashes: true});
                 }
               });
 
@@ -133,6 +156,9 @@ class LaunchJob extends Component {
                 edges: edges2
               };
               var options2 = {
+                nodes: {
+                  size:15
+                }
               };
               var network2 = new vis.Network(container2, data2, options2);
 
@@ -141,13 +167,14 @@ class LaunchJob extends Component {
               // EVENTS
               network2.on("click", function (params) {
                   console.log('params returns: ' + params);
+                  console.log(params);
                   if (params != null) {
                     that.setState({ sel_service_instance_1: params.nodes[0] });
-                    that.checkSelectedItem_1(params.nodes[0]);
+                    that.parseItemId_1(params.nodes[0]);
                     if (that.state.sel_service_instance_id_1 != "") {
-
+                      that.getSIinfo();
                     } else {
-
+                      that.setState({ start_si_button: false, report_si_button: false, cancel_si_button: false });
                     }
                   }
               });
@@ -215,7 +242,7 @@ class LaunchJob extends Component {
   render() {
     return (
       <div style={{margin: "25px 0px 0px 0px"}}>
-        <h3><b>Jobs / DER</b></h3>
+        <h3><b>DER Jobs</b></h3>
         <form>
           <div className="form-group row">
             <div className="col-sm-6">
@@ -243,15 +270,19 @@ class LaunchJob extends Component {
                 </div>
               </div>
 
-              <button type="submit" value="Submit" className="btn btn-success" onClick={this.handleSubmit} disabled={!this.state.start_si_button}>Launch</button>
+              <button type="submit" value="Submit" className="btn btn-success" onClick={this.handleSubmit} disabled={!this.state.start_si_button}>
+                <i class="fa fa-rocket" aria-hidden="true"></i>&nbsp;Launch
+              </button>
               &nbsp;
-              <button className="btn btn-warning" disabled={!this.state.cancel_si_button}>Cancel</button>
+              <button className="btn btn-warning" disabled={!this.state.cancel_si_button}><i class="fa fa-times" aria-hidden="true"></i>&nbsp;Cancel</button>
             </div>
           </div>
 
           <div className="form-group row">
             <div className="col-sm-12">
-              <Button variant="primary" onClick={this.viewReport} disabled={!this.state.report_si_button}>View report</Button>
+              <Button variant="primary" onClick={this.viewReport} disabled={!this.state.report_si_button}>
+                <i class="fa fa-search" aria-hidden="true"></i>&nbsp;View report
+              </Button>
               <textarea className="form-control" id="result" rows="3"/>
             </div>
           </div>
