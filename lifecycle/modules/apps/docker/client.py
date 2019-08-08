@@ -49,12 +49,12 @@ def get_client_agent_docker():
 
 
 # download_docker_image: check if image is already downloaded, and if not, tries to download the image
-def download_docker_image(lclient, service_image, service_image_tag=None):
+def __download_docker_image(lclient, service_image, service_image_tag=None):
     # check if image already exists in agent
     l_images = lclient.images(name=service_image)
     # if not, download image
     if not l_images or len(l_images) == 0:
-        LOG.debug("[lifecycle.modules.apps.docker.client] [download_docker_image] call to 'import_image' [" + service_image + "] ...")
+        LOG.debug("[lifecycle.modules.apps.docker.client] [__download_docker_image] call to 'import_image' [" + service_image + "] ...")
         if service_image_tag is not None:
             lclient.import_image(tag=service_image_tag, image=service_image) # (tag="latest", image="ubuntu")
         else:
@@ -71,7 +71,7 @@ def create_docker_container(service_image, service_name, service_command, prts):
     try:
         if lclient:
             # check if image already exists in agent or download image
-            download_docker_image(lclient, service_image)
+            __download_docker_image(lclient, service_image)
 
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_container] Creating container ...")
 
@@ -105,7 +105,7 @@ def create_docker_compss_container(service_image, ip, prts, ip_leader):
     try:
         if lclient:
             # check if image already exists in agent or download image
-            download_docker_image(lclient, service_image)
+            __download_docker_image(lclient, service_image)
 
             # create a new container: 'docker run'
             # check ports for COMPSs container:
@@ -171,7 +171,7 @@ def create_docker_compose_container(service_name, service_command):
         lclient = get_client_agent_docker()
         if lclient:
             # check if image already exists in agent or download image
-            download_docker_image(lclient, config.dic['DOCKER_COMPOSE_IMAGE'], config.dic['DOCKER_COMPOSE_IMAGE_TAG'])
+            __download_docker_image(lclient, config.dic['DOCKER_COMPOSE_IMAGE'], config.dic['DOCKER_COMPOSE_IMAGE_TAG'])
 
             # create a new container: 'docker run'
             container = lclient.create_container(config.dic['DOCKER_COMPOSE_IMAGE'],

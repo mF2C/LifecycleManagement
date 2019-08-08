@@ -75,71 +75,8 @@ Lifecycle & COMPSs (IT-2):
                 </Property>
             </resourceConf>
         </externalResource>
-        <externalResource>
-            <adaptor>es.bsc.compss.agent.rest.master.Adaptor</adaptor>
-            <description>
-                <memorySize>4.0</memorySize>
-                <memoryType>[unassigned]</memoryType>
-                <operatingSystemDistribution>[unassigned]</operatingSystemDistribution>
-                <operatingSystemType>[unassigned]</operatingSystemType>
-                <operatingSystemVersion>[unassigned]</operatingSystemVersion>
-                <pricePerUnit>-1.0</pricePerUnit>
-                <priceTimeUnit>-1</priceTimeUnit>
-                <processors>
-                    <architecture>[unassigned]</architecture>
-                    <computingUnits>1</computingUnits>
-                    <internalMemory>-1.0</internalMemory>
-                    <name>MainProcessor</name>
-                    <propName>[unassigned]</propName>
-                    <propValue>[unassigned]</propValue>
-                    <speed>-1.0</speed>
-                    <type>CPU</type>
-                </processors>
-                <storageSize>-1.0</storageSize>
-                <storageType>[unassigned]</storageType>
-                <value>0.0</value>
-                <wallClockLimit>-1</wallClockLimit>
-            </description>
-            <name>172.18.0.5</name>
-            <resourceConf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ResourcesExternalAdaptorProperties">
-                <Property>
-                    <Name>Port</Name>
-                    <Value>46101</Value>
-                </Property>
-            </resourceConf>
-        </externalResource>
-        <externalResource>
-            <adaptor>es.bsc.compss.agent.rest.master.Adaptor</adaptor>
-            <description>
-                <memorySize>4.0</memorySize>
-                <memoryType>[unassigned]</memoryType>
-                <operatingSystemDistribution>[unassigned]</operatingSystemDistribution>
-                <operatingSystemType>[unassigned]</operatingSystemType>
-                <operatingSystemVersion>[unassigned]</operatingSystemVersion>
-                <pricePerUnit>-1.0</pricePerUnit>
-                <priceTimeUnit>-1</priceTimeUnit>
-                <processors>
-                    <architecture>[unassigned]</architecture>
-                    <computingUnits>1</computingUnits>
-                    <internalMemory>-1.0</internalMemory>
-                    <name>MainProcessor</name>
-                    <propName>[unassigned]</propName>
-                    <propValue>[unassigned]</propValue>
-                    <speed>-1.0</speed>
-                    <type>CPU</type>
-                </processors>
-                <storageSize>-1.0</storageSize>
-                <storageType>[unassigned]</storageType>
-                <value>0.0</value>
-                <wallClockLimit>-1</wallClockLimit>
-            </description>
-            <name>172.18.0.6</name>
-            <resourceConf xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:type="ResourcesExternalAdaptorProperties">
-                <Property>
-                    <Name>Port</Name>
-                    <Value>46102</Value>
-                </Property>
-            </resourceConf>
+        <externalResource>  
+            ...
         </externalResource>
     </resources>
 </startApplication>
@@ -230,7 +167,8 @@ def start_job(service_instance, body):
         res = requests.put("http://" + agent['url'] + ":" + str(compss_port) + "/COMPSs/startApplication",
                            data=xml,
                            headers={'Content-Type': 'application/xml'})
-        LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] response: " + str(res) + ", " + str(res.json()))
+        LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] response: " + str(res))
+        LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] response (json): " + str(res.json()))
 
         if res.ok:
             LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] res.text: " + str(res.text))
