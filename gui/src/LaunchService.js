@@ -1,5 +1,6 @@
 import React, { Component } from "react";
-import { Dropdown } from 'react-bootstrap';
+import { Alert, Spinner, Button, Tabs, Tab, TabPane } from 'react-bootstrap';
+import request from "request";
 
 
 class LaunchService extends Component {
@@ -9,102 +10,121 @@ class LaunchService extends Component {
     super(props, context);
 
     this.state = {
-      selservice: "",
-      username: 'wsvincent',
-      dropdownOpen: false,
-      value : "",
-      lservices: []
+      isLoading: false,
+      serv_def: "{}",
+      msg: "",
+      msg_content: "",
+      show_alert: false,
+      show_info: false
     };
 
-    this.handleClick = this.handleClick.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-    this.select = this.select.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleCancel = this.handleCancel.bind(this);
+    this.handleChange_serv_def = this.handleChange_serv_def.bind(this);
   }
 
 
-  componentDidMount() {
-    this.setState({
-      lservices: ['one', 'two', 'three', 'four']
-    });
-  }
-
-
-  handleClick(e) {
-    e.preventDefault();
-    this.setState({selservice: e.target.value})
-  }
-
-
-  handleChange(e) {
-    this.setState({
-      username: e.target.value,
-      selservice: e.target.value
-    });
-  }
-
-
-  select(event) {
-    this.setState({
-      dropdownOpen: !this.state.dropdownOpen,
-      value: event.target.innerText,
-      selservice: event.target.innerText
-    });
+  handleChange_serv_def(event) {
+    this.setState({serv_def: event.target.value});
   }
 
 
   handleSubmit(event) {
-    alert('handleSubmit: A new service was submitted: ' + this.state.value);
-    event.preventDefault();
+    this.setState({isLoading: true});
+    console.log("Launching a new service in mF2C ...");
+
+    // call to api
+    try {
+      var that = this;
+      var formData = JSON.parse(this.state.serv_def);
+
+      request.post({url: global.rest_api_lm + "service", json: formData}, function(err, resp, body) {
+        if (err) {
+          console.error(err);
+          that.setState({ show_alert: true, msg: "POST /api/v2/lm/service" + that.state.sel_service_instance_id_1 + "/der", msg_content: err.toString() });
+        }
+        else {
+          console.log("Launching a new service in mF2C ... ok");
+          if (global.debug) {
+            body = JSON.stringify(body);
+            that.setState({ show_info: true, msg: "POST /api/v2/lm/service" + that.state.sel_service_instance_id_1 + "/der => " + resp.statusCode, msg_content: "Service launched: response: " + body });
+          }
+        }
+
+        that.setState({isLoading: false});
+      });
+    }
+    catch(err) {
+      console.error(err);
+      this.setState({ show_alert: true, msg: "POST /api/v2/lm/servicer", msg_content: err.toString(), isLoading: false });
+    }
   }
 
 
   handleCancel(event) {
-    alert('handleCancel: Service submit cancelled');
-    event.preventDefault();
+    this.setState({serv_def: "{}"});
   }
 
-  /*
-  <div>
-    Hello {this.state.username} <br />
-    Change name: <input type="text" onChange={this.handleChange}/>
-  </div>
-  */
+
+  onDismiss() {
+    this.setState({ show_alert: false });
+    this.setState({ show_info: false });
+    this.setState({ msg: "" });
+    this.setState({ msg_content: "" });
+  }
+
 
   render() {
-    const items = []
-    for (const [index, value] of this.state.lservices.entries()) {
-      items.push(<Dropdown.Item onClick={this.select}>{value}</Dropdown.Item>)
-    }
-
     return (
       <div style={{margin: "25px 0px 0px 0px"}}>
-        <h3><b>Launch a new service</b></h3>
-        <p>Select a service and run it in mF2C</p>
-        <form onSubmit={this.handleSubmit}>
-          <div className="form-group row">
-            <Dropdown className="col-sm-2">
-              <Dropdown.Toggle variant="secondary" id="dropdown-basic">
-                Service
-              </Dropdown.Toggle>
+        <h3><b>Launch a new service</b>&nbsp;&nbsp;&nbsp;
+          {this.state.isLoading ?
+            <Spinner animation="border" role="status" variant="primary">
+              <span className="sr-only">Loading...</span>
+            </Spinner> : ""}
+        </h3>
 
-              <Dropdown.Menu>
-                {items}
-                <Dropdown.Item onClick={this.select}>Service a</Dropdown.Item>
-                <Dropdown.Item onClick={this.select}>Service b</Dropdown.Item>
-                <Dropdown.Item onClick={this.select}>Service c</Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-            <div className="col-sm-4">
-              <input type="text" className="form-control" id="service" value={this.state.selservice} disabled/>
-            </div>
-          </div>
 
-          <button type="submit" value="Submit" className="btn btn-success"><i class="fa fa-rocket" aria-hidden="true"></i>&nbsp;Launch</button>
-          &nbsp;
-          <button className="btn btn-warning" onClick={this.handleCancel}><i class="fa fa-times" aria-hidden="true"></i>&nbsp;Cancel</button>
-        </form>
+        <Tabs defaultActiveKey="json">
+          <TabPane eventKey="json" title="json" style={{backgroundColor: "white"}}>
+            <p>Define a service (json) and run it in mF2C</p>
+
+            <form onSubmit={this.handleSubmit}>
+              <div className="form-group row">
+                <div className="col-sm-8">
+                  <textarea className="form-control" id="job" rows="10" value={this.state.serv_def} onChange={this.handleChange_serv_def}>
+                  </textarea>
+                </div>
+              </div>
+
+              <Button variant="success" onClick={this.handleSubmit} disabled={this.state.isLoading}><i class="fa fa-rocket" aria-hidden="true"></i>&nbsp;Launch</Button>
+              &nbsp;
+              <Button variant="warning" onClick={this.handleCancel} disabled={this.state.isLoading}><i class="fa fa-times" aria-hidden="true"></i>&nbsp;Cancel</Button>
+
+              <Alert variant="danger" toggle={this.onDismiss} show={this.state.show_alert}>
+                <p><b>{this.state.msg}</b></p>
+                <p className="mb-0">{this.state.msg_content}</p>
+                <div className="d-flex justify-content-end">
+                  <Button onClick={() => this.setState({ show_alert: false })} variant="outline-danger">
+                    Close
+                  </Button>
+                </div>
+              </Alert>
+
+              <Alert variant="primary" toggle={this.onDismiss} show={this.state.show_info}>
+                <p><b>{this.state.msg}</b></p>
+                <p className="mb-0">{this.state.msg_content}</p>
+                <div className="d-flex justify-content-end">
+                  <Button onClick={() => this.setState({ show_info: false })} variant="outline-primary">
+                    Close
+                  </Button>
+                </div>
+              </Alert>
+            </form>
+          </TabPane>
+
+          <TabPane eventKey="other" title="other" disabled></TabPane>
+        </Tabs>
       </div>
     );
   }

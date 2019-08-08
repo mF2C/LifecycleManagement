@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import request from "request";
-import { Alert, Button, Badge, Form, Row, Col, Spinner } from 'react-bootstrap';
+import { Alert, Button, Badge, Form, Row, Col, Spinner, Tooltip, Modal } from 'react-bootstrap';
 import vis from "vis-network";
 
 
@@ -33,13 +33,18 @@ class ServiceInstances extends Component {
       si_service: "",
       si_agreement: "",
       si_type: "",
-      si_agents: ""
+      si_agents: "",
+      // Modal
+      show: false,
+      service_instance_json: "{}"
     };
 
     this.handleView2 = this.handleView2.bind(this);
     this.handleStart = this.handleStart.bind(this);
     this.handleStop = this.handleStop.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
+    this.handleShow = this.handleShow.bind(this);
+    this.handleClose = this.handleClose.bind(this);
   }
 
 
@@ -156,11 +161,14 @@ class ServiceInstances extends Component {
                 }
               };
               var network2 = new vis.Network(container2, data2, options2);
+
+              that.setState({ service_instance_json: JSON.stringify(body, null, "\t") });
             }
             ////////////////////////////////////////////////////////////////////////////
           }
           else {
-            that.setState({ show_alert: true, msg: "GET /api/v2/lm/service-instances/all", msg_content: JSON.stringify(body) + " => " + resp.statusCode });
+            that.setState({ show_alert: true, msg: "GET /api/v2/lm/service-instances/all",
+                            msg_content: JSON.stringify(body) + " => " + resp.statusCode, service_instance_json: "{}" });
           }
         }
       });
@@ -275,7 +283,8 @@ class ServiceInstances extends Component {
                                      si_agreement: "",
                                      si_type: "",
                                      si_agents: "",
-                                     img_icon_service_type: "img/apps_mini.png"});
+                                     img_icon_service_type: "img/apps_mini.png",
+                                     service_instance_json: "{}"});
                     }
                   }
               });
@@ -336,7 +345,7 @@ class ServiceInstances extends Component {
           if (global.debug) {
             that.setState({ show_info: true, msg: "PUT /api/v2/lm/service-instances/" + that.state.sel_service_instance_id_1 + " => " + resp.statusCode, msg_content: "Service instance deleted: response: " + body });
           }
-          that.sleep(3000);
+          that.sleep(5000);
           that.handleView2(null);
           that.displaySIAgents();
         }
@@ -371,7 +380,7 @@ class ServiceInstances extends Component {
           if (global.debug) {
             that.setState({ show_info: true, msg: "PUT /api/v2/lm/service-instances/" + that.state.sel_service_instance_id_1 + " => " + resp.statusCode, msg_content: "Service instance deleted: response: " + body });
           }
-          that.sleep(3000);
+          that.sleep(5000);
           that.handleView2(null);
           that.displaySIAgents();
         }
@@ -403,7 +412,7 @@ class ServiceInstances extends Component {
           if (global.debug) {
             that.setState({ show_info: true, msg: "DELETE /api/v2/lm/service-instances/" + that.state.sel_service_instance_id_1 + " => " + resp.statusCode, msg_content: "Service instance deleted: response: " + body });
           }
-          that.sleep(3000);
+          that.sleep(5000);
           that.handleView2(null);
           // service instance
           that.setState({si_id: "",
@@ -412,7 +421,9 @@ class ServiceInstances extends Component {
                          si_service: "",
                          si_agreement: "",
                          si_type: "",
-                         si_agents: ""});
+                         si_agents: "",
+                         img_icon_service_type: "img/apps_mini.png",
+                         service_instance_json: "{}"});
         }
 
         that.setState({isDeleting: false});
@@ -422,6 +433,16 @@ class ServiceInstances extends Component {
       console.error(err);
       this.setState({ show_alert: true, msg: "GET /api/v2/um/sharing-model", msg_content: err.toString(), isDeleting: false});
     }
+  }
+
+
+  handleClose(event) {
+    this.setState({show: false});
+  }
+
+
+  handleShow(event) {
+    this.setState({show: true});
   }
 
 
@@ -451,9 +472,8 @@ class ServiceInstances extends Component {
             <div className="col-sm-6">Service Instances managed by this agent <Badge variant="secondary">{this.state.total_service_instances_1}</Badge></div>
             <div className="col-sm-6">
               <img src={this.state.img_icon_service_type} alt="service type" height="25" width="25" />
-              &nbsp;
-              &nbsp;
-              <Badge variant="info">{this.state.sel_service_instance_id_1}</Badge>
+              &nbsp;&nbsp;
+              <Badge variant="info" onClick={this.handleShow}>{this.state.sel_service_instance_id_1}</Badge>
             </div>
           </div>
 
@@ -558,8 +578,19 @@ class ServiceInstances extends Component {
               </Button>
             </div>
           </Alert>
-
         </form>
+
+        <Modal show={this.state.show} onHide={this.handleClose} size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Service Instance (JSON)</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>{this.state.service_instance_json}</Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={this.handleClose}>
+              Close
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     );
   }

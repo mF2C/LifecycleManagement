@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import request from "request";
-import { Alert, Button } from 'react-bootstrap';
+import { Alert, Button, Spinner } from 'react-bootstrap';
 
 
 class User extends Component {
@@ -10,6 +10,7 @@ class User extends Component {
     super(props, context);
 
     this.state = {
+      isLoading: false,
       username: "",
       msg: "",
       msg_content: "",
@@ -25,6 +26,7 @@ class User extends Component {
 
 
   handleView(event) {
+    this.setState({isLoading: true});
     console.log('Getting data from user [' + this.state.username + '] ...');
     // call to api
     try {
@@ -48,16 +50,19 @@ class User extends Component {
             console.error(err);
           }
         }
+
+        that.setState({isLoading: false});
       });
     }
     catch(err) {
       console.error(err);
-      this.setState({ show_alert: true, msg: "GET /api/v2/um/", msg_content: err.toString() });
+      this.setState({ show_alert: true, msg: "GET /api/v2/um/", msg_content: err.toString(), isLoading: false });
     }
   }
 
 
   handleRemove(event) {
+    this.setState({isLoading: true});
     console.log('Removing user [' + this.state.username + '] from mF2C...');
     // call to api
     try {
@@ -76,11 +81,13 @@ class User extends Component {
             that.setState({ show_info: true, msg: "DELETE /api/v2/um/l => " + resp.statusCode, msg_content: "User removed: response: " + JSON.stringify(body) });
           }
         }
+
+        that.setState({isLoading: false});
       });
     }
     catch(err) {
       console.error(err);
-      this.setState({ show_alert: true, msg: "DELETE /api/v2/um/", msg_content: err.toString() });
+      this.setState({ show_alert: true, msg: "DELETE /api/v2/um/", msg_content: err.toString(), isLoading: false });
     }
   }
 
@@ -101,7 +108,12 @@ class User extends Component {
   render() {
     return (
       <div style={{margin: "25px 0px 0px 0px"}}>
-        <h3><b>User</b></h3>
+        <h3><b>User</b>&nbsp;&nbsp;&nbsp;
+          {this.state.isLoading ?
+            <Spinner animation="border" role="status" variant="primary">
+              <span className="sr-only">Loading...</span>
+            </Spinner> : ""}
+        </h3>
         <p>MF2C user information:</p>
         <form>
           <div className="form-group row">
@@ -131,11 +143,11 @@ class User extends Component {
             </div>
           </Alert>
 
-          <button type="submit" className="btn btn-primary" onClick={this.handleView} disabled={this.state.username.length == 0}>
-            <i class="fa fa-search" aria-hidden="true"></i>&nbsp;View</button>
+          <Button variant="primary" onClick={this.handleView} disabled={this.state.username.length == 0 || this.state.isLoading}>
+            <i class="fa fa-search" aria-hidden="true"></i>&nbsp;View</Button>
           &nbsp;
-          <button className="btn btn-danger" onClick={this.handleRemove} disabled={this.state.username.length == 0}>
-            <i class="fa fa-trash" aria-hidden="true"></i>&nbsp;Remove</button>
+          <Button variant="danger" onClick={this.handleRemove} disabled={this.state.username.length == 0 || this.state.isLoading}>
+            <i class="fa fa-trash" aria-hidden="true"></i>&nbsp;Remove</Button>
         </form>
       </div>
     );

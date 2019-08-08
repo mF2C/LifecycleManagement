@@ -255,8 +255,11 @@ class LaunchJob extends Component {
         }
         else {
           console.log("Launching job in DER ... ok");
-          if (global.debug) {
+          if (resp.statusCode < 400) {
             that.setState({ show_info: true, msg: "PUT /api/v2/lm/service-instances/" + that.state.sel_service_instance_id_1 + "/der => " + resp.statusCode, msg_content: "Job launched: response: " + body });
+          }
+          else {
+            that.setState({ show_alert: true, msg: "PUT /api/v2/lm/service-instances/" + that.state.sel_service_instance_id_1 + "/der => ERROR CODE: " + resp.statusCode, msg_content: "Could not launch job" });
           }
         }
 

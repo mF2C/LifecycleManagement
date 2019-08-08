@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import request from "request";
-import { Alert, Button, Badge, Spinner } from 'react-bootstrap';
+import { Alert, Button, Badge, Spinner, OverlayTrigger, Tooltip } from 'react-bootstrap';
 
 
 class SharingModel extends Component {
@@ -136,6 +136,7 @@ class SharingModel extends Component {
 
 
   handleSave(event) {
+    this.setState({isLoading: true});
     console.log('Updating sharing model ...');
     // call to api
     try {
@@ -164,13 +165,14 @@ class SharingModel extends Component {
             that.setState({ show_info: true, msg: "PUT /api/v2/um/" + that.state.id_sharing_model + " => " + resp.statusCode,
                             msg_content: "Sharing-model updated: response: " + JSON.stringify(body) });
           }
-
         }
+
+        that.setState({isLoading: false});
       });
     }
     catch(err) {
       console.error(err);
-      this.setState({ show_alert: true, msg: "PUT /api/v2/um/sharing-model", msg_content: err.toString() });
+      this.setState({ show_alert: true, msg: "PUT /api/v2/um/sharing-model", msg_content: err.toString(), isLoading: false });
     }
   }
 
@@ -212,7 +214,10 @@ class SharingModel extends Component {
               <input type="number" className="form-control" id="cpuUsage" placeholder="10 - 90" value={this.state.max_cpu}
                 onChange={this.handleChange_max_cpu} min="10" max="90"/>
             </div>
-            <small id="cpuUsageHelp" className="col-sm-7 form-text text-muted"><i>Integer Value between 10 - 90</i></small>
+            <OverlayTrigger placement="right" delay={{ show: 250, hide: 400 }}
+                overlay={<Tooltip><i>Integer Value between 10 - 90</i></Tooltip>}>
+              <img src="img/help_icon.png" height="20" width="20" />
+            </OverlayTrigger>
           </div>
 
           <div className="form-group row">
@@ -221,7 +226,10 @@ class SharingModel extends Component {
               <input type="number" className="form-control" id="memUsage" placeholder="10 - 90" value={this.state.max_mem}
                 onChange={this.handleChange_max_mem} min="10" max="90"/>
             </div>
-            <small id="memUsageHelp" className="col-sm-7 form-text text-muted"><i>Integer Value between 10 - 90</i></small>
+            <OverlayTrigger placement="right" delay={{ show: 250, hide: 400 }}
+                overlay={<Tooltip><i>Integer Value between 10 - 90</i></Tooltip>}>
+              <img src="img/help_icon.png" height="20" width="20" />
+            </OverlayTrigger>
           </div>
 
           <div className="form-group row">
@@ -230,7 +238,10 @@ class SharingModel extends Component {
               <input type="number" className="form-control" id="storageUsage" placeholder="10 - 90" value={this.state.max_sto}
                 onChange={this.handleChange_max_sto} min="10" max="90"/>
             </div>
-            <small id="storageUsageHelp" className="col-sm-7 form-text text-muted"><i>Integer Value between 10 - 90</i></small>
+            <OverlayTrigger placement="right" delay={{ show: 250, hide: 400 }}
+                overlay={<Tooltip><i>Integer Value between 10 - 90</i></Tooltip>}>
+              <img src="img/help_icon.png" height="20" width="20" />
+            </OverlayTrigger>
           </div>
 
           <div className="form-group row">
@@ -239,7 +250,10 @@ class SharingModel extends Component {
               <input type="number" className="form-control" id="cpuUsage" placeholder="10 - 90" value={this.state.max_ban}
                 onChange={this.handleChange_max_ban} min="10" max="90"/>
             </div>
-            <small id="bandwidthUsageHelp" className="col-sm-7 form-text text-muted"><i>Integer Value between 10 - 90</i></small>
+            <OverlayTrigger placement="right" delay={{ show: 250, hide: 400 }}
+                overlay={<Tooltip><i>Integer Value between 10 - 90</i></Tooltip>}>
+              <img src="img/help_icon.png" height="20" width="20" />
+            </OverlayTrigger>
           </div>
 
           <div className="form-group row">
@@ -248,7 +262,10 @@ class SharingModel extends Component {
               <input type="number" className="form-control" id="batteryUsage" placeholder="10 - 90" value={this.state.bat_lev}
                 onChange={this.handleChange_bat_lev} min="10" max="90"/>
             </div>
-            <small id="batteryUsageHelp" className="col-sm-7 form-text text-muted"><i>Integer Value between 10 - 90</i></small>
+            <OverlayTrigger placement="right" delay={{ show: 250, hide: 400 }}
+                overlay={<Tooltip><i>Integer Value between 10 - 90</i></Tooltip>}>
+              <img src="img/help_icon.png" height="20" width="20" />
+            </OverlayTrigger>
           </div>
 
           <div className="form-group row">
@@ -257,7 +274,10 @@ class SharingModel extends Component {
               <input type="number" className="form-control" id="batteryUsage" placeholder="1 - 10" value={this.state.max_apps}
                 onChange={this.handleChange_max_apps} min="1" max="10"/>
             </div>
-            <small id="batteryUsageHelp" className="col-sm-7 form-text text-muted"><i>Max. allowed mF2C services that can run in device. Integer Value between 1 - 10</i></small>
+            <OverlayTrigger placement="right" delay={{ show: 250, hide: 400 }}
+                overlay={<Tooltip>Max. allowed mF2C services that can run in the device / agent. <br/><i>(Integer Value between 1 - 10)</i></Tooltip>}>
+              <img src="img/help_icon.png" height="20" width="20" />
+            </OverlayTrigger>
           </div>
 
           <Badge variant="secondary">{this.state.id_sharing_model}</Badge><br />
@@ -282,9 +302,9 @@ class SharingModel extends Component {
             </div>
           </Alert>
 
-          <button type="submit" className="btn btn-primary" onClick={this.handleView}><i class="fa fa-search" aria-hidden="true"></i>&nbsp;View</button>
+          <Button variant="primary" onClick={this.handleView} disabled={this.state.isLoading}><i class="fa fa-search" aria-hidden="true"></i>&nbsp;View</Button>
           &nbsp;
-          <button className="btn btn-success" onClick={this.handleSave}><i class="fa fa-floppy-o" aria-hidden="true"></i>&nbsp;Save</button>
+          <Button variant="success" onClick={this.handleSave} disabled={this.state.isLoading}><i class="fa fa-floppy-o" aria-hidden="true"></i>&nbsp;Save</Button>
         </form>
       </div>
     );

@@ -90,6 +90,7 @@ class UserProfile extends Component {
 
 
   handleSave(event) {
+    this.setState({isLoading: true});
     console.log('Updating user-profile ...');
     // call to api
     try {
@@ -110,11 +111,13 @@ class UserProfile extends Component {
           that.setState({ show_info: true, msg: "PUT /api/v2/um/" + that.state.id_user_profile + " => " + resp.statusCode,
                           msg_content: "User-profile updated: response: " + JSON.stringify(body) });
         }
+
+        that.setState({isLoading: false});
       });
     }
     catch(err) {
       console.error(err);
-      this.setState({ show_alert: true, msg: "PUT /api/v2/um/user-profile", msg_content: err.toString() });
+      this.setState({ show_alert: true, msg: "PUT /api/v2/um/user-profile", msg_content: err.toString(), isLoading: false });
     }
   }
 
@@ -184,9 +187,9 @@ class UserProfile extends Component {
             </div>
           </Alert>
 
-          <button type="submit" className="btn btn-primary" onClick={this.handleView}><i class="fa fa-search" aria-hidden="true"></i>&nbsp;View</button>
+          <Button variant="primary" onClick={this.handleView} disabled={this.state.isLoading}><i class="fa fa-search" aria-hidden="true"></i>&nbsp;View</Button>
           &nbsp;
-          <button className="btn btn-success" onClick={this.handleSave}><i class="fa fa-floppy-o" aria-hidden="true"></i>&nbsp;Save</button>
+          <Button variant="success" onClick={this.handleSave} disabled={this.state.isLoading}><i class="fa fa-floppy-o" aria-hidden="true"></i>&nbsp;Save</Button>
         </form>
       </div>
     );

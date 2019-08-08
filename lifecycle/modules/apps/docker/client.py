@@ -133,7 +133,7 @@ def create_docker_compss_container(service_image, ip, prts, ip_leader):
                                                  environment={"MF2C_HOST": ip,
                                                               "DEBUG": "debug",
                                                               "AGENT_HOST": data_adapter.get_host_ip(),
-                                                              "AGENT_PORT": data_adapter.db_get_compss_port(prts),
+                                                              "AGENT_PORT": config.dic['PORT_COMPSs'], #data_adapter.db_get_compss_port(prts),
                                                               "DATACLAY_EP": ip_leader + config.dic['DATACLAY_EP'],
                                                               "REPORT_ADDRESS": config.dic['CIMI_URL']}, #"http://" +  data_adapter.get_host_ip() + "/api"}, #config.dic['CIMI_URL']},
                                                  tty=True,

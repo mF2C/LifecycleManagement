@@ -167,13 +167,12 @@ def start_job(service_instance, body):
         res = requests.put("http://" + agent['url'] + ":" + str(compss_port) + "/COMPSs/startApplication",
                            data=xml,
                            headers={'Content-Type': 'application/xml'})
-        LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] response: " + str(res))
-        LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] response (json): " + str(res.json()))
-
         if res.ok:
-            LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] res.text: " + str(res.text))
+            LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] response (json): " + str(res) + ", " + str(res.json()) + ", " + str(res.text))
             data_adapter.serv_instance_store_appid_in_master(service_instance, str(res.json()))
             return True
+        else:
+            LOG.error("[lifecycle.modules.apps.compss.adapter] [start_job] Response from COMPSs: " + str(res))
     except:
         LOG.exception('[lifecycle.modules.apps.compss.adapter] [start_job] Exception')
     return False
