@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import request from "request";
-import { Alert, Button, Badge, Form, Row, Col } from 'react-bootstrap';
+import { Alert, Button, Badge, Form, Row, Col, Spinner } from 'react-bootstrap';
 import vis from "vis-network";
 
 
@@ -121,7 +121,7 @@ class ServiceInstances extends Component {
             }
 
             ////////////////////////////////////////////////////////////////////////////
-            if (body['service_instance'] != null && body['service_instance']['agents'].length > 0) {
+            if (body['service_instance'] != null && body['service_instance']['agents'] != null && body['service_instance']['agents'].length > 0) {
               // create an array with nodes
               var app_icon = "./img/apps_mini.png";
               if (body['service_instance']['status'] == "started") {
@@ -440,7 +440,12 @@ class ServiceInstances extends Component {
   render() {
     return (
       <div style={{margin: "25px 0px 0px 0px"}}>
-        <h3><b>Service Instances</b></h3>
+        <h3><b>Service Instances</b>&nbsp;&nbsp;&nbsp;
+          {this.state.isLoading ?
+            <Spinner animation="border" role="status" variant="primary">
+              <span className="sr-only">Loading...</span>
+            </Spinner> : ""}
+        </h3>
         <form>
           <div className="form-group row">
             <div className="col-sm-6">Service Instances managed by this agent <Badge variant="secondary">{this.state.total_service_instances_1}</Badge></div>
@@ -490,7 +495,7 @@ class ServiceInstances extends Component {
                 </Form.Group>
                 <Form.Group as={Row}>
                   <Form.Text size="sm" column  className="col-sm-2">Status</Form.Text>
-                  <Col sm={3}>
+                  <Col sm={6}>
                     <Form.Control size="sm" placeholder="status" value={this.state.si_status}
                      style={{ backgroundColor: "#EEEEEE"}} disabled/>
                   </Col>

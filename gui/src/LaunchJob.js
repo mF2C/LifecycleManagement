@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import request from "request";
-import { Alert, Button, Badge } from 'react-bootstrap';
+import { Alert, Button, Badge, Spinner } from 'react-bootstrap';
 import vis from "vis-network";
 
 
@@ -14,21 +14,22 @@ class LaunchJob extends Component {
       isLoading: false,
       total_service_instances_1: 0,
       sel_service_instance_id_1: "",
-
-      selservice: "",
-      value : "",
+      job_def: "",
       start_si_button: false,
       report_si_button: false,
       cancel_si_button: false,
       msg: "",
       msg_content: "",
       show_alert: false,
-      show_info: false
+      show_info: false,
+      job_report: ""
     };
 
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleView2 = this.handleView2.bind(this);
     this.viewReport = this.viewReport.bind(this);
+    this.handleChange_job_def = this.handleChange_job_def.bind(this);
+    this.handleCancel = this.handleCancel.bind(this);
   }
 
 
@@ -48,7 +49,34 @@ class LaunchJob extends Component {
    *
    */
   viewReport(event) {
-
+    console.log("Getting report [service_instance=" + this.state.sel_service_instance_id_1 + "]  ...");
+    // call to api
+    try {
+      var that = this;
+      request.get({url: global.rest_api_lm + "service-instances/" + this.state.sel_service_instance_id_1 + "/report"}, function(err, resp, body) {
+        if (err) {
+          console.error(err);
+          that.setState({ show_alert: true, msg: "GET /api/v2/lm/service-instances/" + this.state.sel_service_instance_id_1 + "/der", msg_content: err.toString() });
+        }
+        else {
+          console.log('Getting report ... ok');
+          if (global.debug) {
+            //that.setState({ show_info: true, msg: "GET /api/v2/um/user-profile => " + resp.statusCode, msg_content: "User-profile retrieved: response: " + body });
+          }
+          try {
+            console.log(body);
+            that.setState({ job_report: body});
+          }
+          catch(err) {
+            console.error(err);
+          }
+        }
+      });
+    }
+    catch(err) {
+      console.error(err);
+      this.setState({ show_alert: true, msg: "GET /api/v2/lm/service-instances/_id_/report", msg_content: err.toString() });
+    }
   }
 
 
@@ -201,32 +229,43 @@ class LaunchJob extends Component {
   }
 
 
-  handleSubmit(event) {
-    //event.preventDefault();
-    console.log("Launching job in DER [service_instance=" + this.state.selservice + "] ...");
+  handleChange_job_def(event) {
+    this.setState({job_def: event.target.value});
+  }
 
-    var uri = "/api/v2/lm/" + this.state.selservice;
+
+  handleCancel(event) {
+    this.setState({job_def: ""});
+  }
+
+
+  handleSubmit(event) {
+    this.setState({isLoading: true});
+    console.log("Launching job in DER [service_instance=" + this.state.sel_service_instance_id_1 + "] ...");
+
     // call to api
     try {
-      request.put(uri)
-        .on('response', function(response) {
-          console.log(response.statusCode); // 200
-          this.setState({ show_info: true });
-          this.setState({ msg: "PUT " + uri + " : " + response.statusCode });
-          this.setState({ msg_content: "Response: " + response.toString() });
-        })
-        .on('error', function(err) {
+      var that = this;
+      var formData = JSON.parse(this.state.job_def);
+
+      request.put({url: global.rest_api_lm + 'service-instances/' + this.state.sel_service_instance_id_1 + "/der", json: formData}, function(err, resp, body) {
+        if (err) {
           console.error(err);
-          this.setState({ show_alert: true });
-          this.setState({ msg: "PUT " + uri });
-          this.setState({ msg_content: err.toString() });
-        })
+          that.setState({ show_alert: true, msg: "PUT /api/v2/lm/service-instances/" + that.state.sel_service_instance_id_1 + "/der", msg_content: err.toString() });
+        }
+        else {
+          console.log("Launching job in DER ... ok");
+          if (global.debug) {
+            that.setState({ show_info: true, msg: "PUT /api/v2/lm/service-instances/" + that.state.sel_service_instance_id_1 + "/der => " + resp.statusCode, msg_content: "Job launched: response: " + body });
+          }
+        }
+
+        that.setState({isLoading: false});
+      });
     }
     catch(err) {
       console.error(err);
-      this.setState({ show_alert: true });
-      this.setState({ msg: "PUT " + uri });
-      this.setState({ msg_content: err.toString() });
+      this.setState({ show_alert: true, msg: "PUT /api/v2/lm/service-instances/_id_/der", msg_content: err.toString(), isLoading: false });
     }
   }
 
@@ -242,7 +281,12 @@ class LaunchJob extends Component {
   render() {
     return (
       <div style={{margin: "25px 0px 0px 0px"}}>
-        <h3><b>DER Jobs</b></h3>
+        <h3><b>DER Jobs</b>&nbsp;&nbsp;&nbsp;
+          {this.state.isLoading ?
+            <Spinner animation="border" role="status" variant="primary">
+              <span className="sr-only">Loading...</span>
+            </Spinner> : ""}
+        </h3>
         <form>
           <div className="form-group row">
             <div className="col-sm-6">
@@ -265,7 +309,7 @@ class LaunchJob extends Component {
 
               <div className="form-group row">
                 <div className="col-sm-11">
-                  <textarea className="form-control" id="job" rows="10">
+                  <textarea className="form-control" id="job" rows="10" value={this.state.job_def} onChange={this.handleChange_job_def}>
                   </textarea>
                 </div>
               </div>
@@ -274,7 +318,7 @@ class LaunchJob extends Component {
                 <i class="fa fa-rocket" aria-hidden="true"></i>&nbsp;Launch
               </button>
               &nbsp;
-              <button className="btn btn-warning" disabled={!this.state.cancel_si_button}><i class="fa fa-times" aria-hidden="true"></i>&nbsp;Cancel</button>
+              <button className="btn btn-warning" disabled={!this.state.cancel_si_button} onClick={this.handleCancel}><i class="fa fa-times" aria-hidden="true"></i>&nbsp;Cancel</button>
             </div>
           </div>
 
@@ -283,7 +327,7 @@ class LaunchJob extends Component {
               <Button variant="primary" onClick={this.viewReport} disabled={!this.state.report_si_button}>
                 <i class="fa fa-search" aria-hidden="true"></i>&nbsp;View report
               </Button>
-              <textarea className="form-control" id="result" rows="3"/>
+              <textarea className="form-control" id="result" rows="3" value={this.state.job_report}/>
             </div>
           </div>
 

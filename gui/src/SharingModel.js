@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import request from "request";
-import { Alert, Button, Badge } from 'react-bootstrap';
+import { Alert, Button, Badge, Spinner } from 'react-bootstrap';
 
 
 class SharingModel extends Component {
@@ -10,6 +10,7 @@ class SharingModel extends Component {
     super(props, context);
 
     this.state = {
+      isLoading: false,
       msg: "",
       msg_content: "",
       show_alert: false,
@@ -96,6 +97,7 @@ class SharingModel extends Component {
 
 
   handleView(event) {
+    this.setState({isLoading: true});
     console.log('Getting data from sharing model ...');
     // call to api
     try {
@@ -122,11 +124,13 @@ class SharingModel extends Component {
             console.error(err);
           }
         }
+
+        that.setState({isLoading: false});
       });
     }
     catch(err) {
       console.error(err);
-      this.setState({ show_alert: true, msg: "GET /api/v2/um/sharing-model", msg_content: err.toString() });
+      this.setState({ show_alert: true, msg: "GET /api/v2/um/sharing-model", msg_content: err.toString(), isLoading: false });
     }
   }
 
@@ -182,7 +186,12 @@ class SharingModel extends Component {
   render() {
     return (
       <div style={{margin: "25px 0px 0px 0px"}}>
-        <h3><b>Sharing Model</b></h3>
+        <h3><b>Sharing Model</b>&nbsp;&nbsp;&nbsp;
+          {this.state.isLoading ?
+            <Spinner animation="border" role="status" variant="primary">
+              <span className="sr-only">Loading...</span>
+            </Spinner> : ""}
+        </h3>
         <p>List of agent's resources shared in mF2C.</p>
         <form>
           <div className="form-group row">
