@@ -11,7 +11,6 @@ services:
       - "46000:46000"
     environment:
       - CIMI_URL=https://dashboard.mf2c-project.eu/api
-      - STANDALONE_MODE=False
       - HOST_IP=192.168.252.41
       - WORKING_DIR_VOLUME=/tmp/compose_files
       - URL_PM_SLA_MANAGER=http://slalite:46030
@@ -30,22 +29,5 @@ services:
     environment:
       - CIMI_URL=https://dashboard.mf2c-project.eu/api
 
-  # SERVICE MANAGER
-  service-manager:
-    image: mf2c/service-manager
-    expose:
-      - "46200"
-    ports:
-      - "46200:46200"
-    environment:
-      - CIMI_URL=https://dashboard.mf2c-project.eu
-
   # SLA MANAGER
-  slalite:
-    image: mf2c/sla-management:0.1.1
-    expose:
-      - "46030"
-    ports:
-      - "46030:8090"
-    environment:
-      - SLA_CIMIURL=https://dashboard.mf2c-project.eu/api
+

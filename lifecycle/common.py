@@ -57,7 +57,7 @@ STATUS_TERMINATING = "terminating"
 
 # is_standalone_mode
 def is_standalone_mode():
-    if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
+    if config.dic['LM_MODE'] is not None and config.dic['LM_MODE'] == 'STANDALONE':
         return True
     return False
 

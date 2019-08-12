@@ -30,7 +30,6 @@ ENV VARIABLES (mF2C):
     
 ENV VARIABLES (lifecycle):
     HOST_IP
-    STANDALONE_MODE
     
     URL_PM_SLA_MANAGER
     URL_AC_SERVICE_MNGMT
@@ -51,8 +50,6 @@ def init():
         common.set_value_env('LM_WORKING_DIR_VOLUME')  # LM_WORKING_DIR_VOLUME from environment values:
         # LM_MODE
         common.set_value_env('LM_MODE')
-        # STANDALONE_MODE
-        common.set_value_env('STANDALONE_MODE')
         common.set_value_env('DB_STANDALONE_MODE')
         # docker
         common.set_value_env('WORKING_DIR_VOLUME')
@@ -99,7 +96,6 @@ def init():
         LOG.info('[lifecycle.init_config] [init] [DOCKER_SWARM_=' + str(config.dic['DOCKER_SWARM']) + ']')
         LOG.info('[lifecycle.init_config] [init] [K8S_MASTER=' + str(config.dic['K8S_MASTER']) + ']')
         LOG.info('[lifecycle.init_config] [init] [API_DOC_URL=' + config.dic['API_DOC_URL'] + ']')
-        LOG.info('[lifecycle.init_config] [init] [STANDALONE_MODE=' + str(config.dic['STANDALONE_MODE']) + ']')
         LOG.info('[lifecycle.init_config] [init] [LM_WORKING_DIR_VOLUME=' + config.dic['LM_WORKING_DIR_VOLUME'] + ']')
         LOG.info('[lifecycle.init_config] [init] [VERIFY_SSL=' + str(config.dic['VERIFY_SSL']) + ']')
         LOG.info('[lifecycle.init_config] [init] [CIMI_URL=' + config.dic['CIMI_URL'] + ']')
@@ -117,7 +113,7 @@ def init():
         LOG.info('[lifecycle.init_config] [init] [NETWORK_COMPSs=' + config.dic['NETWORK_COMPSs'] + ']')
         LOG.info('[lifecycle.init_config] [init] [DATACLAY_EP=' + config.dic['DATACLAY_EP'] + ']')
 
-        if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
+        if config.dic['LM_MODE'] is not None and config.dic['LM_MODE'] == 'STANDALONE':
             LOG.warning("[lifecycle.init_config] [init] STANDALONE_MODE enabled")
         else:
             LOG.info("[lifecycle.init_config] [init] STANDALONE_MODE not enabled")
@@ -126,7 +122,8 @@ def init():
         if os.path.exists(config.dic['LM_WORKING_DIR_VOLUME'] + config.dic['DB_DOCKER_PORTS']):
             LOG.info("[lifecycle.init_config] [init] The file exists: " + config.dic['LM_WORKING_DIR_VOLUME'] + config.dic['DB_DOCKER_PORTS'])
         else:
-            LOG.info("[lifecycle.init_config] [init] The file does not exist: " + config.dic['LM_WORKING_DIR_VOLUME'] + config.dic['DB_DOCKER_PORTS'])
+            LOG.info("[lifecycle.init_config] [init] The file does not exist: " + config.dic['LM_WORKING_DIR_VOLUME'] + config.dic['DB_DOCKER_PORTS'] + ". Creating new path ...")
+            os.makedirs(config.dic['LM_WORKING_DIR_VOLUME'], exist_ok=True)
 
         data_adapter.init(config.dic['LM_MODE'])
         connector.init(config.dic['LM_MODE'])

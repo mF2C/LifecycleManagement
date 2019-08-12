@@ -15,6 +15,8 @@ import config
 from lifecycle.logs import LOG
 from lifecycle.data.app import db as db
 from lifecycle.data.standalone import data_interface as data_standalone
+from lifecycle.data.standalone import lm_db as lm_db
+from lifecycle.connectors.atos import user_manager as user_manager
 
 
 # Data adapter class
@@ -25,8 +27,8 @@ class StandaloneDataAdapter:
 
     # get_my_ip: Get IP address from local
     def get_my_ip(self):
-        LOG.warning("[lifecycle.data.standalone_data_adapter] [get_my_ip] not implemented")
-        return None
+        LOG.warning("[lifecycle.data.standalone_data_adapter] [get_my_ip] not implemented. Returning value of 'HOST_IP' ...")
+        return config.dic['HOST_IP']
 
 
     # get_host_ip: Get IP address from local
@@ -51,14 +53,20 @@ class StandaloneDataAdapter:
 
     # get_um_profile: Get um_profile
     def get_um_profile(self):
-        LOG.warning("[lifecycle.data.standalone_data_adapter] [get_um_profile] not implemented")
-        return None
+        um_res = user_manager.get_user_profile()
+        if um_res is not None:
+            return um_res['user_profile']
+        else:
+            return None
 
 
     # get_um_sharing_model: Get sharing_model
     def get_um_sharing_model(self):
-        LOG.warning("[lifecycle.data.standalone_data_adapter] [get_um_sharing_model] not implemented")
-        return None
+        um_res = user_manager.get_sharing_model()
+        if um_res is not None:
+            return um_res['sharing_model']
+        else:
+            return None
 
 
     # get_check_swarm: checks if device can run swarm apps

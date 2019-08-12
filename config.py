@@ -13,7 +13,7 @@ Created on 18 oct. 2018
 
 #!/usr/bin/python
 
-dic = { "VERSION":                      "1.3.6",
+dic = { "VERSION":                      "1.3.7",
 
         # LIFECYCLE MANAGER MODE: "DEFAULT", "MF2C" , "STANDALONE"
         "LM_MODE":                      "MF2C",
@@ -22,13 +22,12 @@ dic = { "VERSION":                      "1.3.6",
         "SERVER_PORT":                  46000,
         "HOST_IP":                      "localhost",
         "API_DOC_URL":                  "/api/v2/lm",
-        "STANDALONE_MODE":              False,
 
         # STANDALONE_MODE db
         "DB_STANDALONE_MODE":           "lm_db",
 
-        # working dir
-        "LM_WORKING_DIR_VOLUME":        "/tmp/mf2c/lm/", #"C://TMP/store/", # "/tmp/lm/", #
+        # working dir:    "C://TMP/tmp/mf2c/lm/"     "/tmp/mf2c/lm/"
+        "LM_WORKING_DIR_VOLUME":        "/tmp/mf2c/lm/",
 
         # DOCKER / SWARM / K8s:
         "DOCKER_SOCKET":                "unix://var/run/docker.sock",
@@ -73,6 +72,6 @@ dic = { "VERSION":                      "1.3.6",
         # TODO fix/remove dependencies
         # PM-Lifecycle: /api/v1/lifecycle/<string:service_id>
         "URL_PM_LIFECYCLE":             "http://lm-um:46000/api/v2/lm",
-        # AC-USER MANAGEMENT
+        # AC-USER MANAGEMENT:    "http://lm-um:46300/api/v2/um"    "http://localhost:46300/api/v2/um"
         "URL_AC_USER_MANAGEMENT":       "http://lm-um:46300/api/v2/um"
 }

@@ -78,3 +78,45 @@ def get_current(val):
     except:
         LOG.exception("[lifecycle.connectors.atos.user_manager] [get_current] Exception; Returning None ...")
     return None
+
+
+# GET CURRENT USER-PROFILE
+# get_user_profile: call to local UM to get current user-profile
+def get_user_profile():
+    LOG.debug("[lifecycle.connectors.atos.user_manager] [get_user_profile] Getting user-profile from localhost ...")
+    try:
+        LOG.info("[lifecycle.connectors.atos.user_manager] [get_user_profile] HTTP GET: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/user-profile")
+        r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/user-profile",
+                         verify=config.dic['VERIFY_SSL'])
+        LOG.debug("[lifecycle.connectors.atos.user_manager] [get_user_profile] response: " + str(r) + ", " + str(r.json()))
+
+        json_data = json.loads(r.text)
+        LOG.debug("[lifecycle.connectors.atos.user_manager] [get_user_profile] json_data=" + str(json_data))
+        if r.status_code == 200:
+            return json_data
+
+        LOG.error("[lifecycle.connectors.atos.user_manager] [get_user_profile] Error: status_code=" + str(r.status_code) + "; Returning None ...")
+    except:
+        LOG.exception("[lifecycle.connectors.atos.user_manager] [get_user_profile] Exception; Returning None ...")
+    return None
+
+
+# GET CURRENT SHARING-MODEL
+# get_sharing_model: call to local UM to get current usharing-model
+def get_sharing_model():
+    LOG.debug("[lifecycle.connectors.atos.user_manager] [get_sharing_model] Getting sharing-model from localhost ...")
+    try:
+        LOG.info("[lifecycle.connectors.atos.user_manager] [get_sharing_model] HTTP GET: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharing-model")
+        r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/sharing-model",
+                         verify=config.dic['VERIFY_SSL'])
+        LOG.debug("[lifecycle.connectors.atos.user_manager] [get_sharing_model] response: " + str(r) + ", " + str(r.json()))
+
+        json_data = json.loads(r.text)
+        LOG.debug("[lifecycle.connectors.atos.user_manager] [get_sharing_model] json_data=" + str(json_data))
+        if r.status_code == 200:
+            return json_data
+
+        LOG.error("[lifecycle.connectors.atos.user_manager] [get_sharing_model] Error: status_code=" + str(r.status_code) + "; Returning None ...")
+    except:
+        LOG.exception("[lifecycle.connectors.atos.user_manager] [get_sharing_model] Exception; Returning None ...")
+    return None
