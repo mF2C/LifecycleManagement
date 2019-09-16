@@ -24,10 +24,10 @@ class App extends Component {
     super(props, context);
 
     //Setting up global variables
-    global.rest_api_lm = 'http://192.168.252.41:46000/api/v2/lm/';
-    global.rest_api_um = 'http://192.168.252.41:46300/api/v2/um/';
-    global.const_rest_api_lm = 'http://192.168.252.41:46000/api/v2/lm/';
-    global.const_rest_api_um = 'http://192.168.252.41:46300/api/v2/um/';
+    global.rest_api_lm = 'http://lm-um:46000/api/v2/lm/';
+    global.rest_api_um = 'http://lm-um:46300/api/v2/um/';
+    global.const_rest_api_lm = 'http://lm-um:46000/api/v2/lm/';
+    global.const_rest_api_um = 'http://lm-um:46300/api/v2/um/';
     global.debug = true;
   }
 
