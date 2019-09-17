@@ -16,7 +16,7 @@ from lifecycle import common as common
 from lifecycle.data import data_adapter as data_adapter
 import uuid, os, time
 import urllib.request as urequest
-from lifecycle.data.app.db import SERVICE_INSTANCES_LIST
+from lifecycle.data.common.db import SERVICE_INSTANCES_LIST
 from lifecycle.logs import LOG
 import config
 from lifecycle.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, \

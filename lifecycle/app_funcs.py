@@ -68,6 +68,14 @@ def getAgentUMInfo():
     return resp
 
 
+# isUMAlive
+def isUMAlive():
+    if not connector.user_management_check_avialability() is None:
+        return Response(json.dumps({'res': 'ok'}), status=200, mimetype='application/json')
+    else:
+        return common.gen_response(500, 'Exception', 'isUMAlive', "user_management_check_avialability returned None")
+
+
 # getCheckAgentUMInfo
 def getCheckAgentUMInfo():
     result = connector.user_management_check_avialability() #data_adapter.get_check_um()

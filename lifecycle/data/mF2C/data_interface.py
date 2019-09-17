@@ -12,8 +12,7 @@ Created on 09 feb. 2018
 """
 
 import config
-from lifecycle.data.mF2C import cimi as cimi
-from lifecycle.data.app import service_instance as service_instance
+from lifecycle.data.mF2C import cimi as cimi, service_instance as service_instance
 from lifecycle.logs import LOG
 
 

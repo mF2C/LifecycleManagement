@@ -61,7 +61,7 @@ REST API
                 /lm/service
                         POST:   Submits a service and gets a service instance (new version)
 
-                /api/v2/lm/service-instance-int
+                /lm/service-instance-int
                         POST:   Submits /lm/service-instance-inta service in a mF2C agent
                         PUT:    starts / stops ... a service in a mF2C agent; start-job
 '''
@@ -209,6 +209,32 @@ api.add_resource(AgentUM, '/api/v2/lm/agent-um')
 
 
 #
+# Healthcheck service: UM and LM
+#
+#    '/api/v2/lm/isumalive'
+#
+#        GET:    checks if UM is alive
+#
+class AgentUMIsAlive(Resource):
+    # GET /api/v2/lm/isumalive
+    @swagger.operation(
+        summary="checks if UM is alive",
+        notes="checks if UM is alive",
+        produces=["application/json"],
+        authorizations=[],
+        parameters=[],
+        responseMessages=[{
+            "code": 500,
+            "message": "Exception processing request"
+        }])
+    def get(self):
+        return lm.isUMAlive()
+
+
+api.add_resource(AgentUMIsAlive, '/api/v2/lm/isumalive')
+
+
+#
 # Service instance route:
 #
 #     '/api/v2/lm/service-instances/<string:service_instance_id>'
@@ -313,43 +339,42 @@ class ServiceInstanceCOMPSs(Resource):
     # PUT /api/v2/lm/service-instance/<string:service_instance_id>
     @swagger.operation(
         summary="start a <b>COMPSs job</b>",
-        notes="Available operations:<br/>"
-             "<b>'start-job'</b> ... starts a job<br/><br/>"
-             "Field 'parameters' is used only for starting a job in an agent.",
+        notes="Executes a COMPSs job in the DER.<br/>"
+             "<hr/><br/>Example:<br/>"
+             "{<br/><font color='blue'>\"operation\":</font>\"start-job\",<br/>"
+             "<font color='blue'>\"ceiClass\":</font>\"es.bsc.compss.agent.test.TestItf\",<br/>"
+             "<font color='blue'>\"className\":</font>\"es.bsc.compss.agent.test.Test\",<br/>"
+             "<font color='blue'>\"hasResult\":</font>false,<br/>"
+             "<font color='blue'>\"methodName\":</font>\"main\",<br/>"
+             "<font color='blue'>\"parameters\":</font>\""
+             "    &lt;params paramId=\\\"0\\\"&gt;"
+             "      &lt;direction&gt;IN&lt;/direction&gt;"
+             "      &lt;stream&gt;UNSPECIFIED&lt;/stream&gt;"
+             "      &lt;type&gt;OBJECT_T&lt;/type&gt;"
+             "      &lt;array paramId=\\\"0\\\"&gt;"
+             "        &lt;componentClassname&gt;java.lang.String&lt;/componentClassname&gt;"           
+             "        &lt;values&gt;"
+             "          &lt;element paramId=\\\"0\\\"&gt;"
+             "            &lt;className&gt;java.lang.String&lt;/className&gt;"
+             "            &lt;value xmlns:xsi=\\\"http://www.w3.org/2001/XMLSchema-instance\\\" "
+             "                 xmlns:xs=\\\"http://www.w3.org/2001/XMLSchema\\\" xsi:type=\\\"xs:string\\\"&gt;3&lt;/value&gt;"
+             "          &lt;/element&gt;"
+             "        &lt;/values&gt;"
+             "      &lt;/array&gt;"
+             "    &lt;/params&gt;\" <br/>}",
         produces=["application/json"],
         authorizations=[],
         parameters=[{
-            "name": "service_instance_id", "description": "Service instance ID or 'all'.<br/>Example: <br/>b08ee389-36c0-45f0-8684-61baf6e03da8",
+            "name": "service_instance_id", "description": "Service instance ID or 'all'",
             "required": True,
             "paramType": "path",
             "type": "string"
         }, {
             "name": "body",
-            "description": "Parameters in JSON format.<br/>Example:<br/>"
-                           "{<br/><font color='blue'>\"operation\":</font>\"start-job\",<br/>"
-                           "<font color='blue'>\"ceiClass\":</font>\"es.bsc.compss.agent.test.TestItf\",<br/>"
-                           "<font color='blue'>\"className\":</font>\"es.bsc.compss.agent.test.Test\",<br/>"
-                           "<font color='blue'>\"hasResult\":</font>false,<br/>"
-                           "<font color='blue'>\"methodName\":</font>\"main\",<br/>"
-                           "<font color='blue'>\"parameters\":</font>\""
-                           "    &lt;params paramId=\\\"0\\\"&gt;"
-                           "      &lt;direction&gt;IN&lt;/direction&gt;"
-                           "      &lt;stream&gt;UNSPECIFIED&lt;/stream&gt;"
-                           "      &lt;type&gt;OBJECT_T&lt;/type&gt;"
-                           "      &lt;array paramId=\\\"0\\\"&gt;"
-                           "        &lt;componentClassname&gt;java.lang.String&lt;/componentClassname&gt;"           
-                           "        &lt;values&gt;"
-                           "          &lt;element paramId=\\\"0\\\"&gt;"
-                           "            &lt;className&gt;java.lang.String&lt;/className&gt;"
-                           "            &lt;value xmlns:xsi=\\\"http://www.w3.org/2001/XMLSchema-instance\\\" "
-                           "                 xmlns:xs=\\\"http://www.w3.org/2001/XMLSchema\\\" xsi:type=\\\"xs:string\\\"&gt;3&lt;/value&gt;"
-                           "          &lt;/element&gt;"
-                           "        &lt;/values&gt;"
-                           "      &lt;/array&gt;"
-                           "    &lt;/params&gt;\" <br/>}",
+            "description": "Parameters in JSON format",
             "required": True,
             "paramType": "body",
-            "type": "string"
+            "type": "json"
         }], responseMessages=[{
             "code": 406, "message": "('operation' / 'parameters') Parameter not found"
         }, {
@@ -406,23 +431,40 @@ class Service(Resource):
     # POST /api/v2/lm/service
     @swagger.operation(
         summary="Submits a <b>service</b> (deployment phase)</b>",
-        notes="Submits a service and returns a json with the content of a service instance. Types of services:<br/>"
-              "<i>'exec_type'</i>=<b>'docker'</b> ... deploy a docker image<br/>"
-              "<i>'exec_type'</i>=<b>'docker-compose'</b> ... deploy a docker compose service<br/>" 
-              "<i>'exec_type'</i>=<b>'docker-swarm'</b> ... deploy a docker swarm service<br/>"
-              "<i>'exec_type'</i>=<b>'K8s'</b> ... deploy a Kubernetes service<br/>"
-              "<i>'exec_type'</i>=<b>'compss'</b> ... deploy a docker COMPSs image<br/>",
+        notes="Submits a service and returns a json with the content of a service instance. Types of services that can be deployed and managed:<br/>"
+              "&nbsp;&nbsp;<b>'docker'</b> ... deploy a docker image<br/>"
+              "&nbsp;&nbsp;<b>'docker-compose'</b> ... deploy a docker compose service<br/>" 
+              "&nbsp;&nbsp;<b>'docker-swarm'</b> ... deploy a docker swarm service<br/>"
+              "&nbsp;&nbsp;<b>'compss'</b> ... deploy a docker COMPSs image<br/><br/>"
+              "Body content:<br/>"
+              "{<br/>"
+              "&nbsp; <b>service_id</b>: string,<br/>"
+              "&nbsp; <b>sla_template</b>: string,<br/>"
+              "&nbsp; <b>service</b>: json (only if <i>service_id</i> is not defined),<br/>"
+              "&nbsp; <b>service_instance_id</b>: json (only used for internal calls - request forwarding),<br/>"
+              "&nbsp; <b>agents_list</b>: list,<br/>}<br/><hr/>"
+              "Example 1:<br/>"
+              "{<br/>"
+              "&nbsp; \"service_id\": \"service/74dd7176-111e-412a-98ce-a6409d58b3ca\",<br/>"
+              "&nbsp; \"sla_template\": \"sla-template/12932af0ef123\"<br/>}<br/><br/>"
+              "Example 2:<br/>"
+              "{<br/>"
+              "&nbsp; \"service_id\": \"service/74dd7176-111e-412a-98ce-a6409d58b3ca\",<br/>"
+              "&nbsp; \"sla_template\": \"sla-template/12932af0ef123\",<br/>"
+              "&nbsp; \"agents_list\": [{\"agent_ip\": \"192.168.131.02\"}, {\"agent_ip\": \"192.168.131.03\"}]<br/>}<br/><br/>"
+              "Example 3:<br/>"
+              "{<br/>"
+              "&nbsp; \"service\": {<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\"name\": \"nginx\", <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\"exec\": \"nginx\", <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\"num_agents\": 5, <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\"exec_type\": \"docker\", <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\"exec_ports\": [80], <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\"category\": 2, <br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;\"sla_templates\": [\"sla-template/c2843afa-0fb0-4366-87e9-303c6a961be2\"]},<br/>"
+              "&nbsp; \"sla_template\": \"sla-template/12932af0ef123\",<br/>"
+              "&nbsp; \"agents_list\": [{\"agent_ip\": \"192.168.131.02\"}, {\"agent_ip\": \"192.168.131.03\"}]<br/>}<br/><br/>",
         produces=["application/json"],
         authorizations=[],
         parameters=[{
             "name": "body",
-            "description": "Parameters in JSON format.<br/>Service example: <br/>"
-                           "{<br/>"
-                           "\"service_id\": \"service/74dd7176-111e-412a-98ce-a6409d58b3ca\",<br/>"
-                           "\"sla_template\": \"sla-templatet/12932af0ef123\"<br/>}",
+            "description": "Parameters in JSON format",
             "required": True,
             "paramType": "body",
-            "type": "string"
+            "type": "json"
         }],
         responseMessages=[{
             "code": 406,

@@ -11,10 +11,9 @@ Created on 10 mayo 2019
 @author: Roi Sucasas - ATOS
 """
 
-from lifecycle.data.mF2C import data_interface as data_mf2c
+from lifecycle.data.mF2C import data_interface as data_mf2c, service_instance as si
 from lifecycle.modules.apps.swarm import adapter as swarm_adapter
-from lifecycle.data.app import service_instance as si
-from lifecycle.data.app import db as db
+from lifecycle.data.common import db as db
 
 
 # Data adapter class

@@ -13,7 +13,7 @@ Created on 10 mayo 2019
 
 import config
 from lifecycle.logs import LOG
-from lifecycle.data.app import db as db
+from lifecycle.data.common import db as db
 from lifecycle.data.standalone import data_interface as data_standalone
 from lifecycle.data.standalone import lm_db as lm_db
 from lifecycle.connectors.atos import user_manager as user_manager
