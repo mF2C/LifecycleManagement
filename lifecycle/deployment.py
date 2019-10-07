@@ -186,8 +186,8 @@ def thr_submit_service_in_agents(service, service_instance, sla_template_id, use
         LOG.exception("[lifecycle.deployment] [thr_submit_service_in_agents] Exception")
 
 
-# forward_submit_request_to_leader
-def forward_submit_request_to_leader(service, user_id, sla_template_id, service_instance_id):
+# __forward_submit_request_to_leader
+def __forward_submit_request_to_leader(service, user_id, sla_template_id, service_instance_id):
     LOG.debug("[lifecycle.deployment] [forward_submit_request_to_leader] Forwarding service [" + service['name'] + "] deployment to leader" +
               " (user_id: " + user_id + ", sla_template_id: " + sla_template_id + ", service_instance_id: " + service_instance_id + ") ...")
     # leader IP and cuerrent agent IP
@@ -273,14 +273,15 @@ def submit_service_in_agents(service, user_id, service_instance_id, sla_template
         if m == "error" or r is None:
             LOG.error("[lifecycle.deployment] [submit_service_in_agents] error when selecting agents. Forwarding to Leader...")
             # forward to parent
-            return forward_submit_request_to_leader(service, user_id, sla_template_id, service_instance['id'])
+            return __forward_submit_request_to_leader(service, user_id, sla_template_id, service_instance['id'])
 
         elif m == "not-enough-resources-found" or len(r['agents']) == 0:
             LOG.warning("[lifecycle.deployment] [submit_service_in_agents] Not enough resources (number of agents) found. Forwarding to Leader...")
             # forward to parent
-            return forward_submit_request_to_leader(service, user_id, sla_template_id, service_instance['id'])
+            return __forward_submit_request_to_leader(service, user_id, sla_template_id, service_instance['id'])
 
         else:
+            LOG.info("######## DEPLOYMENT ###############################################################")
             service_instance = r
             LOG.debug("[lifecycle.deployment] [submit_service_in_agents] service_instance: " + str(service_instance))
 
@@ -312,15 +313,16 @@ def submit(service, user_id, service_instance_id, sla_template_id):
             # warning
             LOG.error("[lifecycle.deployment] [submit] available_agents_list is None. Forwarding to Leader...")
             # forward to parent
-            return forward_submit_request_to_leader(service, user_id, sla_template_id, "")
+            return __forward_submit_request_to_leader(service, user_id, sla_template_id, "")
 
         elif len(available_agents_list) == 0:
             # no resurces / agents found
             LOG.warning("[lifecycle.deployment] [submit] available_agents_list is empty. Forwarding to Leader...")
             # forward to parent
-            return forward_submit_request_to_leader(service, user_id, sla_template_id, "")
+            return __forward_submit_request_to_leader(service, user_id, sla_template_id, "")
 
         else:
+            LOG.info("######## DEPLOYMENT ###############################################################")
             # 3. Create new service instance & allocate service / call other agents when needed
             return submit_service_in_agents(service, user_id, service_instance_id, sla_template_id, available_agents_list)
     except:

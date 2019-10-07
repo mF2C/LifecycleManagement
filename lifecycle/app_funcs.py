@@ -78,21 +78,18 @@ def isUMAlive():
 
 # getCheckAgentUMInfo
 def getCheckAgentUMInfo():
-    result = connector.user_management_check_avialability() #data_adapter.get_check_um()
-
+    result = connector.user_management_check_avialability()
     if not result is None:
         agent_um = {
-            'device-id': 'not-defined',
-            'user-id': 'not-defined',
-            'message': result['message'],
-            'result': result['result']
+            "message": result['message'],
+            "sharing_model": result['sharing_model'],
+            "result": result['result']
         }
     else:
         agent_um = {
-            'device-id': 'not-defined',
-            'user-id': 'not-defined',
-            'message': 'not-defined',
-            'result': False
+            "message": result['message'],
+            "sharing_model": {},
+            "result": False
         }
     resp = Response(json.dumps(agent_um), status=200, mimetype='application/json')
     return resp

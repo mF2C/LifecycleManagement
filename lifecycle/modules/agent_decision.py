@@ -117,7 +117,11 @@ def __user_management(service_instance):
                 if 'result' in res and not res['result']:
                     LOG.debug("[lifecycle.modules.agent_decision] [__user_management] agent not allowed: " + str(agent))
                 else:
-                    l_filtered_agents.append(agent)
+                    if not res['sharing_model'] or not res['sharing_model']['device_id']:
+                        l_filtered_agents.append(agent)
+                    else:
+                        agent['device_id'] = res['sharing_model']['device_id']
+                        l_filtered_agents.append(agent)
 
         service_instance['agents'] = l_filtered_agents
 
@@ -329,15 +333,16 @@ def select_agents(service_type, num_agents, service_instance):
         else:
             LOG.debug("[lifecycle.modules.agent_decision] [select_agents] agents INITIAL list: " + str(service_instance['agents']))
             # 1. FILTER LIST ###############
-            LOG.info("######## SELECT AGENTS: SERVICE MANAGEMENT (QoS) ############################## (2) ###########")
-            # 1.1. QoS PROVIDING
-            service_instance_res = __qos_providing(service_instance)
+
+            # 1.1. USER MANAGEMENT -> profiling and sharing model
+            LOG.info("######## SELECT AGENTS: USER MANAGEMENT ####################################### (2) ###########")
+            service_instance_res = __user_management(service_instance)
             if not service_instance_res is None:
                 service_instance = service_instance_res
 
-            # 1.2. USER MANAGEMENT -> profiling and sharing model
-            LOG.info("######## SELECT AGENTS: USER MANAGEMENT ####################################### (3) ###########")
-            service_instance_res = __user_management(service_instance)
+            # 1.2. QoS PROVIDING
+            LOG.info("######## SELECT AGENTS: SERVICE MANAGEMENT (QoS) ############################## (3) ###########")
+            service_instance_res = __qos_providing(service_instance)
             if not service_instance_res is None:
                 service_instance = service_instance_res
 

@@ -22,10 +22,10 @@ from lifecycle.logs import LOG
 def create_sla_agreement(template_id, user_id, service):
     LOG.debug("[lifecycle.connectors.atos.sla_manager] [create_sla_agreement] template_id=" + template_id + ", user_id=" + user_id + ", service=" + service['name'])
     try:
-        LOG.info("[lifecycle.connectors.atos.sla_manager] [create_sla_agreement] HTTP POST: " + str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements")
+        LOG.info("[lifecycle.connectors.atos.sla_manager] [create_sla_agreement] HTTP POST: " + str(config.dic['URL_PM_SLA_MANAGER']) + "/mf2c/create-agreement")
         body = {"template_id": template_id,
                 "parameters": {"user":user_id}}
-        r = requests.post(str(config.dic['URL_PM_SLA_MANAGER']) + "/agreements",
+        r = requests.post(str(config.dic['URL_PM_SLA_MANAGER']) + "/mf2c/create-agreement",
                           json=body,
                           verify=config.dic['VERIFY_SSL'])
         LOG.debug("[lifecycle.connectors.atos.sla_manager] [create_sla_agreement] response: " + str(r) + ", " + str(r.json()))
