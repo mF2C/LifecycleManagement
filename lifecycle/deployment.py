@@ -190,16 +190,16 @@ def thr_submit_service_in_agents(service, service_instance, sla_template_id, use
 def __forward_submit_request_to_leader(service, user_id, sla_template_id, service_instance_id):
     LOG.debug("[lifecycle.deployment] [forward_submit_request_to_leader] Forwarding service [" + service['name'] + "] deployment to leader" +
               " (user_id: " + user_id + ", sla_template_id: " + sla_template_id + ", service_instance_id: " + service_instance_id + ") ...")
-    # leader IP and cuerrent agent IP
+    # leader IP and current agent IP
     leader_ip = data_adapter.get_leader_ip()
     my_ip = data_adapter.get_my_ip()
 
     # check if leader_ip =/= current agent IP
     if  leader_ip is not None and my_ip is not None and my_ip == leader_ip:
-        LOG.warning("[lifecycle.deployment] [forward_submit_request_to_leader] LM cannot forward request to leader. Reason: 'my_ip' == 'leader_ip'");
+        LOG.warning("[lifecycle.deployment] [forward_submit_request_to_leader] LM cannot forward request to leader. Reason: 'my_ip' == 'leader_ip'")
         # delete service_instance
         if service_instance_id is not None:
-            LOG.debug("[lifecycle.deployment] [forward_submit_request_to_leader] Deleting service instance [" + service_instance_id + "] ...");
+            LOG.debug("[lifecycle.deployment] [forward_submit_request_to_leader] Deleting service instance [" + service_instance_id + "] ...")
             service_instance_id = id.replace('service-instance/', '')
             operations.terminate(service_instance_id)
         # send error
@@ -210,24 +210,24 @@ def __forward_submit_request_to_leader(service, user_id, sla_template_id, servic
 
     # if leader_ip =/= current agent IP, forward request to leader
     elif leader_ip is not None and connector.lifecycle_parent_deploy(leader_ip, service['id'], user_id, sla_template_id, service_instance_id):
-        LOG.debug("[lifecycle.deployment] [forward_submit_request_to_leader] Checking service_instance before forwarding request to leader...");
+        LOG.debug("[lifecycle.deployment] [forward_submit_request_to_leader] Checking service_instance before forwarding request to leader...")
         # check if service instance was created
         service_instance = None
         if not service_instance_id:
             service_instance = data_adapter.create_service_instance(service, [], user_id, "")
             service_instance_id = service_instance['id']
 
-        LOG.debug("[lifecycle.deployment] [forward_submit_request_to_leader] Request forwarded to leader.");
+        LOG.debug("[lifecycle.deployment] [forward_submit_request_to_leader] Request forwarded to leader.")
         return common.gen_response_ok("Not enough resources found in current cluster => Request forwarded to Leader. Service deployment operation is being processed...",
                                       "service_instance_id", service_instance_id,
                                       "service_instance", service_instance)
 
     # error
     else:
-        LOG.error("[lifecycle.deployment] [forward_submit_request_to_leader] LM could not forward request to leader: 'leader_ip' is None / error connecting to leader agent");
+        LOG.error("[lifecycle.deployment] [forward_submit_request_to_leader] LM could not forward request to leader: 'leader_ip' is None / error connecting to leader agent")
         # delete service_instance
         if service_instance_id is not None:
-            LOG.debug("[lifecycle.deployment] [forward_submit_request_to_leader] Deleting service instance [" + service_instance_id + "] ...");
+            LOG.debug("[lifecycle.deployment] [forward_submit_request_to_leader] Deleting service instance [" + service_instance_id + "] ...")
             service_instance_id = id.replace('service-instance/', '')
             operations.terminate(service_instance_id)
         # send error
@@ -248,10 +248,8 @@ def submit_service_in_agents(service, user_id, service_instance_id, sla_template
             return common.gen_response(500, 'field(s) category/exec/exec_type not found', 'service', str(service))
 
         # 2. create new service instance
-        if service_instance_id is not None:
-            # TODO
-            LOG.warning("[lifecycle.deployment] [submit_service_in_agents] service_instance_id is not None - not implemented -")
-            return common.gen_response(500, 'error creating service_instance', 'service', str(service))
+        if service_instance_id is not None and service_instance_id != "":
+            service_instance = data_adapter.get_service_instance(service_instance_id)
         else:
             LOG.debug("[lifecycle.deployment] [submit_service_in_agents] Creating service instance ... ")
             service_instance = data_adapter.create_service_instance(service, agents_list, user_id, "DEFAULT-VALUE")
@@ -307,7 +305,7 @@ def submit(service, user_id, service_instance_id, sla_template_id):
             return common.gen_response(500, 'field(s) category/exec/exec_type not found', 'service', str(service))
 
         # 2. get list of available agents / resources / VMs. Example: [{"agent_ip": "192.168.252.41"}, {...}]
-        # Call to landscaper/recommender
+        # Call to landscaper / recommender
         available_agents_list = agent_decision.get_available_agents_resources(service)
         if not available_agents_list:
             # warning
@@ -316,7 +314,7 @@ def submit(service, user_id, service_instance_id, sla_template_id):
             return __forward_submit_request_to_leader(service, user_id, sla_template_id, "")
 
         elif len(available_agents_list) == 0:
-            # no resurces / agents found
+            # no resources / agents found
             LOG.warning("[lifecycle.deployment] [submit] available_agents_list is empty. Forwarding to Leader...")
             # forward to parent
             return __forward_submit_request_to_leader(service, user_id, sla_template_id, "")

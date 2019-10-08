@@ -22,7 +22,7 @@ from lifecycle.common import SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COM
 # ANALYTICS ENGINE functions
 
 # FUNCTION:  get_available_agents_list: Gets a list of available agents ordered by X
-#   OUT: resources TODO!!
+#   OUT: resources
 #       { ... "list_of_agents": ["192.168.252.7", "192.168.252.8", "192.168.252.9" ...] }
 #
 #   OUTPUT FROM LANDSCAPER/RECOMMENDER:
@@ -253,8 +253,7 @@ def __select_agents_service_compss(service_instance, num_agents):
 def __select_agents_service_docker_swarm(service_instance):
     # docker swarm ==> deploy in first available agent
     if len(service_instance['agents']) > 0:
-        list_of_agents = []
-        list_of_agents.append(service_instance['agents'][0])
+        list_of_agents = [service_instance['agents'][0]]
         LOG.debug("[lifecycle.modules.agent_decision] [__select_agents_service_docker_swarm] first agent: " + str(list_of_agents))
         service_instance['agents'] = list_of_agents
 
@@ -272,8 +271,7 @@ def __select_agents_service_docker_swarm(service_instance):
 def __select_agents_service_default(service_instance):
     # docker swarm ==> deploy in first available agent
     if len(service_instance['agents']) > 0:
-        list_of_agents = []
-        list_of_agents.append(service_instance['agents'][0])
+        list_of_agents = [service_instance['agents'][0]]
         LOG.debug("[lifecycle.modules.agent_decision] [__select_agents_service_default] first agent: " + str(list_of_agents))
         service_instance['agents'] = list_of_agents
 
@@ -289,8 +287,7 @@ def __select_agents_service_default(service_instance):
 def __select_agents_service_docker(service_instance, num_agents):
     # docker ==> deploy in only 1 agent
     if len(service_instance['agents']) > 0 and num_agents == -1:
-        list_of_agents = []
-        list_of_agents.append(service_instance['agents'][0])
+        list_of_agents = [service_instance['agents'][0]]
         LOG.debug("[lifecycle.modules.agent_decision] [__select_agents_service_docker] first agent: " + str(list_of_agents))
         service_instance['agents'] = list_of_agents
 
@@ -339,6 +336,8 @@ def select_agents(service_type, num_agents, service_instance):
             service_instance_res = __user_management(service_instance)
             if not service_instance_res is None:
                 service_instance = service_instance_res
+                # save service instance in cimi
+                data_adapter.update_service_instance(service_instance['id'], service_instance)
 
             # 1.2. QoS PROVIDING
             LOG.info("######## SELECT AGENTS: SERVICE MANAGEMENT (QoS) ############################## (3) ###########")
