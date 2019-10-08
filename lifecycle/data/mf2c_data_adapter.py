@@ -136,14 +136,9 @@ class Mf2cDataAdapter:
         return si.is_agent_in_service_instance(service_instance, agent_url)
 
 
-    # serv_instance_add_agents_to_empty_service_instance:
-    def serv_instance_add_agents_to_empty_service_instance(self, service, user_id, agreement_id, agents_list):
-        return si.add_agents_to_empty_service_instance(service, user_id, agreement_id, agents_list)
-
-
-    # serv_instance_add_agents_to_empty_service_instance:
-    def serv_instance_new_empty_service_instance(self, service, user_id, agreement_id):
-        return si.new_empty_service_instance(service, user_id, agreement_id)
+    # serv_instance_replace_service_instance_agents:
+    def serv_instance_replace_service_instance_agents(self, service_instance, service, user_id, sla_template_id, agents_list):
+        return si.replace_service_instance_agents(service_instance, service, user_id, sla_template_id, agents_list)
 
 
     ###############################################################################

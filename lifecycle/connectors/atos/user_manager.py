@@ -41,19 +41,19 @@ def set_um_properties(apps=0):
 # CHECK AVIALABILITY
 # check_avialability: call to local UM to check if it's possible to deploy a service
 def check_avialability():
-    LOG.debug("[lifecycle.connectors.atos.user_manager] [check_avialability] localhost - local UM: Checking avialability ...")
+    LOG.trace("[lifecycle.connectors.atos.user_manager] [check_avialability] localhost - local UM: Checking avialability ...")
     try:
-        LOG.info("[lifecycle.connectors.atos.user_manager] [check_avialability] HTTP GET: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/check")
+        LOG.trace("[lifecycle.connectors.atos.user_manager] [check_avialability] HTTP GET: " + str(config.dic['URL_AC_USER_MANAGEMENT']) + "/check")
         r = requests.get(str(config.dic['URL_AC_USER_MANAGEMENT']) + "/check",
                          verify=config.dic['VERIFY_SSL'])
-        LOG.debug("[lifecycle.connectors.atos.user_manager] [check_avialability] response: " + str(r) + ", " + str(r.json()))
+        LOG.trace("[lifecycle.connectors.atos.user_manager] [check_avialability] response: " + str(r) + ", " + str(r.json()))
 
         json_data = json.loads(r.text)
-        LOG.debug("[lifecycle.connectors.atos.user_manager] [check_avialability] json_data=" + str(json_data))
+        LOG.trace("[lifecycle.connectors.atos.user_manager] [check_avialability] json_data=" + str(json_data))
         if r.status_code == 200 and not json_data['result'] is None:
             return json_data
 
-        LOG.error("[lifecycle.connectors.atos.user_manager] [check_avialability] Error: status_code=" + str(r.status_code) + "; Returning None ...")
+        LOG.trace("[lifecycle.connectors.atos.user_manager] [check_avialability] Error: status_code=" + str(r.status_code) + "; Returning None ...")
     except:
         LOG.exception("[lifecycle.connectors.atos.user_manager] [check_avialability] Exception; Returning None ...")
     return None

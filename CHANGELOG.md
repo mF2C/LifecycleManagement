@@ -7,10 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.3.9] - 2019-10-08
 ### Changed
 - Service deployment - Agent selection: workflow updated; the LM calls the UM before calling the QoS Provider
+- Service instance is updated before calling QoS Provider
 
 ### Fixed
 - create agreement path was fixed
-- Service instance is updated before calling QoS Provider
 
 ## [1.3.7] - 2019-09-17
 ### Added

@@ -155,15 +155,9 @@ class StandaloneDataAdapter:
         return None
 
 
-    # serv_instance_add_agents_to_empty_service_instance:
-    def serv_instance_add_agents_to_empty_service_instance(self, service, user_id, agreement_id, agents_list):
-        LOG.warning("[lifecycle.data.standalone_data_adapter] [serv_instance_add_agents_to_empty_service_instance] not implemented")
-        return None
-
-
-    # serv_instance_add_agents_to_empty_service_instance:
-    def serv_instance_new_empty_service_instance(self, service, user_id, agreement_id):
-        LOG.warning("[lifecycle.data.standalone_data_adapter] [serv_instance_new_empty_service_instance] not implemented")
+    # serv_instance_replace_service_instance_agents:
+    def serv_instance_replace_service_instance_agents(self, service_instance, service, user_id, sla_template_id, agents_list):
+        LOG.warning("[lifecycle.data.standalone_data_adapter] [serv_instance_replace_service_instance_agents] not implemented")
         return None
 
 

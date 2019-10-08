@@ -249,7 +249,16 @@ def submit_service_in_agents(service, user_id, service_instance_id, sla_template
 
         # 2. create new service instance
         if service_instance_id is not None and service_instance_id != "":
+            LOG.info("[lifecycle.deployment] [submit_service_in_agents] 'FORWARD REQUEST' ...")
+            LOG.info("[lifecycle.deployment] [submit_service_in_agents] Getting service instance [" + service_instance_id + "] from cimi ... ")
             service_instance = data_adapter.get_service_instance(service_instance_id)
+            # update service-instance's agents list
+            LOG.info("[lifecycle.deployment] [submit_service_in_agents] Updating service instance's agents list ... ")
+            service_instance = data_adapter.serv_instance_replace_service_instance_agents(service_instance,
+                                                                                          service,
+                                                                                          user_id,
+                                                                                          sla_template_id,
+                                                                                          agents_list)
         else:
             LOG.debug("[lifecycle.deployment] [submit_service_in_agents] Creating service instance ... ")
             service_instance = data_adapter.create_service_instance(service, agents_list, user_id, "DEFAULT-VALUE")
@@ -307,15 +316,9 @@ def submit(service, user_id, service_instance_id, sla_template_id):
         # 2. get list of available agents / resources / VMs. Example: [{"agent_ip": "192.168.252.41"}, {...}]
         # Call to landscaper / recommender
         available_agents_list = agent_decision.get_available_agents_resources(service)
-        if not available_agents_list:
+        if not available_agents_list or len(available_agents_list) == 0:
             # warning
-            LOG.error("[lifecycle.deployment] [submit] available_agents_list is None. Forwarding to Leader...")
-            # forward to parent
-            return __forward_submit_request_to_leader(service, user_id, sla_template_id, "")
-
-        elif len(available_agents_list) == 0:
-            # no resources / agents found
-            LOG.warning("[lifecycle.deployment] [submit] available_agents_list is empty. Forwarding to Leader...")
+            LOG.error("[lifecycle.deployment] [submit] available_agents_list is None or empty. Forwarding to Leader...")
             # forward to parent
             return __forward_submit_request_to_leader(service, user_id, sla_template_id, "")
 

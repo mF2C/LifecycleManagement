@@ -231,7 +231,7 @@ def __select_agents_service_compss(service_instance, num_agents):
             LOG.debug("[lifecycle.modules.agent_decision] [__select_agents_service_compss] [SERVICE_COMPSS] service will be deployed in " + str(num_agents) + " agents")
             list_of_agents = []
             i = 0
-            while i < len(service_instance['agents']):
+            while i < num_agents: #len(service_instance['agents']):
                 list_of_agents.append(service_instance['agents'][i])
                 i += 1
             service_instance['agents'] = list_of_agents
@@ -297,7 +297,7 @@ def __select_agents_service_docker(service_instance, num_agents):
             LOG.debug("[lifecycle.modules.agent_decision] [__select_agents_service_docker] [DOCKER] service will be deployed in " + str(num_agents) + " agents")
             list_of_agents = []
             i = 0
-            while i < len(service_instance['agents']):
+            while i < num_agents: # len(service_instance['agents']):
                 list_of_agents.append(service_instance['agents'][i])
                 i += 1
             service_instance['agents'] = list_of_agents

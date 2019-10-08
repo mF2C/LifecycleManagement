@@ -123,26 +123,23 @@ def new_empty_service_instance(service, user_id, agreement_id):
     return new_service_instance
 
 
-# add_agents_to_empty_service_instance: Adds a list of agents to the service instance
-def add_agents_to_empty_service_instance(service, user_id, agreement_id, agents_list):
-    LOG.debug("[lifecycle.data.mF2C.service_instance] [add_agents_to_empty_service_instance] " + service['name'] + ", " + str(user_id) + ", " + str(agreement_id))
+# replace_service_instance_agents: Replaces the list of agents of the service instance
+def replace_service_instance_agents(service_instance, service, user_id, agreement_id, agents_list):
+    LOG.debug("[lifecycle.data.mF2C.service_instance] [replace_service_instance_agents] " + service['name'] + ", " + str(user_id) + ", " + str(agreement_id))
+
+    # create new temp service-instance
+    tmp_service_instance = new_service_instance(service, agents_list, user_id, agreement_id)
 
     # SERVICE_INSTANCE:
-    new_service_instance = {"service":          service['id'],
-                            "agreement":        agreement_id,
-                            "user":             user_id,
-                            "device_id":        "not-defined",
-                            "device_ip":        "not-defined",
-                            "parent_device_id": "not-defined",
-                            "parent_device_ip": "not-defined",
-                            "agents":           [],
-                            "service_type":     service['exec_type'],
-                            "status":           STATUS_CREATED_NOT_INITIALIZED}
+    service_instance['agents'] = tmp_service_instance['agents']
+    service_instance['status'] = tmp_service_instance['status']
 
-    LOG.debug("[lifecycle.data.mF2C.service_instance] [add_agents_to_empty_service_instance] adding service_intance to CIMI ...")
-    LOG.debug("[lifecycle.data.mF2C.service_instance] [add_agents_to_empty_service_instance] new_service_instance=" + str(new_service_instance))
+    LOG.debug("[lifecycle.data.mF2C.service_instance] [replace_service_instance_agents] Updating service_intance in cimi ...")
+    data_adapter.update_service_instance(service_instance['id'], service_instance)
 
-    return new_service_instance
+    LOG.debug("[lifecycle.data.mF2C.service_instance] [replace_service_instance_agents] service_instance=" + str(service_instance))
+
+    return service_instance
 
 
 # is_agent_in_service_instance: check if an agent (url) is being used in a service_instance
