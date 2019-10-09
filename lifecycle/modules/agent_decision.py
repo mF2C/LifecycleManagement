@@ -164,7 +164,7 @@ def __qos_providing(service_instance):
                 LOG.debug("[lifecycle.modules.agent_decision] [__qos_providing] processing response...")
                 for agent_resp in service_instance_resp["agents"]:
                     for agent in service_instance["agents"]:
-                        if agent['url'] == agent_resp['url'] and __check_qos(agent_resp):
+                        if agent['device_id'] == agent_resp['device_id'] and __check_qos(agent_resp):
                             l_filtered_agents.append(agent)
             except:
                 LOG.exception('[lifecycle.modules.agent_decision] [__qos_providing] Exception while processing response')

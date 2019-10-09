@@ -200,7 +200,7 @@ def __forward_submit_request_to_leader(service, user_id, sla_template_id, servic
         # delete service_instance
         if service_instance_id is not None:
             LOG.debug("[lifecycle.deployment] [forward_submit_request_to_leader] Deleting service instance [" + service_instance_id + "] ...")
-            service_instance_id = id.replace('service-instance/', '')
+            service_instance_id = service_instance_id.replace('service-instance/', '')
             operations.terminate(service_instance_id)
         # send error
         return common.gen_response(500,
@@ -228,7 +228,7 @@ def __forward_submit_request_to_leader(service, user_id, sla_template_id, servic
         # delete service_instance
         if service_instance_id is not None:
             LOG.debug("[lifecycle.deployment] [forward_submit_request_to_leader] Deleting service instance [" + service_instance_id + "] ...")
-            service_instance_id = id.replace('service-instance/', '')
+            service_instance_id = service_instance_id.replace('service-instance/', '')
             operations.terminate(service_instance_id)
         # send error
         return common.gen_response(500,
