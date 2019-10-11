@@ -244,6 +244,7 @@ def get_service_by_id(id):
 # FUNCTION: get_service_instance_by_id: get service instance by id
 def get_service_instance_by_id(id):
     try:
+        id = id.replace(RSRC_SERVICE_INSTANCE + '/', '')
         res = requests.get(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE + '/' + id,
                            headers=CIMI_HEADER,
                            verify=False)
