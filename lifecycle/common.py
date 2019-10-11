@@ -21,6 +21,9 @@ from lifecycle.logs import LOG
 ###############################################################################
 # GLOBAL VARS:
 
+# LOGS
+TRACE = 5
+
 # Service Type
 SERVICE_DOCKER = "docker"
 SERVICE_DOCKER_COMPOSE = "docker-compose" #"docker-compose"
@@ -76,7 +79,7 @@ def gen_response_ok(message, key, value, key2=None, value2=None):
     dict[key] = value
     if not (key2 is None) and not (value2 is None):
         dict[key2] = value2
-    LOG.debug("[lifecycle.common.common] [gen_response_ok] Generate response OK; dict=" + str(dict))
+    LOG.log(TRACE, "[lifecycle.common.common] [gen_response_ok] Generate response OK; dict=" + str(dict))
     return dict
 
 
@@ -86,7 +89,7 @@ def gen_response(status, message, key, value, key2=None, value2=None):
     dict[key] = value
     if not (key2 is None) and not (value2 is None):
         dict[key2] = value2
-    LOG.debug('[lifecycle.common.common] [gen_response] Generate response ' + str(status) + "; dict=" + str(dict))
+    LOG.log(TRACE, '[lifecycle.common.common] [gen_response] Generate response ' + str(status) + "; dict=" + str(dict))
     return Response(json.dumps(dict), status=status, content_type='application/json')
 
 
@@ -96,7 +99,7 @@ def gen_response_ko(message, key, value, key2=None, value2=None):
     dict[key] = value
     if not (key2 is None) and not (value2 is None):
         dict[key2] = value2
-    LOG.debug("[lifecycle.common.common] [gen_response] Generate response KO; dict=" + str(dict))
+    LOG.log(TRACE, "[lifecycle.common.common] [gen_response] Generate response KO; dict=" + str(dict))
     return dict
 
 
@@ -110,6 +113,14 @@ def check_ip(ip_adress):
         response = os.system("ping -c 1 " + ip_adress)
         if response == 0:
             return True
+        else:
+            response = os.system("ping -c 1 " + ip_adress)
+            if response == 0:
+                return True
+            else:
+                response = os.system("ping -c 1 " + ip_adress)
+                if response == 0:
+                    return True
     except:
         LOG.error('[lifecycle.common.common] [check_ip] Exception')
     return False

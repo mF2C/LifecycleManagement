@@ -321,6 +321,7 @@ def postService(request):
 
 # postServiceInt: deploy a service instance in the device / agent
 def postServiceInt(request):
+    LOG.info("######## DEPLOYMENT (remote call) ##################################################################")
     data = request.get_json()
     # check input parameters
     if 'service' not in data or 'service_instance' not in data or 'agent' not in data:
@@ -334,6 +335,7 @@ def postServiceInt(request):
 
 # putServiceInt
 def putServiceInt(request):
+    LOG.info("######## OPERATION (remote call) ##################################################################")
     data = request.get_json()
     # check input parameters
     if 'service' not in data or 'operation' not in data or 'agent' not in data:

@@ -11,7 +11,7 @@ Created on 09 feb. 2018
 @author: Roi Sucasas - ATOS
 """
 
-import threading
+import threading, time
 from lifecycle.connectors import connector as connector
 from lifecycle.modules import agent_decision as agent_decision
 from lifecycle.modules import applications_adapter as apps_adapter
@@ -193,6 +193,7 @@ def __forward_submit_request_to_leader(service, user_id, sla_template_id, servic
     # leader IP and current agent IP
     leader_ip = data_adapter.get_leader_ip()
     my_ip = data_adapter.get_my_ip()
+    LOG.debug("[lifecycle.deployment] [forward_submit_request_to_leader] leader_ip=" + str(leader_ip) + ", my_ip=" + str(my_ip))
 
     # check if leader_ip =/= current agent IP
     if  leader_ip is not None and my_ip is not None and my_ip == leader_ip:
@@ -251,7 +252,19 @@ def submit_service_in_agents(service, user_id, service_instance_id, sla_template
         if service_instance_id is not None and service_instance_id != "":
             LOG.info("[lifecycle.deployment] [submit_service_in_agents] 'FORWARD REQUEST' ...")
             LOG.info("[lifecycle.deployment] [submit_service_in_agents] Getting service instance [" + service_instance_id + "] from cimi ... ")
+
             service_instance = data_adapter.get_service_instance(service_instance_id)
+            LOG.info("[lifecycle.deployment] [submit_service_in_agents] service_instance=" + str(service_instance))
+            if service_instance is None or service_instance == -1:
+                LOG.info("[lifecycle.deployment] [submit_service_in_agents] Waiting 20s to try again ...")
+                time.sleep(20)
+                service_instance = data_adapter.get_service_instance(service_instance_id)
+                LOG.info("[lifecycle.deployment] [submit_service_in_agents] service_instance=" + str(service_instance))
+                if service_instance is None or service_instance == -1:
+                    LOG.info("[lifecycle.deployment] [submit_service_in_agents] Waiting 40s to try again ...")
+                    time.sleep(40)
+                    service_instance = data_adapter.get_service_instance(service_instance_id)
+
             # update service-instance's agents list
             LOG.info("[lifecycle.deployment] [submit_service_in_agents] Updating service instance's agents list ... ")
             service_instance = data_adapter.serv_instance_replace_service_instance_agents(service_instance,
@@ -288,7 +301,7 @@ def submit_service_in_agents(service, user_id, service_instance_id, sla_template
             return __forward_submit_request_to_leader(service, user_id, sla_template_id, service_instance['id'])
 
         else:
-            LOG.info("######## DEPLOYMENT ###############################################################")
+            LOG.info("######## DEPLOYMENT ###########################################################################")
             service_instance = r
             LOG.debug("[lifecycle.deployment] [submit_service_in_agents] service_instance: " + str(service_instance))
 
@@ -323,7 +336,6 @@ def submit(service, user_id, service_instance_id, sla_template_id):
             return __forward_submit_request_to_leader(service, user_id, sla_template_id, "")
 
         else:
-            LOG.info("######## DEPLOYMENT ###############################################################")
             # 3. Create new service instance & allocate service / call other agents when needed
             return submit_service_in_agents(service, user_id, service_instance_id, sla_template_id, available_agents_list)
     except:

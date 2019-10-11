@@ -16,6 +16,7 @@ import datetime
 import config
 from lifecycle.logs import LOG
 from urllib3.exceptions import NewConnectionError
+from lifecycle.common import TRACE
 
 
 '''
@@ -138,7 +139,7 @@ def get_agent_info():
         res = requests.get(config.dic['CIMI_URL'] + "/agent",
                            headers=CIMI_HEADER,
                            verify=False)
-        LOG.debug("[lifecycle.data.mf2c.cimi] [get_agent_info] response: " + str(res) + ", " + str(res.json()))
+        LOG.log(TRACE, "[lifecycle.data.mf2c.cimi] [get_agent_info] response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 200 and res.json()['count'] == 0:
             LOG.warning("[lifecycle.data.mf2c.cimi] [get_agent_info] 'agent' not found")
@@ -165,7 +166,7 @@ def get_id_from_device(deviceID):
         res = requests.get(config.dic['CIMI_URL'] + "/device?$filter=deviceID=\"" + deviceID + "\"",
                            headers=CIMI_HEADER,
                            verify=False)
-        LOG.debug("[lifecycle.data.mf2c.cimi] [get_id_from_device] response: " + str(res) + ", " + str(res.json()))
+        LOG.log(TRACE, "[lifecycle.data.mf2c.cimi] [get_id_from_device] response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 200 and len(res.json()['devices']) > 0:
             return res.json()['devices'][0]['id']
@@ -187,7 +188,7 @@ def get_user_profile_by_device(device_id):
         res = requests.get(config.dic['CIMI_URL'] + "/user-profile?$filter=device_id=\"device/" + device_id + "\"",
                            headers=CIMI_HEADER,
                            verify=False)
-        LOG.debug("[lifecycle.data.mf2c.cimi] [get_user_profile_by_device] [" + device_id + "] response: " + str(res) + ", " + str(res.json()))
+        LOG.log(TRACE, "[lifecycle.data.mf2c.cimi] [get_user_profile_by_device] [" + device_id + "] response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 200 and len(res.json()['userProfiles']) > 0:
             return res.json()['userProfiles'][0]
@@ -206,7 +207,7 @@ def get_sharing_model_by_device(device_id):
         res = requests.get(config.dic['CIMI_URL'] + "/sharing-model?$filter=device_id=\"device/" + device_id + "\"",
                            headers=CIMI_HEADER,
                            verify=False)
-        LOG.debug("[lifecycle.data.mf2c.cimi] [get_sharing_model_by_device] [" + device_id + "] response: " + str(res) + ", " + str(res.json()))
+        LOG.log(TRACE, "[lifecycle.data.mf2c.cimi] [get_sharing_model_by_device] [" + device_id + "] response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 200 and len(res.json()['sharingModels']) > 0:
             return res.json()['sharingModels'][0]
@@ -228,7 +229,7 @@ def get_service_by_id(id):
         res = requests.get(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE + '/' + resource_id,
                            headers=CIMI_HEADER,
                            verify=False)
-        LOG.debug("[lifecycle.data.mf2c.cimi] [get_service_by_id] [" + resource_id + "] response: " + str(res) + ", " + str(res.json()))
+        LOG.log(TRACE, "[lifecycle.data.mf2c.cimi] [get_service_by_id] [" + resource_id + "] response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 200 and 'id' in res.json():
             return res.json()
@@ -246,7 +247,7 @@ def get_service_instance_by_id(id):
         res = requests.get(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE + '/' + id,
                            headers=CIMI_HEADER,
                            verify=False)
-        LOG.debug("[lifecycle.data.mf2c.cimi] [get_service_instance_by_id] [" + id + "] response: " + str(res) + ", " + str(res.json()))
+        LOG.log(TRACE, "[lifecycle.data.mf2c.cimi] [get_service_instance_by_id] [" + id + "] response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 200 and 'id' in res.json():
             return res.json()
@@ -264,7 +265,7 @@ def get_service_instance_report(id):
         res = requests.get(config.dic['CIMI_URL'] + "/" + RSRC_SERVICE_INSTANCE_REPORT + "?$filter=operation_id='" + id + "'",
                            headers=CIMI_HEADER,
                            verify=False)
-        LOG.debug("[lifecycle.data.mf2c.cimi] [get_service_instance_report] [" + id + "] response: " + str(res) + ", " + str(res.json()))
+        LOG.log(TRACE, "[lifecycle.data.mf2c.cimi] [get_service_instance_report] [" + id + "] response: " + str(res) + ", " + str(res.json()))
 
 
         if res.status_code == 200 and len(res.json()['serviceOperationReports']) > 0:
@@ -303,7 +304,7 @@ def del_service_instance_by_id(resource_id):
         res = requests.delete(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE + '/' + resource_id,
                               headers=CIMI_HEADER,
                               verify=False)
-        LOG.debug("[lifecycle.data.mf2c.cimi] [del_service_instance_by_id] [" + resource_id + "] response: " + str(res) + ", " + str(res.json()))
+        LOG.log(TRACE, "[lifecycle.data.mf2c.cimi] [del_service_instance_by_id] [" + resource_id + "] response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 200:
             return res.json()
@@ -319,12 +320,12 @@ def del_all_service_instances():
     try:
         service_instances = get_all_service_instances()
         for si in service_instances:
-            LOG.debug("[lifecycle.data.mf2c.cimi] [del_all_service_instances] Deleting " + si['id'] + " ... ")
+            LOG.log(TRACE, "[lifecycle.data.mf2c.cimi] [del_all_service_instances] Deleting " + si['id'] + " ... ")
             resource_id = si['id'].replace(RSRC_SERVICE_INSTANCE + '/', '')
             res = requests.delete(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE + '/' + resource_id,
                                   headers=CIMI_HEADER,
                                   verify=False)
-            LOG.debug("[lifecycle.data.mf2c.cimi] [del_all_service_instances] [all] response: " + str(res) + ", " + str(res.json()))
+            LOG.log(TRACE, "[lifecycle.data.mf2c.cimi] [del_all_service_instances] [all] response: " + str(res) + ", " + str(res.json()))
         return True
     except:
         LOG.exception("[lifecycle.data.mf2c.cimi] [del_all_service_instances] Exception; Returning False ...")
@@ -335,12 +336,12 @@ def del_all_service_instances():
 def add_service_instance(content, user):
     try:
         content.update(common_new_map_fields_user(user)) #common_new_map_fields()) # complete map and update resource
-        LOG.debug("[lifecycle.data.mf2c.cimi] [add_service_instance] [content=" + str(content) + "] [user=" + user + "] ... ")
+        LOG.log(TRACE, "[lifecycle.data.mf2c.cimi] [add_service_instance] [content=" + str(content) + "] [user=" + user + "] ... ")
         res = requests.post(config.dic['CIMI_URL'] + '/' + RSRC_SERVICE_INSTANCE,
                             headers=CIMI_HEADER,
                             verify=False,
                             json=content)
-        LOG.debug("[lifecycle.data.mf2c.cimi] [add_service_instance] response: " + str(res) + ", " + str(res.json()))
+        LOG.log(TRACE, "[lifecycle.data.mf2c.cimi] [add_service_instance] response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 201:
             id = res.json()['resource-id'].replace(RSRC_SERVICE_INSTANCE + '/', '')
@@ -358,12 +359,12 @@ def update_service_instance(resource_id, content):
         resource_id = resource_id.replace(RSRC_SERVICE_INSTANCE + '/', '')
         content.update(common_update_map_fields_user(content['user']))#common_update_map_fields()) # complete map and update resource
         #content.update(patch_update_map_fields())
-        LOG.debug("[lifecycle.data.mf2c.cimi] [update_service_instance] [content=" + str(content) + "] ... ")
+        LOG.log(TRACE, "[lifecycle.data.mf2c.cimi] [update_service_instance] [content=" + str(content) + "] ... ")
         res = requests.put(config.dic['CIMI_URL']  + '/' + RSRC_SERVICE_INSTANCE + '/' + resource_id,
                            headers=CIMI_HEADER,
                            verify=False,
                            json=content)
-        LOG.debug("[lifecycle.data.mf2c.cimi] [update_service_instance] response: " + str(res) + ", " + str(res.json()))
+        LOG.log(TRACE, "[lifecycle.data.mf2c.cimi] [update_service_instance] response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 200:
             return get_service_instance_by_id(resource_id)
@@ -396,7 +397,7 @@ def get_agent():
         res = requests.get(config.dic['CIMI_URL'] + "/agent",
                            headers=CIMI_HEADER,
                            verify=False)
-        LOG.debug("[lifecycle.data.mf2c.cimi] [get_agent] response: " + str(res) + ", " + str(res.json()))
+        LOG.log(TRACE, "[lifecycle.data.mf2c.cimi] [get_agent] response: " + str(res) + ", " + str(res.json()))
 
         if res.status_code == 200 and res.json()['count'] == 0:
             LOG.warning("[lifecycle.data.mf2c.cimi] [get_agent] 'agent' not found")

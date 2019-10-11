@@ -161,7 +161,7 @@ def start_job(service_instance, body):
               "</startApplication>"
         LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] [xml=" + xml + "]")
 
-        compss_port = data_adapter.db_get_compss_port(agent['ports'])
+        compss_port = agent['ports'][0] #data_adapter.db_get_compss_port(agent['ports'])
         LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] PUT http://" + agent['url'] + ":" + str(compss_port) + "/COMPSs/startApplication")
 
         res = requests.put("http://" + agent['url'] + ":" + str(compss_port) + "/COMPSs/startApplication",
@@ -210,7 +210,8 @@ def start_job_in_agents(service_instance, body):
         LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job_in_agents] [xml=" + xml + "]")
 
         master_agent = data_adapter.serv_instance_find_master(service_instance)
-        compss_port = data_adapter.db_get_compss_port(master_agent['ports'])
+
+        compss_port = master_agent['ports'][0] #data_adapter.db_get_compss_port(master_agent['ports'])
 
         res = requests.put("http://" + master_agent['url'] + ":" + str(compss_port) + "/COMPSs/startApplication",
                            data=xml,

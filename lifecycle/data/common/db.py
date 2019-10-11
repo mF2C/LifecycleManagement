@@ -14,6 +14,7 @@ Created on 09 feb. 2018
 import config
 from lifecycle.logs import LOG
 from pydblite.pydblite import Base
+from lifecycle.common import TRACE
 
 
 '''
@@ -63,15 +64,15 @@ def get_elem_from_list(container_main_id):
 
 # print_records
 def __print_records(db):
-    LOG.debug('[lifecycle.data.app.db] [__print_records] Retrieving records from db...')
+    LOG.log(TRACE, '[lifecycle.data.app.db] [__print_records] Retrieving records from db...')
     records = db()
     for r in records:
-        LOG.debug("db> " + str(r))
+        LOG.log(TRACE, "db> " + str(r))
 
 
 # save_to_DB_DOCKER_PORTS
 def save_to_DB_DOCKER_PORTS(port, mapped_to):
-    LOG.debug('[lifecycle.data.app.db] [save_to_DB_DOCKER_PORTS] Saving record ...')
+    LOG.log(TRACE, '[lifecycle.data.app.db] [save_to_DB_DOCKER_PORTS] Saving record ...')
     try:
         record = get_from_DB_DOCKER_PORTS(port)
         if record is None:

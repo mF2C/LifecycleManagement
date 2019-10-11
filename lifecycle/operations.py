@@ -142,6 +142,7 @@ def thr_operation_service_remote(operation, service, agent):
 
 # thr_operation_service: start/stop/terminate service instance in agents
 def __thr_operation_service(service_instance, operation):
+    LOG.info("######## OPERATION #######################################################################")
     LOG.debug("[lifecycle.operations] [__thr_operation_service] operation=" + operation + ", service_instance_id=" + service_instance['id'])
     try:
         # 1. get service
@@ -259,6 +260,7 @@ def terminate_all():
 
 # Service Instance Operation: starts a job / app
 def start_job(body, service_instance_id):
+    LOG.info("######## JOBS #########################################################################")
     LOG.debug("[lifecycle.operations] [start_job] body=" + str(body))
     LOG.debug("[lifecycle.operations] [start_job] service_instance_id=" + service_instance_id)
     try:
