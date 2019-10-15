@@ -18,7 +18,7 @@ from lifecycle import common as common
 from lifecycle.data import data_adapter as data_adapter
 from lifecycle.logs import LOG
 from lifecycle.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, STATUS_ERROR, STATUS_STARTED, STATUS_STOPPED, \
-    STATUS_TERMINATED, STATUS_UNKNOWN, STATUS_STARTING, STATUS_STOPPING, STATUS_TERMINATING
+    STATUS_TERMINATED, STATUS_UNKNOWN, STATUS_STARTING, STATUS_STOPPING, STATUS_TERMINATING, OPERATION_STOP_TERMINATE
 
 
 '''
@@ -192,6 +192,74 @@ def __thr_operation_service(service_instance, operation):
         LOG.exception('[lifecycle.operations] [__thr_operation_service] Exception')
 
 
+# __thr_stop_terminate_service: stop and terminate service instance in agents
+def __thr_stop_terminate_service(service_instance):
+    LOG.info("######## OPERATION #######################################################################")
+    LOG.debug("[lifecycle.operations] [__thr_stop_terminate_service] service_instance_id=" + service_instance['id'])
+    try:
+        # 1. get service
+        service = data_adapter.get_service(service_instance['service'])
+        LOG.debug("[lifecycle.operations] [__thr_stop_terminate_service] service: " + str(service))
+
+        # 2. stop service in all agents
+        LOG.debug("[lifecycle.operations] [__thr_stop_terminate_service] Stopping service instance ...")
+        thrs = []  # 1 thread per agent
+        for agent in service_instance["agents"]:
+            LOG.info("[lifecycle.operations] [__thr_stop_terminate_service] >>> AGENT >>> " + agent['url'] + " <<<")
+            # LOCAL
+            if agent['url'] == data_adapter.get_my_ip(): #common.get_local_ip():
+                thrs.append(threading.Thread(target=thr_operation_service_local, args=(OPERATION_STOP, service, agent,)))
+            # REMOTE AGENT (call lifecycle from agent)
+            elif common.check_ip(agent['url']):
+                thrs.append(threading.Thread(target=thr_operation_service_remote, args=(OPERATION_STOP, service, agent,)))
+            # NOT FOUND / NOT CONNECTED
+            else:
+                agent['status'] = STATUS_ERROR
+                LOG.error("[lifecycle.operations] [__thr_stop_terminate_service] agent [" + agent['url'] + "] cannot be reached")
+
+        # start threads
+        for x in thrs:
+            x.start()
+
+        # join / wait for threads before executing next tags
+        for x in thrs:
+            x.join()
+
+        # 3. terminate service in all agents
+        LOG.debug("[lifecycle.operations] [__thr_stop_terminate_service] Terminating service instance ...")
+        thrs = []  # 1 thread per agent
+        for agent in service_instance["agents"]:
+            LOG.info("[lifecycle.operations] [__thr_stop_terminate_service] >>> AGENT >>> " + agent['url'] + " <<<")
+            # LOCAL
+            if agent['url'] == data_adapter.get_my_ip():  # common.get_local_ip():
+                thrs.append(threading.Thread(target=thr_operation_service_local, args=(OPERATION_TERMINATE, service, agent,)))
+            # REMOTE AGENT (call lifecycle from agent)
+            elif common.check_ip(agent['url']):
+                thrs.append(
+                    threading.Thread(target=thr_operation_service_remote, args=(OPERATION_TERMINATE, service, agent,)))
+            # NOT FOUND / NOT CONNECTED
+            else:
+                agent['status'] = STATUS_ERROR
+                LOG.error("[lifecycle.operations] [__thr_stop_terminate_service] agent [" + agent[
+                    'url'] + "] cannot be reached")
+
+        # start threads
+        for x in thrs:
+            x.start()
+
+        # join / wait for threads before executing next tags
+        for x in thrs:
+            x.join()
+
+        # 4. save / update / terminate service_instance
+        LOG.debug("[lifecycle.operations] [__thr_stop_terminate_service] Updating service_instance [" + OPERATION_STOP_TERMINATE + "]: " + str(service_instance))
+        service_instance['status'] = STATUS_TERMINATED
+        data_adapter.del_service_instance(service_instance['id'])                               # cimi / db
+        connector.sla_terminate_agreement(service_instance['agreement'])                        # sla
+    except:
+        LOG.exception('[lifecycle.operations] [__thr_stop_terminate_service] Exception')
+
+
 # operation_service: start/stop/terminate service instance in agents
 def operation_service(service_instance_id, operation):
     LOG.debug("[lifecycle.operations] [operation_service] operation=" + operation + ", service_instance_id=" + service_instance_id)
@@ -201,16 +269,22 @@ def operation_service(service_instance_id, operation):
         if service_instance is None or service_instance == -1:
             return common.gen_response(500, 'Error getting service instance object', 'service_instance_id', service_instance_id)
 
-        # submit operation thread
-        if operation == OPERATION_START:
-            service_instance['status'] = STATUS_STARTING
-        elif operation == OPERATION_STOP:
-            service_instance['status'] = STATUS_STOPPING
-        elif operation == OPERATION_TERMINATE:
+        if operation == OPERATION_STOP_TERMINATE:
             service_instance['status'] = STATUS_TERMINATING
-
-        t = threading.Thread(target=__thr_operation_service, args=(service_instance, operation,))
-        t.start()
+            # execute thread
+            t = threading.Thread(target=__thr_stop_terminate_service, args=(service_instance,))
+            t.start()
+        else:
+            # submit operation thread
+            if operation == OPERATION_START:
+                service_instance['status'] = STATUS_STARTING
+            elif operation == OPERATION_STOP:
+                service_instance['status'] = STATUS_STOPPING
+            elif operation == OPERATION_TERMINATE:
+                service_instance['status'] = STATUS_TERMINATING
+            # execute thread
+            t = threading.Thread(target=__thr_operation_service, args=(service_instance, operation,))
+            t.start()
 
         # response
         return common.gen_response_ok("Service " + operation + " operation is being processed ...", "service_instance", service_instance)
@@ -238,12 +312,12 @@ def terminate(service_instance_id):
         if service_instance is None or service_instance == -1:
             return common.gen_response(500, 'Error getting service instance object', 'service_instance_id', service_instance_id)
 
-        # 2. service instance status = Stopped
+        # 2.1 service instance status = Stopped => stop and terminate
         if service_instance['status'] != "Stopped":
-            stop(service_instance_id)
-
-        # 3. terminate
-        return operation_service(service_instance_id, OPERATION_TERMINATE)
+            return operation_service(service_instance_id, OPERATION_STOP_TERMINATE)
+        # 2.2 terminate
+        else:
+            return operation_service(service_instance_id, OPERATION_TERMINATE)
     except:
         LOG.exception('[lifecycle.operations] [terminate] Exception')
         return common.gen_response(500, 'Exception', 'service_instance_id', service_instance_id)

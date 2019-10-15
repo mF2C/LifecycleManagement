@@ -37,6 +37,7 @@ OPERATION_STOP = "stop"
 OPERATION_RESTART = "restart"
 OPERATION_TERMINATE = "terminate"
 OPERATION_START_JOB = "start-job"
+OPERATION_STOP_TERMINATE = "stop-and-terminate"
 
 # service instance / agent status
 STATUS_ERROR = "error"
