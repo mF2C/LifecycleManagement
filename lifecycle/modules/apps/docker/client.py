@@ -246,6 +246,16 @@ def remove_container(agent):
         return False
 
 
+# inspect_container
+def inspect_container(id):
+    try:
+        lclient = get_client_agent_docker()
+        return lclient.inspect_container(id)
+    except:
+        LOG.exception("[lifecycle.modules.apps.docker.client] [inspect_container] [" + str(id) + "]: Exception")
+        return False
+
+
 # start_container
 def add_container_to_network(id):
     try:

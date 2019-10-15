@@ -241,8 +241,15 @@ def __operation_service_agent(agent, operation):
                 if l_elem is not None and l_elem['type'] == SERVICE_DOCKER_COMPOSE:
                     LOG.debug("[lifecycle.modules.apps.docker.adapter] [__operation_service_agent] 'Docker-compose down' container [" + l_elem['container_2'] + "] launched ...")
                     docker_client.start_container(l_elem['container_2'])
-                    LOG.debug("[lifecycle.modules.apps.docker.adapter] [__operation_service_agent] Executing 'docker-compose down' (waiting 60 seconds) ...")
-                    time.sleep(60)
+                    LOG.debug("[lifecycle.modules.apps.docker.adapter] [__operation_service_agent] Executing 'docker-compose down' ...")
+
+                    for i in range(6):
+                        time.sleep(20)
+                        res = docker_client.inspect_container(l_elem['container_2'])
+                        if res is not None and res['State']['Status'] is not None and res['State']['Status'] == 'exited':
+                            break
+                        LOG.debug("[lifecycle.modules.apps.docker.adapter] [__operation_service_agent] Waiting for 'docker-compose down' execution (20s) ...")
+
                     LOG.debug("[lifecycle.modules.apps.docker.adapter] [__operation_service_agent] Stopping 'Docker-compose up' container [" + agent['container_id'] + "] ...")
                     docker_client.stop_container(agent['container_id'])
                     LOG.debug("[lifecycle.modules.apps.docker.adapter] [__operation_service_agent] Stopping 'Docker-compose down' container [" + l_elem['container_2'] + "] ...")
