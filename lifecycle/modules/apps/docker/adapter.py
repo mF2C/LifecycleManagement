@@ -16,7 +16,7 @@ from lifecycle import common as common
 from lifecycle.data import data_adapter as data_adapter
 import uuid, os, time
 import urllib.request as urequest
-from lifecycle.data.common.db import SERVICE_INSTANCES_LIST
+from lifecycle.data.common import db as db #import SERVICE_INSTANCES_LIST
 from lifecycle.logs import LOG
 import config
 from lifecycle.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINATE, \
@@ -66,7 +66,7 @@ def __deploy_docker_image(service, agent):
 
         container1 = docker_client.create_docker_container(service_image, service_name, service_command, ports)
         if container1 is not None:
-            SERVICE_INSTANCES_LIST.append({
+            db.SERVICE_INSTANCES_LIST.append({
                 "type": SERVICE_DOCKER,
                 "container_main": container1['Id'],
                 "container_2": "-"
@@ -102,7 +102,7 @@ def __deploy_docker_compss(service, service_instance, agent):
 
         container1 = docker_client.create_docker_compss_container(service_image, ip, ports, ip_leader)
         if container1 is not None:
-            SERVICE_INSTANCES_LIST.append({
+            db.SERVICE_INSTANCES_LIST.append({
                 "type": SERVICE_COMPSS,
                 "container_main": container1['Id'],
                 "container_2": "-"
@@ -159,7 +159,7 @@ def __deploy_docker_compose(service, agent):
             # container 2 => command 'down'
             container2 = docker_client.create_docker_compose_container(service_name + "-" + str(uuid.uuid4()), "down")
             if container2 is not None:
-                SERVICE_INSTANCES_LIST.append({
+                db.SERVICE_INSTANCES_LIST.append({
                     "type": SERVICE_DOCKER_COMPOSE,
                     "container_main": container1['Id'],
                     "container_2": container2['Id']
@@ -168,7 +168,7 @@ def __deploy_docker_compose(service, agent):
                 LOG.debug("[lifecycle.modules.apps.docker.adapter] [__deploy_docker_compose] container '1' & '2' created")
                 agent['agent_param'] = container2['Id']
             else:
-                SERVICE_INSTANCES_LIST.append({
+                db.SERVICE_INSTANCES_LIST.append({
                     "type": SERVICE_DOCKER_COMPOSE,
                     "container_main": container1['Id'],
                     "container_2": 'error'
