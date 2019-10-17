@@ -195,7 +195,7 @@ def __forward_submit_request_to_leader(service, user_id, sla_template_id, servic
     my_ip = data_adapter.get_my_ip()
     LOG.debug("[lifecycle.deployment] [forward_submit_request_to_leader] leader_ip=" + str(leader_ip) + ", my_ip=" + str(my_ip))
 
-    # check if leader_ip =/= current agent IP
+    # if 'my_ip' == 'leader_ip', cannot forward => cancel operation
     if  leader_ip is not None and my_ip is not None and my_ip == leader_ip:
         LOG.warning("[lifecycle.deployment] [forward_submit_request_to_leader] LM cannot forward request to leader. Reason: 'my_ip' == 'leader_ip'")
         # delete service_instance
@@ -253,20 +253,21 @@ def submit_service_in_agents(service, user_id, service_instance_id, sla_template
         if check_service and not check_service_content(service):
             return common.gen_response(500, 'field(s) category/exec/exec_type not found', 'service', str(service))
 
-        # 2. create new service instance
+        # 2.1 FORWARD REQUEST
         if service_instance_id is not None and service_instance_id != "":
             LOG.info("[lifecycle.deployment] [submit_service_in_agents] 'FORWARD REQUEST' ...")
             LOG.info("[lifecycle.deployment] [submit_service_in_agents] Getting service instance [" + service_instance_id + "] from cimi ... ")
 
             service_instance = data_adapter.get_service_instance(service_instance_id)
             LOG.info("[lifecycle.deployment] [submit_service_in_agents] service_instance=" + str(service_instance))
+            # try to get the service-instance created in child agent (x3)
             if service_instance is None or service_instance == -1:
-                LOG.info("[lifecycle.deployment] [submit_service_in_agents] Waiting 20s to try again ...")
+                LOG.info("[lifecycle.deployment] [submit_service_in_agents] Waiting 20s (for synchronization) to try again ...")
                 time.sleep(20)
                 service_instance = data_adapter.get_service_instance(service_instance_id)
                 LOG.info("[lifecycle.deployment] [submit_service_in_agents] service_instance=" + str(service_instance))
                 if service_instance is None or service_instance == -1:
-                    LOG.info("[lifecycle.deployment] [submit_service_in_agents] Waiting 40s to try again ...")
+                    LOG.info("[lifecycle.deployment] [submit_service_in_agents] Waiting 40s (for synchronization) to try again ...")
                     time.sleep(40)
                     service_instance = data_adapter.get_service_instance(service_instance_id)
                     LOG.info("[lifecycle.deployment] [submit_service_in_agents] service_instance=" + str(service_instance))
@@ -282,6 +283,7 @@ def submit_service_in_agents(service, user_id, service_instance_id, sla_template
                                                                                           user_id,
                                                                                           sla_template_id,
                                                                                           agents_list)
+        # 2.2 create new service instance
         else:
             LOG.debug("[lifecycle.deployment] [submit_service_in_agents] Creating service instance ... ")
             service_instance = data_adapter.create_service_instance(service, agents_list, user_id, "DEFAULT-VALUE")
@@ -339,13 +341,23 @@ def submit(service, user_id, service_instance_id, sla_template_id):
         # 2. get list of available agents / resources / VMs. Example: [{"agent_ip": "192.168.252.41"}, {...}]
         # Call to landscaper / recommender
         available_agents_list = agent_decision.get_available_agents_resources(service)
-        if not available_agents_list or len(available_agents_list) == 0:
+        LOG.debug("[lifecycle.deployment] [submit] Checking total of agents found by recommender ...")
+        if not available_agents_list or len(available_agents_list) == 0 or service['num_agents'] < len(available_agents_list):
             # warning
-            LOG.error("[lifecycle.deployment] [submit] available_agents_list is None or empty. Forwarding to Leader...")
+            LOG.warning("[lifecycle.deployment] [submit] available_agents_list is None or empty. Forwarding to Leader...")
+
+            # create empty service instance
+            LOG.debug("[lifecycle.deployment] [submit] Creating new empty service instance ...")
+            service_instance = data_adapter.create_service_instance(service, [], user_id, sla_template_id)
+            if not service_instance or 'id' not in service_instance:
+                LOG.error("[lifecycle.deployment] [submit] error creating empty service_instance")
+                return common.gen_response(500, 'error creating empty service_instance', 'service', str(service))
+
             # forward to parent
-            return __forward_submit_request_to_leader(service, user_id, sla_template_id, "")
+            return __forward_submit_request_to_leader(service, user_id, sla_template_id, service_instance['id'])
 
         else:
+            LOG.debug("[lifecycle.deployment] [submit] Agents found by recommender = " + str(len(available_agents_list)))
             # 3. Create new service instance & allocate service / call other agents when needed
             return submit_service_in_agents(service, user_id, service_instance_id, sla_template_id, available_agents_list)
     except:

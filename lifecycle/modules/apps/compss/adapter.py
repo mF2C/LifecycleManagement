@@ -152,12 +152,13 @@ def start_job(service_instance, body):
         # create xml
         xml = "<?xml version='1.0' encoding='utf-8'?>" \
               "<startApplication>" \
-              "<ceiClass>" + ceiClass + "</ceiClass>" \
-              "<className>" + className + "</className>" \
-              "<hasResult>" + str(hasResult) + "</hasResult>" \
-              "<methodName>" + methodName + "</methodName>" \
-              "<parameters>" + parameters + "</parameters>" \
-              "<resources>" + xml_resource + "</resources>" \
+              "  <ceiClass>" + ceiClass + "</ceiClass>" \
+              "  <className>" + className + "</className>" \
+              "  <hasResult>" + str(hasResult) + "</hasResult>" \
+              "  <methodName>" + methodName + "</methodName>" \
+              "  <parameters>" + parameters + "</parameters>" \
+              "  <resources>" + xml_resource + "</resources>" \
+              "  <serviceInstanceId>" + service_instance['id'].replace("service-instance/", "") + "</serviceInstanceId>" \
               "</startApplication>"
         LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] [xml=" + xml + "]")
 
@@ -206,6 +207,7 @@ def start_job_in_agents(service_instance, body):
               "  <methodName>" + methodName + "</methodName>" \
               "  <parameters>" + parameters + "</parameters>" \
               "  <resources>" + xml_resources_content + "</resources>" \
+              "  <serviceInstanceId>" + service_instance['id'].replace("service-instance/", "") + "</serviceInstanceId>" \
               "</startApplication>"
         LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job_in_agents] [xml=" + xml + "]")
 

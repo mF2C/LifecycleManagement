@@ -4,15 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.3.10] - 2019-10-15
+## [1.3.10] - 2019-10-17
 ### Changed
 - Service deployment - Agent selection: workflow updated; the LM calls the UM before calling the QoS Provider
 - Service instance is updated before calling QoS Provider
 - logs updated
+- der/compss applications: if only one agent is required, the LM first tries to deploy locally 
+- qos handler now maintains a list of service instances that are being processed
 
 ### Fixed
 - create agreement path was fixed
 - termination of a docker-compose service
+- service-instance-id passed to compss
 
 ## [1.3.7] - 2019-09-17
 ### Added

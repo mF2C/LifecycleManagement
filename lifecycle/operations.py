@@ -312,10 +312,14 @@ def terminate(service_instance_id):
         if service_instance is None or service_instance == -1:
             return common.gen_response(500, 'Error getting service instance object', 'service_instance_id', service_instance_id)
 
-        # 2.1 service instance status = Stopped => stop and terminate
+        # 2. updates service instance status
+        service_instance['status'] = STATUS_TERMINATING
+        data_adapter.update_service_instance(service_instance_id, service_instance)
+
+        # 3.1 service instance status = Stopped => stop and terminate
         if service_instance['status'] != "Stopped":
             return operation_service(service_instance_id, OPERATION_STOP_TERMINATE)
-        # 2.2 terminate
+        # 3.2 terminate
         else:
             return operation_service(service_instance_id, OPERATION_TERMINATE)
     except:

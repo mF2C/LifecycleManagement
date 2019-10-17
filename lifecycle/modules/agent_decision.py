@@ -217,6 +217,14 @@ def __filter_by_swarm(service_instance):
 
 ###############################################################################
 
+# FUNCTION: __get_local_agent: get local agent
+def __get_local_agent(service_instance):
+    for agent in service_instance['agents']:
+        if agent['url'] == data_adapter.get_my_ip():
+            return agent
+    return None
+
+
 # FUNCTION: __service_compss: deploy COMPSs application ==> all available agents / num_agents
 # if the service is a COMPSs service, the LM will select all agents or a total of 'num_agents'
 # in the case this variable ('num_agents') is defined and grater than 1
@@ -225,13 +233,18 @@ def __select_agents_service_compss(service_instance, num_agents):
     if len(service_instance['agents']) > 0 and num_agents == -1:
         LOG.debug("[lifecycle.modules.agent_decision] [__select_agents_service_compss] [SERVICE_COMPSS] service will be deployed in all selected agents")
 
+    # compss ==> deploy in 1 agent
+    elif num_agents == 1 and __get_local_agent(service_instance) is not None:
+        LOG.debug("[lifecycle.modules.agent_decision] [__select_agents_service_compss] [SERVICE_COMPSS] service will be deployed in 1 agent")
+        service_instance['agents'] = [__get_local_agent(service_instance)]
+
     # compss ==> deploy in 'num_agents'
     elif len(service_instance['agents']) > 0:
         if len(service_instance['agents']) >= num_agents:
             LOG.debug("[lifecycle.modules.agent_decision] [__select_agents_service_compss] [SERVICE_COMPSS] service will be deployed in " + str(num_agents) + " agents")
             list_of_agents = []
             i = 0
-            while i < num_agents: #len(service_instance['agents']):
+            while i < num_agents:
                 list_of_agents.append(service_instance['agents'][i])
                 i += 1
             service_instance['agents'] = list_of_agents

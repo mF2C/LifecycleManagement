@@ -4,3 +4,6 @@ __pycache__/*
 .git/*
 src/modules/__pycache__/*
 *.pyc
+gui/*
+lifecycle/data/mF2C/~/cookies
+.gitgnore

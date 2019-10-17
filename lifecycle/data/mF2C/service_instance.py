@@ -107,17 +107,47 @@ def new_service_instance(service, agents_list, user_id, agreement_id):
 def new_empty_service_instance(service, user_id, agreement_id):
     LOG.debug("[lifecycle.data.mF2C.service_instance] [new_empty_service_instance] " + service['name'] + ", " + str(user_id) + ", " + str(agreement_id))
 
-    # SERVICE_INSTANCE:
-    new_service_instance = {"service":          service['id'],
-                            "agreement":        agreement_id,
-                            "user":             user_id,
-                            "device_id":        "not-defined",
-                            "device_ip":        "not-defined",
-                            "parent_device_id": "not-defined",
-                            "parent_device_ip": "not-defined",
-                            "agents":           [],
-                            "service_type":     service['exec_type'],
-                            "status":           STATUS_CREATED_NOT_INITIALIZED}
+    # info from AGENT
+    cimi_agent = data_adapter.get_agent()
+    if cimi_agent is not None and cimi_agent != -1:
+        if 'parent_device_id' not in cimi_agent:
+            parent_device_id = "not-defined"
+        else:
+            parent_device_id = cimi_agent['parent_device_id']
+
+        if 'parent_device_ip' not in cimi_agent:
+            parent_device_ip = "not-defined"
+        else:
+            parent_device_ip = cimi_agent['parent_device_ip']
+
+        if 'device_ip' not in cimi_agent or cimi_agent['device_ip'] == "":
+            device_ip = "not-defined"
+        else:
+            device_ip = cimi_agent['device_ip']
+
+        # SERVICE_INSTANCE:
+        new_service_instance = {"service":          service['id'],
+                                "agreement":        agreement_id,
+                                "user":             user_id,
+                                "device_id":        cimi_agent['device_id'],
+                                "device_ip":        device_ip,
+                                "parent_device_id": parent_device_id,
+                                "parent_device_ip": parent_device_ip,
+                                "agents":           [],
+                                "service_type":     service['exec_type'],
+                                "status":           STATUS_CREATED_NOT_INITIALIZED}
+    else:
+        new_service_instance = {
+            "service":          service['id'],
+            "agreement":        agreement_id,
+            "user":             user_id,
+            "device_id":        "not-defined",
+            "device_ip":        "not-defined",
+            "parent_device_id": "not-defined",
+            "parent_device_ip": "not-defined",
+            "agents":           [],
+            "service_type":     service['exec_type'],
+            "status":           STATUS_CREATED_NOT_INITIALIZED}
 
     LOG.debug("[lifecycle.data.mF2C.service_instance] [new_empty_service_instance] new_service_instance=" + str(new_service_instance))
     return new_service_instance
