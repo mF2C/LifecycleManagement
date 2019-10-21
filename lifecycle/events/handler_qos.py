@@ -17,6 +17,8 @@ from lifecycle import common as common
 from lifecycle.modules import agent_decision as agent_decision
 from lifecycle.data import data_adapter as data_adapter
 from lifecycle.modules.apps.compss import adapter as compss_adpt
+from lifecycle.connectors import connector as connector
+from lifecycle.common import STATUS_CREATED_NOT_INITIALIZED
 
 
 ###############################################################################
@@ -36,6 +38,45 @@ from lifecycle.modules.apps.compss import adapter as compss_adpt
 
 # List of service instances being processed
 QoS_SERVICE_INSTANCES_LIST = []
+
+
+# __deploy_COMPSs_in_agent
+def __deploy_COMPSs_in_agent(service, service_instance, agent_ip):
+    LOG.debug("[lifecycle.events.handler_qos] [__deploy_COMPSs_in_agent] Deploying COMPSs service [" + service_instance['id'] + "] in new agent  [" + agent_ip + "] ...")
+    try:
+        # 1. create NEW AGENT
+        LOG.debug("[lifecycle.events.handler_qos] [__deploy_COMPSs_in_agent] Creating new service instance agent [" + agent_ip + "]")
+        new_agent = {"device_id":     "-",
+                     "app_type":      service['exec_type'],
+                     "ports":         service['exec_ports'],
+                     "url":           agent_ip,
+                     "status":        STATUS_CREATED_NOT_INITIALIZED,
+                     "compss_app_id": "-",
+                     "allow":         True,
+                     "container_id":  "-",
+                     "master_compss": False,
+                     "agent_param":   "not-defined"}
+
+        # 2. DEPLOY COMPSs in NEW AGENT
+        LOG.debug("[lifecycle.events.handler_qos] [__deploy_COMPSs_in_agent] allocate service in remote agent [" + new_agent['url'] + "]")
+        resp_deploy = connector.lifecycle_deploy(service, service_instance, new_agent)
+        if resp_deploy is not None:
+            new_agent['status'] = resp_deploy['status']
+            new_agent['container_id'] = resp_deploy['container_id']
+            new_agent['ports'] = resp_deploy['ports']
+            LOG.debug("[lifecycle.events.handler_qos] [__deploy_COMPSs_in_agent] allocate service in remote agent: [agent=" + str(new_agent) + "]")
+            # executes / starts service
+            resp_start = connector.lifecycle_operation(service, new_agent, "start")
+            if resp_start is not None:
+                new_agent['status'] = resp_start['status']
+                LOG.debug("[lifecycle.events.handler_qos] [__deploy_COMPSs_in_agent] execute service in remote agent: [agent=" + str(new_agent) + "]")
+                return True
+        else:
+            LOG.error("[lifecycle.events.handler_qos] [__deploy_COMPSs_in_agent] allocate service in remote agent: NOT DEPLOYED")
+            new_agent['status'] = "not-deployed"
+    except:
+        LOG.exception("[lifecycle.events.handler_qos] [__deploy_COMPSs_in_agent] Exception. Returning False ...")
+    return False
 
 
 # thread
@@ -62,16 +103,24 @@ def thr(notification):
             if new_num_agents > current_num_agents:
                 LOG.debug("[lifecycle.events.handler_qos] [thr] Reconfiguring service instance: Adding more nodes to service instance (COMPSs) ...")
                 # Call to landscaper/recommender
+                LOG.debug("[lifecycle.events.handler_qos] [thr] Getting list of available agents ...")
                 available_agents_list = agent_decision.get_available_agents_resources(service) # ==> [{"agent_ip": "192.168.252.41"}, ...]
+                LOG.debug("[lifecycle.events.handler_qos] [thr] List of available agents: " + str(available_agents_list))
                 if len(available_agents_list) > 0:
                     LOG.debug("[lifecycle.events.handler_qos] [thr] Reconfiguring service instance: Checking available resources ...")
                     for agent in available_agents_list:
+                        LOG.debug("[lifecycle.events.handler_qos] [thr]  - checking agent [" + str(agent) + "]")
                         # add new resources to master if agent does not belong to current execution
                         if not data_adapter.serv_instance_is_agent_in_service_instance(service_instance, agent["agent_ip"]) and new_num_agents > current_num_agents:
-                            if compss_adpt.add_resources_to_job(service_instance, appId, agent["agent_ip"]):
-                                current_num_agents = current_num_agents + 1
-                            else:
-                                LOG.error("[lifecycle.events.handler_qos] [thr] Reconfiguring service instance: Error adding new resources / 'appId' not found in service_instance!")
+                            # DEPLOY
+                            LOG.debug("[lifecycle.events.handler_qos] [thr] Deploying COMPSs in agent [" + str(agent) + "] ...")
+                            if __deploy_COMPSs_in_agent(service, service_instance, agent["agent_ip"]):
+                                # ADD TO COMPSs
+                                LOG.debug("[lifecycle.events.handler_qos] [thr] Adding to COMPSs execution ...")
+                                if compss_adpt.add_resources_to_job(service_instance, appId, agent["agent_ip"]):
+                                    current_num_agents = current_num_agents + 1
+                                else:
+                                    LOG.error("[lifecycle.events.handler_qos] [thr] Reconfiguring service instance: Error adding new resources / 'appId' not found in service_instance!")
                 else:
                     LOG.error("[lifecycle.events.handler_qos] [thr] Handling QoS notifications: available_agents_list is None or is empty ")
 
