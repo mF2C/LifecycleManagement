@@ -255,10 +255,15 @@ def get_appid_from_master(service_instance):
     try:
         LOG.debug("[lifecycle.data.mF2C.service_instance] [get_appid_from_master] Getting (COMPSs) appId from the service instance ...")
 
-        for agent in service_instance['agents']:
-            if agent['master_compss']:
-                LOG.debug("[lifecycle.data.mF2C.service_instance] [get_appid_from_master] Agent is master: " + str(agent))
-                return agent['compss_app_id']
+        if service_instance['agents'] is not None and len(service_instance['agents']) > 1:
+            for agent in service_instance['agents']:
+                if agent['master_compss']:
+                    LOG.debug("[lifecycle.data.mF2C.service_instance] [get_appid_from_master] Agent is master: " + str(agent))
+                    return agent['compss_app_id']
+        elif service_instance['agents'] is not None and len(service_instance['agents']) == 0:
+            return service_instance['agents'][0]['compss_app_id']
+
+        LOG.error("[lifecycle.data.mF2C.service_instance] [get_appid_from_master] Agents list is empty. Returning None ...")
     except:
         LOG.exception("[lifecycle.data.mF2C.service_instance] [get_appid_from_master] Exception. Returning None ...")
     return None

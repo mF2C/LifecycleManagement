@@ -116,14 +116,23 @@ def create_docker_compss_container(service_image, ip, prts, ip_leader):
                 prts.insert(0, config.dic['PORT_COMPSs'])
 
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] prts: " + str(prts))
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] prts[0]: " + str(prts[0]))
 
             prts_list = list(prts)
-            ports_dict = pmngr.create_ports_dict(prts)
+            ports_dict = pmngr.create_ports_dict(prts, True)
+            agent_port = next(iter(ports_dict))
+            agent_ports_list = []
+            for key, value in ports_dict.items():
+                agent_ports_list.append(key)
+
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] ports_dict: " + str(ports_dict))
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] prts_list: " + str(prts_list))
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] agent_port: " + str(agent_port))
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] agent_ports_list: " + str(agent_ports_list))
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] agent_ports_list[0]: " + str(agent_ports_list[0]))
 
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] AGENT_HOST: " + data_adapter.get_host_ip())
-            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] AGENT_PORT: " + str(data_adapter.db_get_compss_port(prts)))
+            LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] AGENT_PORT: " + str(agent_port))
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] DATACLAY_EP: " + ip_leader + config.dic['DATACLAY_EP'])
             LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] REPORT_ADDRESS: " + config.dic['CIMI_URL']) #"http://" +  data_adapter.get_host_ip() + "/api") #config.dic['CIMI_URL'])
 
@@ -133,12 +142,11 @@ def create_docker_compss_container(service_image, ip, prts, ip_leader):
                                                  environment={"MF2C_HOST": ip,
                                                               "DEBUG": "debug",
                                                               "AGENT_HOST": data_adapter.get_host_ip(),
-                                                              "AGENT_PORT": config.dic['PORT_COMPSs'], #data_adapter.db_get_compss_port(prts),
+                                                              "AGENT_PORT": agent_port, #config.dic['PORT_COMPSs'], #data_adapter.db_get_compss_port(prts),
                                                               "DATACLAY_EP": ip_leader + config.dic['DATACLAY_EP'],
                                                               "REPORT_ADDRESS": config.dic['CIMI_URL']}, #"http://" +  data_adapter.get_host_ip() + "/api"}, #config.dic['CIMI_URL']},
                                                  tty=True,
-                                                 ports=prts_list,
-                                                 #networking_config=None,
+                                                 ports=agent_ports_list,
                                                  host_config=lclient.create_host_config(port_bindings=ports_dict,
                                                                                         auto_remove=False))
 
@@ -153,13 +161,13 @@ def create_docker_compss_container(service_image, ip, prts, ip_leader):
             else:
                 LOG.debug("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] networks is empty / None")
 
-            return container
+            return container, agent_ports_list
         else:
             LOG.error("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] Could not connect to DOCKER API")
-            return None
+            return None, None
     except:
         LOG.exception("[lifecycle.modules.apps.docker.client] [create_docker_compss_container] Exception")
-        return None
+        return None, None
 
 
 # create_docker_compose_container

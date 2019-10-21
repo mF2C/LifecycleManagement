@@ -86,12 +86,8 @@ Lifecycle & COMPSs (IT-2):
 # gen_resource:
 def gen_resource(url, ports):
     try:
-        if url == data_adapter.get_my_ip(): #common.get_ip_address():
-            LOG.debug("[lifecycle.modules.apps.compss.adapter] [gen_resource] (local) get_COMPSs_port_DB_DOCKER_PORTS ...")
-            compss_port = data_adapter.db_get_compss_port(ports)
-        else:
-            LOG.debug("[lifecycle.modules.apps.compss.adapter] [gen_resource] (remote agent) first element from list ...")
-            compss_port = ports[0]
+        LOG.debug("[lifecycle.modules.apps.compss.adapter] [gen_resource] Getting first element from list (compss_port) ...")
+        compss_port = ports[0]
         LOG.debug("[lifecycle.modules.apps.compss.adapter] [gen_resource] compss_port: " + str(compss_port))
 
         xml = "<externalResource>" \
@@ -162,7 +158,8 @@ def start_job(service_instance, body):
               "</startApplication>"
         LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] [xml=" + xml + "]")
 
-        compss_port = agent['ports'][0] #data_adapter.db_get_compss_port(agent['ports'])
+        master_agent = data_adapter.serv_instance_find_master(service_instance)
+        compss_port = agent['ports'][0]
         LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job] PUT http://" + agent['url'] + ":" + str(compss_port) + "/COMPSs/startApplication")
 
         res = requests.put("http://" + agent['url'] + ":" + str(compss_port) + "/COMPSs/startApplication",
@@ -175,7 +172,7 @@ def start_job(service_instance, body):
         else:
             LOG.error("[lifecycle.modules.apps.compss.adapter] [start_job] Response from COMPSs: " + str(res))
     except:
-        LOG.exception('[lifecycle.modules.apps.compss.adapter] [start_job] Exception')
+        LOG.exception('[lifecycsle.modules.apps.compss.adapter] [start_job] Exception')
     return False
 
 
@@ -198,7 +195,6 @@ def start_job_in_agents(service_instance, body):
             LOG.error('[lifecycle.modules.apps.compss.adapter] [start_job_in_agents] xml_resources_content is empty: agents status != STATUS_STARTED')
             return False
 
-        # TODO ??? "  <serviceInstanceId>" + service_instance_id + "</serviceInstanceId>" \   ????
         xml = "<?xml version='1.0' encoding='utf-8'?>" \
               "<startApplication>" \
               "  <ceiClass>" + ceiClass + "</ceiClass>" \
@@ -212,8 +208,7 @@ def start_job_in_agents(service_instance, body):
         LOG.debug("[lifecycle.modules.apps.compss.adapter] [start_job_in_agents] [xml=" + xml + "]")
 
         master_agent = data_adapter.serv_instance_find_master(service_instance)
-
-        compss_port = master_agent['ports'][0] #data_adapter.db_get_compss_port(master_agent['ports'])
+        compss_port = master_agent['ports'][0]
 
         res = requests.put("http://" + master_agent['url'] + ":" + str(compss_port) + "/COMPSs/startApplication",
                            data=xml,

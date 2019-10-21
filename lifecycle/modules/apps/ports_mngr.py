@@ -78,7 +78,7 @@ def replace_in_list(l, xvalue, newxvalue):
 
 
 # create_ports_dict:
-def create_ports_dict(ports):
+def create_ports_dict(ports, isCompss=False):
     try:
         LOG.debug("[lifecycle.modules.apps.ports_mngr] [create_ports_dict] Checking and configuring service instance ports [" + str(ports) + "] ...")
         dict_ports = {}
@@ -90,10 +90,16 @@ def create_ports_dict(ports):
             else:
                 np = assign_new_port()
                 # original port : new port (exposed to host)
-                dict_ports.update({p: np})
-                take_port(np, p)
-                replace_in_list(ports, p, np)
-                LOG.debug("[lifecycle.modules.apps.ports_mngr] [create_ports_dict] port [ " + str(p) + " ] not free: redirected to " + str(np))
+                if not isCompss:
+                    dict_ports.update({p: np})
+                    take_port(np, p)
+                    replace_in_list(ports, p, np)
+                    LOG.debug("[lifecycle.modules.apps.ports_mngr] [create_ports_dict] Port [ " + str(p) + " ] not free: redirected to " + str(np))
+                else:
+                    dict_ports.update({np: np})
+                    take_port(np, np)
+                    replace_in_list(ports, np, np)
+                    LOG.debug("[lifecycle.modules.apps.ports_mngr] [create_ports_dict] Compss service using port: " + str(np))
 
         return dict_ports
     except:

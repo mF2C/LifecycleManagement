@@ -342,9 +342,9 @@ def submit(service, user_id, service_instance_id, sla_template_id):
         # Call to landscaper / recommender
         available_agents_list = agent_decision.get_available_agents_resources(service)
         LOG.debug("[lifecycle.deployment] [submit] Checking total of agents found by recommender ...")
-        if not available_agents_list or len(available_agents_list) == 0 or service['num_agents'] < len(available_agents_list):
+        if not available_agents_list or len(available_agents_list) == 0 or (available_agents_list is not None and 'num_agents' in service and service['num_agents'] > len(available_agents_list)):
             # warning
-            LOG.warning("[lifecycle.deployment] [submit] available_agents_list is None or empty. Forwarding to Leader...")
+            LOG.warning("[lifecycle.deployment] [submit] available_agents_list is None, empty or contains not enough resources. Forwarding to Leader...")
 
             # create empty service instance
             LOG.debug("[lifecycle.deployment] [submit] Creating new empty service instance ...")

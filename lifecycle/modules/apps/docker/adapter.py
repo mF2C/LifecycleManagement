@@ -100,7 +100,7 @@ def __deploy_docker_compss(service, service_instance, agent):
         # ip_leader
         ip_leader = service_instance['device_ip'] # TODO create a 'exec_device_ip'
 
-        container1 = docker_client.create_docker_compss_container(service_image, ip, ports, ip_leader)
+        container1, agents_ports = docker_client.create_docker_compss_container(service_image, ip, ports, ip_leader)
         if container1 is not None:
             db.SERVICE_INSTANCES_LIST.append({
                 "type": SERVICE_COMPSS,
@@ -112,6 +112,7 @@ def __deploy_docker_compss(service, service_instance, agent):
             # update agent properties
             agent['container_id'] = container1['Id']
             agent['agent_param'] = "-"
+            agent['ports'] = agents_ports
             agent['status'] = STATUS_WAITING
             return common.gen_response_ok('Deploy service in agent', 'agent', str(agent), 'service', str(service))
         else:
