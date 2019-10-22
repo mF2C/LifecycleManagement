@@ -101,7 +101,8 @@ def thr(notification):
         else:
             # ADD NEW RESOURCES TO COMPSs MASTER
             if new_num_agents > current_num_agents:
-                LOG.debug("[lifecycle.events.handler_qos] [thr] Reconfiguring service instance: Adding more nodes to service instance (COMPSs) ...")
+                LOG.debug("[lifecycle.events.handler_qos] [thr] new_num_agents > current_num_agents")
+                LOG.info("[lifecycle.events.handler_qos] [thr] Reconfiguring service instance: Adding more nodes to service instance (COMPSs) ...")
                 # Call to landscaper/recommender
                 LOG.debug("[lifecycle.events.handler_qos] [thr] Getting list of available agents ...")
                 available_agents_list = agent_decision.get_available_agents_resources(service) # ==> [{"agent_ip": "192.168.252.41"}, ...]
@@ -123,18 +124,25 @@ def thr(notification):
                                     LOG.error("[lifecycle.events.handler_qos] [thr] Reconfiguring service instance: Error adding new resources / 'appId' not found in service_instance!")
                 else:
                     LOG.error("[lifecycle.events.handler_qos] [thr] Handling QoS notifications: available_agents_list is None or is empty ")
+                LOG.debug("[lifecycle.events.handler_qos] [thr] Waiting 60s to terminate process ...")
+                time.sleep(60)
 
             # REMOVE RESOURCES FROM COMPSs MASTER
             elif new_num_agents < current_num_agents:
-                LOG.debug("[lifecycle.events.handler_qos] [thr] Reconfiguring service instance: Removing nodes from service instance (COMPSs) ...")
+                LOG.debug("[lifecycle.events.handler_qos] [thr] new_num_agents < current_num_agents")
+                LOG.info("[lifecycle.events.handler_qos] [thr] Reconfiguring service instance: Removing nodes from service instance (COMPSs) ...")
                 for agent in service_instance['agents']:
                     # if agent is not the master, it can be removed
                     if not data_adapter.serv_instance_is_master(agent) and new_num_agents < current_num_agents:
                         if compss_adpt.rem_resources_from_job(service_instance, appId, agent["agent_ip"]):
                             current_num_agents = current_num_agents - 1
+                LOG.debug("[lifecycle.events.handler_qos] [thr] Waiting 60s to terminate process ...")
+                time.sleep(60)
 
-        LOG.debug("[lifecycle.events.handler_qos] [thr] Waiting 60s to terminate process ...")
-        time.sleep(60)
+            else:
+                LOG.debug("[lifecycle.events.handler_qos] [thr] new_num_agents = current_num_agents")
+                LOG.debug("[lifecycle.events.handler_qos] [thr] Waiting 10s to terminate process ...")
+                time.sleep(10)
 
         LOG.debug("[lifecycle.events.handler_qos] [thr] Removing service instance id from QoS_SERVICE_INSTANCES_LIST ...")
         QoS_SERVICE_INSTANCES_LIST.remove(notification['service_instance_id'])
@@ -151,18 +159,20 @@ def __check_service_instance_id(service_instance_id):
         if sid == service_instance_id:
             LOG.warning("[lifecycle.events.handler_qos] [__check_notification] service instance [" + service_instance_id + "] is being processed")
             return False
-    LOG.debug("[lifecycle.events.handler_qos] [__check_notification] service instance [" + sid + "] is NOT being processed")
+    LOG.debug("[lifecycle.events.handler_qos] [__check_notification] service instance [" + service_instance_id + "] is NOT being processed")
     return True
 
 
 # Handle QoS violations
 def handle_qos_notification(notification):
+    LOG.info("########################################################################################")
+    LOG.info("######## QoS ENFORCEMENT")
     try:
         global QoS_SERVICE_INSTANCES_LIST
 
         LOG.info("[lifecycle.events.handler_qos] [handle_qos_notification] service_instance_id: notification: " + str(notification))
 
-        if not 'num_agents' in notification and not 'service_instance_id' in notification:
+        if not 'num_agents' in notification or not 'service_instance_id' in notification:
             LOG.error("[lifecycle.events.handler_qos] [handle_qos_notification] 'num_agents' / 'service_instance_id' parameters not found in notification!")
             return common.gen_response(406, 'Error', 'parameter num_agents / service_instance_id not found in qos notification', str(notification))
 
@@ -173,7 +183,7 @@ def handle_qos_notification(notification):
             t.start()
             return common.gen_response_ok('QoS Notification is being processed...', 'notification', str(notification))
 
-        return common.gen_response_ok("QoS Notification was not processed: List of current service instances being processed: " + str(SERVICE_INSTANCES_LIST),
+        return common.gen_response_ok("QoS Notification was not processed: List of current service instances being processed: " + str(QoS_SERVICE_INSTANCES_LIST),
                                       "notification",
                                       str(notification))
     except:

@@ -48,14 +48,6 @@ def get_available_agents_resources(service):
             # Based on this optimal configuration returned by the Recommender, the Lifecycle module asks the Landscaper for a list of resources that match this recommendation.
             resources = connector.get_available_devices(service)
 
-            # TODO release version - uncomment
-            # if not resources:
-            #     LOG.debug("LIFECYCLE: agent_decision: get_available_agents_list: total=None")
-            # else:
-            #     LOG.debug("LIFECYCLE: agent_decision: get_available_agents_list: total=" + str(len(resources)))
-            # return resources
-
-            # TODO temporal version - until analytics engine works - remove
             # If no resources were found, then the Lifecycle Management forwards the request (submit a service) upwards
             if not resources or len(resources) == 0:
                 LOG.warning("[lifecycle.modules.agent_decision] [get_available_agents_resources] temporal fix")

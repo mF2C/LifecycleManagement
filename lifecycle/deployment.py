@@ -23,9 +23,7 @@ from lifecycle import operations as operations
 
 
 '''
- Data managed by this component:
- SERVICE:
-     new version:
+SERVICE:
          {
             "name": "hello-world",
             "description": "Hello World Service",
@@ -50,7 +48,7 @@ from lifecycle import operations as operations
                     "docker-swarm" ..... "exec" =
                     "K8s" .............. "exec" =
 -----------------------------------------------------------------------------------------------
- SERVICE INSTANCE:
+SERVICE INSTANCE:
    {
        ...
        "id": "",
@@ -66,9 +64,7 @@ from lifecycle import operations as operations
                "num_cpus": 2, "allow": true, "master_compss": false}
       ]
    }
-   
-    Agent example: {"agent": resource-link, "url": "192.168.1.31", "ports": [8081], "container_id": "10asd673f", 
-                    "status": "waiting", "num_cpus": 3, "allow": true, "master_compss": false}
+
 -----------------------------------------------------------------------------------------------
  AGENTS_LIST: (STANDALONE MODE)
     agents_list: [{"agent_ip": "192.168.252.41", "master_compss": true, "num_cpus": 4}, 
@@ -342,9 +338,24 @@ def submit(service, user_id, service_instance_id, sla_template_id):
         # Call to landscaper / recommender
         available_agents_list = agent_decision.get_available_agents_resources(service)
         LOG.debug("[lifecycle.deployment] [submit] Checking total of agents found by recommender ...")
-        if not available_agents_list or len(available_agents_list) == 0 or (available_agents_list is not None and 'num_agents' in service and service['num_agents'] > len(available_agents_list)):
+
+        if not available_agents_list or len(available_agents_list) == 0:
             # warning
-            LOG.warning("[lifecycle.deployment] [submit] available_agents_list is None, empty or contains not enough resources. Forwarding to Leader...")
+            LOG.warning("[lifecycle.deployment] [submit] available_agents_list is None or is empty. Forwarding to Leader...")
+
+            # create empty service instance
+            LOG.debug("[lifecycle.deployment] [submit] Creating new empty service instance ...")
+            service_instance = data_adapter.create_service_instance(service, [], user_id, sla_template_id)
+            if not service_instance or 'id' not in service_instance:
+                LOG.error("[lifecycle.deployment] [submit] error creating empty service_instance")
+                return common.gen_response(500, 'error creating empty service_instance', 'service', str(service))
+
+            # forward to parent
+            return __forward_submit_request_to_leader(service, user_id, sla_template_id, service_instance['id'])
+
+        elif available_agents_list is not None and 'num_agents' in service and service['num_agents'] > len(available_agents_list):
+            # warning
+            LOG.warning("[lifecycle.deployment] [submit] List of available agents contains not enough resources. Forwarding to Leader...")
 
             # create empty service instance
             LOG.debug("[lifecycle.deployment] [submit] Creating new empty service instance ...")

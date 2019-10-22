@@ -21,65 +21,6 @@ from lifecycle.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINAT
     STATUS_TERMINATED, STATUS_UNKNOWN, STATUS_STARTING, STATUS_STOPPING, STATUS_TERMINATING, OPERATION_STOP_TERMINATE
 
 
-'''
- Data managed by this component:
- SERVICE:
-    new version:
-         {
-            "name": "hello-world",
-            "description": "Hello World Service",
-            "exec": "hello-world",
-            "exec_type": "docker",
-            "exec_ports": [8080],
-            "agent_type": "cloud",
-            "num_agents": 1,
-            "cpu_arch": "x86-64",
-            "os": "linux", 
-            "memory_min": 1000,
-            "storage_min": 100, 
-            "disk": 100, 
-            "req_resource": ["Location", "Sentinel", "Ambulance"],
-            "opt_resource": ["SenseHat", "GP-20U7"],
-            "category": 3 
-        }
-
-       "exec_type": "docker" ........... "exec" = docker image (docker hub)
-                    "compss" ........... "exec" = docker image based on COMPSs (docker hub)
-                    "docker-compose" ... "exec" = docker-compose.yml location
-                    "docker-swarm" ..... "exec" =
-                    "K8s" .............. "exec" =
------------------------------------------------------------------------------------------------
- SERVICE INSTANCE:
-   {
-       ...
-       "id": "",
-       "user": "testuser",
-       "service": "",
-       "agreement": "",
-       "status": "waiting",
-       "service_type": "docker-swarm",
-       "agents": [
-           {"agent": resource-link, "url": "192.168.1.31", "ports": [8081], "container_id": "10asd673f", "status": "waiting",
-               "num_cpus": 3, "allow": true, "master_compss": true},
-           {"agent": resource-link, "url": "192.168.1.34", "ports": [8081], "container_id": "99asd673f", "status": "waiting",
-               "num_cpus": 2, "allow": true, "master_compss": false}
-      ]
-   }
-
-    Agent example: {"agent": resource-link, "url": "192.168.1.31", "ports": [8081], "container_id": "10asd673f", 
-                    "status": "waiting", "num_cpus": 3, "allow": true, "master_compss": false}
------------------------------------------------------------------------------------------------
- AGENTS_LIST: (STANDALONE MODE)
-    agents_list: [{"agent_ip": "192.168.252.41", "master_compss": true, "num_cpus": 4}, 
-                  {"agent_ip": "192.168.252.42", "master_compss": false, "num_cpus": 2},
-                  {"agent_ip": "192.168.252.43", "master_compss": false, "num_cpus": 2}]
-
- AGENTS_LIST: (landscaper/recommender)                
-    available_agents_list: [{"agent_ip": "192.168.252.41"}, {"agent_ip": "192.168.252.42"}]
-
-'''
-
-
 # thr_operation_service_local: operation_service localhost
 def thr_operation_service_local(operation, service, agent):
     try:
@@ -142,7 +83,8 @@ def thr_operation_service_remote(operation, service, agent):
 
 # thr_operation_service: start/stop/terminate service instance in agents
 def __thr_operation_service(service_instance, operation):
-    LOG.info("######## OPERATION #######################################################################")
+    LOG.info("########################################################################################")
+    LOG.info("######## OPERATION: " + operation + " SERVICE INSTANCE")
     LOG.debug("[lifecycle.operations] [__thr_operation_service] operation=" + operation + ", service_instance_id=" + service_instance['id'])
     try:
         # 1. get service
@@ -194,7 +136,8 @@ def __thr_operation_service(service_instance, operation):
 
 # __thr_stop_terminate_service: stop and terminate service instance in agents
 def __thr_stop_terminate_service(service_instance):
-    LOG.info("######## OPERATION #######################################################################")
+    LOG.info("########################################################################################")
+    LOG.info("######## OPERATION: STOP & TERMINATE SERVICE INSTANCE")
     LOG.debug("[lifecycle.operations] [__thr_stop_terminate_service] service_instance_id=" + service_instance['id'])
     try:
         # 1. get service
@@ -338,7 +281,8 @@ def terminate_all():
 
 # Service Instance Operation: starts a job / app
 def start_job(body, service_instance_id):
-    LOG.info("######## JOBS #########################################################################")
+    LOG.info("########################################################################################")
+    LOG.info("######## JOBS: START JOB")
     LOG.debug("[lifecycle.operations] [start_job] body=" + str(body))
     LOG.debug("[lifecycle.operations] [start_job] service_instance_id=" + service_instance_id)
     try:

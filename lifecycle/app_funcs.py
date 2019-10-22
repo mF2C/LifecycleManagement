@@ -233,8 +233,9 @@ def deleteServiceInstance(service_instance_id):
 def postService(request):
     # 1. Parse and check input data
     data = request.get_json()
-    LOG.info("***************************************************************************************")
+    LOG.info("****************************************************************************************")
     LOG.info("[lifecycle.app_funcs] [postService] Launching new service [" + str(data) + "] ...")
+    LOG.info("****************************************************************************************")
 
     # USER_ID:
     if 'user_id' not in data:
@@ -321,7 +322,8 @@ def postService(request):
 
 # postServiceInt: deploy a service instance in the device / agent
 def postServiceInt(request):
-    LOG.info("######## DEPLOYMENT (remote call) ##################################################################")
+    LOG.info("########################################################################################")
+    LOG.info("######## DEPLOYMENT (remote call)")
     data = request.get_json()
     # check input parameters
     if 'service' not in data or 'service_instance' not in data or 'agent' not in data:
@@ -335,7 +337,8 @@ def postServiceInt(request):
 
 # putServiceInt
 def putServiceInt(request):
-    LOG.info("######## OPERATION (remote call) ##################################################################")
+    LOG.info("########################################################################################")
+    LOG.info("######## OPERATION (remote call)")
     data = request.get_json()
     # check input parameters
     if 'service' not in data or 'operation' not in data or 'agent' not in data:

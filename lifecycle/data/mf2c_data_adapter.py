@@ -128,7 +128,7 @@ class Mf2cDataAdapter:
 
     # serv_instance_find_master:
     def serv_instance_find_master(self, service_instance):
-        return si.findserv_instance_is_agent_in_service_instance_master(service_instance)
+        return si.find_master(service_instance)
 
 
     # serv_instance_is_agent_in_service_instance:
