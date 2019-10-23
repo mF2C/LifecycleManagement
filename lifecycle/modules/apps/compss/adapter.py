@@ -225,7 +225,7 @@ def start_job_in_agents(service_instance, body):
 
 
 # add_resources_to_job
-def add_resources_to_job(service_instance, appId, workerIP):
+def add_resources_to_job(service_instance, appId, workerIP, workerPorts):
     # <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
     # <newResource>
     #    <appId>1357211900655995414</appId>
@@ -263,9 +263,8 @@ def add_resources_to_job(service_instance, appId, workerIP):
     #        </resourceConf>
     #    </externalResource>
     # </newResource>
-    LOG.debug("[lifecycle.modules.apps.compss.adapter] [add_resources_to_job] ... ")
+    LOG.debug("[lifecycle.modules.apps.compss.adapter] [add_resources_to_job] Adding new worker to execution: workerIP=" + workerIP + ", workerPort=" + str(workerPort) + " ...")
     try:
-        # TODO get new port for new resource ==> 46102
         xml = "<newResource>" \
               "     <appId>" + appId + "</appId>" \
               "     <externalResource>" \
@@ -296,7 +295,7 @@ def add_resources_to_job(service_instance, appId, workerIP):
               "         <name>" + workerIP + "</name>" \
               "         <resourceConf xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"ResourcesExternalAdaptorProperties\">" \
               "             <Property>" \
-              "                 <Name>Port</Name>" \
+              "                 <Name>" + str(workerPorts[0]) + "</Name>" \
               "                 <Value>46102</Value>" \
               "             </Property>" \
               "         </resourceConf>" \
@@ -304,7 +303,7 @@ def add_resources_to_job(service_instance, appId, workerIP):
               "</newResource>"
 
         master_agent = data_adapter.serv_instance_find_master(service_instance)
-        compss_port = data_adapter.db_get_compss_port(master_agent['ports'])
+        compss_port = master_agent['ports'][0]
 
         res = requests.put("http://" + master_agent['url'] + ":" + str(compss_port) + "/COMPSs/newResource",
                            data=xml,
