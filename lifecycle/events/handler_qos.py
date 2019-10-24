@@ -119,7 +119,10 @@ def thr(notification):
                             if res:
                                 # ADD TO COMPSs
                                 LOG.debug("[lifecycle.events.handler_qos] [thr] Adding to COMPSs execution ...")
+                                time.sleep(25)
                                 if compss_adpt.add_resources_to_job(service_instance, appId, agent["agent_ip"], new_agent['ports']):
+                                    service_instance['agents'].append(new_agent)
+                                    data_adapter.update_service_instance(service_instance['id'], service_instance)
                                     current_num_agents = current_num_agents + 1
                                 else:
                                     LOG.error("[lifecycle.events.handler_qos] [thr] Reconfiguring service instance: Error adding new resources / 'appId' not found in service_instance!")
@@ -179,11 +182,13 @@ def handle_qos_notification(notification):
 
         # handle notification
         if __check_service_instance_id(notification['service_instance_id']):
+            LOG.info("[lifecycle.events.handler_qos] [handle_qos_notification] Processing request...")
             QoS_SERVICE_INSTANCES_LIST.append(notification['service_instance_id'])
             t = threading.Thread(target=thr, args=(notification,))
             t.start()
             return common.gen_response_ok('QoS Notification is being processed...', 'notification', str(notification))
 
+        LOG.info("[lifecycle.events.handler_qos] [handle_qos_notification] Request not processed.")
         return common.gen_response_ok("QoS Notification was not processed: List of current service instances being processed: " + str(QoS_SERVICE_INSTANCES_LIST),
                                       "notification",
                                       str(notification))

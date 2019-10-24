@@ -263,7 +263,7 @@ def add_resources_to_job(service_instance, appId, workerIP, workerPorts):
     #        </resourceConf>
     #    </externalResource>
     # </newResource>
-    LOG.debug("[lifecycle.modules.apps.compss.adapter] [add_resources_to_job] Adding new worker to execution: workerIP=" + workerIP + ", workerPort=" + str(workerPort) + " ...")
+    LOG.debug("[lifecycle.modules.apps.compss.adapter] [add_resources_to_job] Adding new worker to execution: workerIP=" + workerIP + ", workerPort=" + str(workerPorts) + " ...")
     try:
         xml = "<newResource>" \
               "     <appId>" + appId + "</appId>" \
@@ -295,20 +295,22 @@ def add_resources_to_job(service_instance, appId, workerIP, workerPorts):
               "         <name>" + workerIP + "</name>" \
               "         <resourceConf xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:type=\"ResourcesExternalAdaptorProperties\">" \
               "             <Property>" \
-              "                 <Name>" + str(workerPorts[0]) + "</Name>" \
-              "                 <Value>46102</Value>" \
+              "                 <Name>Port</Name>" \
+              "                 <Value>" + str(workerPorts[0]) + "</Value>" \
               "             </Property>" \
               "         </resourceConf>" \
               "     </externalResource>" \
               "</newResource>"
 
+        LOG.debug("[lifecycle.modules.apps.compss.adapter] [add_resources_to_job] [xml=" + xml + "]")
+
         master_agent = data_adapter.serv_instance_find_master(service_instance)
         compss_port = master_agent['ports'][0]
 
-        res = requests.put("http://" + master_agent['url'] + ":" + str(compss_port) + "/COMPSs/newResource",
+        res = requests.put("http://" + master_agent['url'] + ":" + str(compss_port) + "/COMPSs/addResources",
                            data=xml,
                            headers={'Content-Type': 'application/xml'})
-        LOG.debug("[lifecycle.modules.apps.compss.adapter] [add_resources_to_job] response: " + str(res) + ", " + str(res.json()))
+        LOG.debug("[lifecycle.modules.apps.compss.adapter] [add_resources_to_job] response: " + str(res))
 
         return True
     except:
