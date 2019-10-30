@@ -269,14 +269,13 @@ The following method stops the service instance.
 REQUEST:
 
 ```
-PUT /api/v1/lifecycle
+PUT /api/v2/lm/service-instance/<service_instance_id>
 ```
 
 REQUEST BODY:
 
 ```json
-{"service_instance_id":"f1bcf627-99cb-4138-a429-b44c5645e6a6",
-"operation":"stop"}
+{"operation":"stop"}
 ```
 
 RESPONSE:
@@ -299,13 +298,8 @@ After stopping the service, the service instance can be terminated and removed f
 REQUEST:
 
 ```
-DELETE /api/v1/lifecycle
+DELETE /api/v2/lm/service-instance/<service_instance_id>
 ```
-
-REQUEST BODY:
-
-```json
-{"service_instance_id":"f1bcf627-99cb-4138-a429-b44c5645e6a6"}
 
 RESPONSE:
 
