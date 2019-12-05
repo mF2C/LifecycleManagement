@@ -15,6 +15,7 @@ import lifecycle.modules.apps.docker.client as docker_client
 import common.common as common
 import lifecycle.data.db as db
 import wget, uuid, os, time
+import urllib.request as urequest
 from lifecycle.data.db import SERVICE_INSTANCES_LIST
 from common.logs import LOG
 import config
@@ -142,10 +143,14 @@ def deploy_docker_compose(service, agent):
             os.remove(config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
         except:
             LOG.warning("LIFECYCLE:Error when removing file: " + config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
+
         # download docker-compose.yml
         try:
-            res = wget.download(location, config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
-            LOG.debug("LIFECYCLE:  > wget download result: " + str(res))
+            #res = wget.download(location, config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
+            #LOG.debug("LIFECYCLE:  > wget download result: " + str(res))
+
+            res, _ = urequest.urlretrieve(location, config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
+            LOG.debug("LIFECYCLE: Docker adapter: deploy_docker_compose:  > download result: " + str(res))
         except:
             LOG.exception("LIFECYCLE:Error when downloading file to: " + config.dic['WORKING_DIR_VOLUME'] + "/docker-compose.yml")
             return common.gen_response(500, "Exception: deploy_docker_compose(): Error when downloading file to WORKING_DIR_VOLUME",

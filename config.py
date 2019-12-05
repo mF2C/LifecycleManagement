@@ -13,7 +13,7 @@ Created on 18 oct. 2018
 
 #!/usr/bin/python
 
-dic = { "VERSION":                      "1.0.7-arm",
+dic = { "VERSION":                      "1.0.8-arm",
 
         # SERVER - REST API:
         "SERVER_PORT":                  46000,
@@ -36,10 +36,10 @@ dic = { "VERSION":                      "1.0.7-arm",
 
         # docker:
         # working dir for docker compose applications / services
-        "WORKING_DIR_VOLUME":           "/home/atos/mF2C/compose_examples",
+        "WORKING_DIR_VOLUME":           "/tmp/mf2c/compose_files",
         # docker compose image: needed to deploy docker compose based services
-        "DOCKER_COMPOSE_IMAGE":         "docker/compose:1.23.1", #1.21.0",
-        "DOCKER_COMPOSE_IMAGE_TAG":     "1.23.1", #"1.21.0",
+        "DOCKER_COMPOSE_IMAGE":         "docker/compose:1.24.0",
+        "DOCKER_COMPOSE_IMAGE_TAG":     "1.24.0",
         # docker socket volume
         "DOCKER_SOCKET_VOLUME":         "/var/run/docker.sock",
         # ports db

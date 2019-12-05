@@ -13,6 +13,7 @@ Created on 02 may 2018
 
 
 import config
+import os
 import common.common as common
 from common.logs import LOG
 
@@ -28,7 +29,6 @@ ENV VARIABLES (mF2C):
     
 ENV VARIABLES (lifecycle):
     HOST_IP
-    STANDALONE_MODE
     
     URL_PM_SLA_MANAGER
     URL_AC_SERVICE_MNGMT
@@ -45,8 +45,6 @@ def init():
     try:
         # CONFIGURATION / ENVIRONMENT VALUES
         LOG.info('LIFECYCLE: Reading values from ENVIRONMENT...')
-        # STANDALONE_MODE
-        common.set_value_env('STANDALONE_MODE')
         # docker
         common.set_value_env('WORKING_DIR_VOLUME')
         common.set_value_env('DOCKER_COMPOSE_IMAGE')
@@ -88,7 +86,6 @@ def init():
         LOG.info('LIFECYCLE: [API_DOC_URL=' + config.dic['API_DOC_URL'] + ']')
         LOG.info('LIFECYCLE: [CERT_CRT=' + config.dic['CERT_CRT'] + ']')
         LOG.info('LIFECYCLE: [CERT_KEY=' + config.dic['CERT_KEY'] + ']')
-        LOG.info('LIFECYCLE: [STANDALONE_MODE=' + str(config.dic['STANDALONE_MODE']) + ']')
         LOG.info('LIFECYCLE: [VERIFY_SSL=' + str(config.dic['VERIFY_SSL']) + ']')
         LOG.info('LIFECYCLE: [CIMI_URL=' + config.dic['CIMI_URL'] + ']')
         LOG.info('LIFECYCLE: [CIMI_USER=' + config.dic['CIMI_USER'] + ']')
@@ -102,9 +99,10 @@ def init():
         LOG.info('LIFECYCLE: [NETWORK_COMPSs=' + config.dic['NETWORK_COMPSs'] + ']')
         LOG.info('LIFECYCLE: [DATACLAY_EP=' + config.dic['DATACLAY_EP'] + ']')
 
-        if config.dic['STANDALONE_MODE'] == 'True' or config.dic['STANDALONE_MODE'] is None:
-            LOG.warning("LIFECYCLE: STANDALONE_MODE enabled")
+        if os.path.exists(config.dic['WORKING_DIR_VOLUME']):
+            LOG.info("LIFECYCLE: init_config: The folder exists: " + config.dic['WORKING_DIR_VOLUME'])
         else:
-            LOG.info("LIFECYCLE: STANDALONE_MODE not enabled")
+            LOG.info("LIFECYCLE: init_config: The folder does not exist: " + config.dic['WORKING_DIR_VOLUME'] + ". Creating new path ...")
+            os.makedirs(config.dic['WORKING_DIR_VOLUME'], exist_ok=True)
     except:
         LOG.error('LIFECYCLE: init_config: Exception: Error while initializing application')
