@@ -10,7 +10,7 @@ Service definition:
 	"name": "docker_compose_app_1",
 	"description": "docker-compose application",
 	"exec": "https://raw.githubusercontent.com/sameersbn/docker-gitlab/master/docker-compose.yml",
-  "sla_templates": ["sla-template/083e1759-4b66-4295-b187-37997feec013"],
+        "sla_templates": ["sla-template/083e1759-4b66-4295-b187-37997feec013"],
 	"os": "linux",
 	"disk": 100,
 	"category": 0,
@@ -103,7 +103,7 @@ curl -H "slipstream-authn-info: super ADMIN" -H "Content-type: application/json"
 	\"name\": \"docker_compose_app_1\",
 	\"description\": \"docker-compose application\",
 	\"exec\": \"https://raw.githubusercontent.com/sameersbn/docker-gitlab/master/docker-compose.yml\",
-  \"sla_templates\": [\"sla-template/461de863-75f4-453f-b60e-932be8df6e69\"],
+        \"sla_templates\": [\"sla-template/461de863-75f4-453f-b60e-932be8df6e69\"],
 	\"os\": \"linux\",
 	\"disk\": 100,
 	\"category\": 0,
@@ -158,7 +158,7 @@ If the `service id` is not included in the request body, then this body requires
 		"name": "docker_compose_app_1",
 		"description": "docker-compose application",
 		"exec": "https://raw.githubusercontent.com/sameersbn/docker-gitlab/master/docker-compose.yml",
-	  "sla_templates": ["sla-template/083e1759-4b66-4295-b187-37997feec013"],
+	        "sla_templates": ["sla-template/083e1759-4b66-4295-b187-37997feec013"],
 		"os": "linux",
 		"disk": 100,
 		"category": 0,
@@ -173,8 +173,7 @@ If the `service id` is not included in the request body, then this body requires
 		"opt_resource": []
 	},
 	"sla_template": "sla-template/083e1759-4b66-4295-b187-37997feec013",
-	"agents_list": [
-		{"agent_ip": "192.168.252.41", "num_cpus": 4}, {"agent_ip": "192.168.252.42", "num_cpus": 4}]
+	"agents_list": [{"agent_ip": "192.168.252.41"}, {"agent_ip": "192.168.252.42"}]
 }
 ```
 
@@ -270,14 +269,13 @@ The following method stops the service instance.
 REQUEST:
 
 ```
-PUT /api/v1/lifecycle
+PUT /api/v2/lm/service-instance/<service_instance_id>
 ```
 
 REQUEST BODY:
 
 ```json
-{"service_instance_id":"f1bcf627-99cb-4138-a429-b44c5645e6a6",
-"operation":"stop"}
+{"operation":"stop"}
 ```
 
 RESPONSE:
@@ -300,13 +298,8 @@ After stopping the service, the service instance can be terminated and removed f
 REQUEST:
 
 ```
-DELETE /api/v1/lifecycle
+DELETE /api/v2/lm/service-instance/<service_instance_id>
 ```
-
-REQUEST BODY:
-
-```json
-{"service_instance_id":"f1bcf627-99cb-4138-a429-b44c5645e6a6"}
 
 RESPONSE:
 
