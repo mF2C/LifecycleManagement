@@ -296,7 +296,13 @@ def submit_service_in_agents(service, user_id, service_instance_id, sla_template
         LOG.info("[lifecycle.deployment] [submit_service_in_agents] Total agents needed to run the service ['num_agents']: " + str(num_agents))
         LOG.info("[lifecycle.deployment] [submit_service_in_agents] Selecting agents ... ")
 
-        r, m = agent_decision.select_agents(service['exec_type'], num_agents, service_instance)
+        # get agent type
+        if 'agent_type' not in service:
+            agent_type = "normal"
+        else:
+            agent_type = service['agent_type']
+
+        r, m = agent_decision.select_agents(service['exec_type'], agent_type, num_agents, service_instance)
 
         if m == "error" or r is None:
             LOG.error("[lifecycle.deployment] [submit_service_in_agents] error when selecting agents. Forwarding to Leader...")

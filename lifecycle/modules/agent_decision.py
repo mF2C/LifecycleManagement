@@ -322,9 +322,9 @@ def __select_agents_service_docker(service_instance, num_agents):
 
 # select_agents_list: Select from list of available agents
 #   the initial list of agents can be found in 'service_instance' object
-def select_agents(service_type, num_agents, service_instance):
+def select_agents(service_type, agent_type, num_agents, service_instance):
     try:
-        LOG.debug("[lifecycle.modules.agent_decision] [select_agents] [service_type=" + service_type + "], [agents=" + str(service_instance) + "]")
+        LOG.debug("[lifecycle.modules.agent_decision] [select_agents] [agent_type=" + agent_type + "], [service_type=" + service_type + "], [agents=" + str(service_instance) + "]")
 
         # STANDALONE MODE ################################
         if common.is_standalone_mode():
@@ -338,11 +338,15 @@ def select_agents(service_type, num_agents, service_instance):
 
             # 1.1. USER MANAGEMENT -> profiling and sharing model
             LOG.info("######## SELECT AGENTS: USER MANAGEMENT ####################################### (2) ###########")
-            service_instance_res = __user_management(service_instance)
-            if not service_instance_res is None:
-                service_instance = service_instance_res
-                # save service instance in cimi
-                data_adapter.update_service_instance(service_instance['id'], service_instance)
+            if agent_type == "normal":
+                LOG.info("[lifecycle.modules.agent_decision] [select_agents] agent_type is NORMAL. Filtering by User Management info... ")
+                service_instance_res = __user_management(service_instance)
+                if not service_instance_res is None:
+                    service_instance = service_instance_res
+                    # save service instance in cimi
+                    data_adapter.update_service_instance(service_instance['id'], service_instance)
+            else:
+                LOG.info("[lifecycle.modules.agent_decision] [select_agents] agent_type is MICRO. No (User Management) filter will be applied.")
 
             # 1.2. QoS PROVIDING
             LOG.info("######## SELECT AGENTS: SERVICE MANAGEMENT (QoS) ############################## (3) ###########")
@@ -351,11 +355,14 @@ def select_agents(service_type, num_agents, service_instance):
                 service_instance = service_instance_res
 
             # 1.3. check if service is a SWARM service and filter
-            if service_type == SERVICE_DOCKER_SWARM:
+            if agent_type == "normal" and service_type == SERVICE_DOCKER_SWARM:
+                LOG.info("[lifecycle.modules.agent_decision] [select_agents] agent_type is NORMAL. Looking for Swarm devices... ")
                 LOG.info("######## SELECT AGENTS: SWARM SERVICE ######################################### (4) ###########")
                 service_instance_res = __filter_by_swarm(service_instance)
                 if not service_instance_res is None:
                     service_instance = service_instance_res
+            else:
+                LOG.info("[lifecycle.modules.agent_decision] [select_agents] agent_type is MICRO. No (Swarm) filter will be applied.")
 
             LOG.debug("[lifecycle.modules.agent_decision] [select_agents] agents FILTERED list: " + str(service_instance['agents']))
 

@@ -78,7 +78,8 @@ def get_optimal_resources(service):
 
         r = requests.post(str(config.dic['URL_PM_RECOM_LANDSCAPER']) + "/optimal",
                           json={"sort_order": sort_order,
-                                "name":"test"},
+                                "name":"test",
+                                "service_id": service['id']},
                           headers={"Accept": "text/json", "Content-Type": "application/json"},
                           verify=config.dic['VERIFY_SSL'],
                           timeout=config.dic['TIMEOUT_ANALYTICSENGINE'])

@@ -100,6 +100,21 @@ def db_si_get(id):
     return None
 
 
+# get from DB_LM_SERVICE_INSTANCES
+def db_si_getrecord(id):
+    try:
+        records = [r for r in DB_LM_SERVICE_INSTANCES if r['id'] == id]
+        LOG.debug("[lifecycle.data.app.lm_db] [db_si_get] records: " + str(records))
+
+        if len(records) >= 1:
+            return records[0]
+        else:
+            LOG.warning('[lifecycle.data.app.lm_db] [db_si_get] No records found')
+    except:
+        LOG.exception('[lifecycle.data.app.lm_db] [db_si_get] Exception')
+    return None
+
+
 # get all from DB_LM_SERVICE_INSTANCES
 def db_si_getall():
     try:
@@ -121,7 +136,7 @@ def db_si_getall():
 # del from DB_LM_SERVICE_INSTANCES
 def db_si_del(id):
     try:
-        record = db_si_get(id)
+        record = db_si_getrecord(id)
         if record is not None:
             LOG.debug("[lifecycle.data.app.lm_db] [db_si_del] deleted records: " + str(DB_LM_SERVICE_INSTANCES.delete(record)))
             # save changes on disk
