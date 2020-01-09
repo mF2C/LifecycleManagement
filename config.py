@@ -13,7 +13,7 @@ Created on 18 oct. 2018
 
 #!/usr/bin/python
 
-dic = { "VERSION":                      "1.3.11",
+dic = { "VERSION":                      "1.3.14",
 
         # LIFECYCLE MANAGER MODE: "DEFAULT", "MF2C" , "STANDALONE"
         "LM_MODE":                      "MF2C",
