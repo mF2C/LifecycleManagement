@@ -14,9 +14,10 @@ Created on 09 feb. 2018
 from lifecycle.connectors import connector as connector
 from lifecycle.modules.apps.docker import adapter as docker_adpt
 from lifecycle.modules.apps.swarm import adapter as swarm_adpt
+from lifecycle.modules.apps.swarm.compose import adapter as swarm_compose_adpt
 from lifecycle.modules.apps.kubernetes import adapter as k8s_adpt
 from lifecycle.modules.apps.compss import adapter as compss_adpt
-from lifecycle.common import SERVICE_KUBERNETES, SERVICE_DOCKER_SWARM, STATUS_ERROR
+from lifecycle.common import SERVICE_KUBERNETES, SERVICE_DOCKER_SWARM, SERVICE_DOCKER_COMPOSE_SWARM, STATUS_ERROR
 
 
 # Deploy / allocate service
@@ -26,6 +27,8 @@ def deploy_service_agent(service, service_instance, agent):
         return k8s_adpt.deploy_service(service, agent)
     elif service['exec_type'] == SERVICE_DOCKER_SWARM:
         return swarm_adpt.deploy_service_agent(service, agent)
+    elif service['exec_type'] == SERVICE_DOCKER_COMPOSE_SWARM:
+        return swarm_compose_adpt.deploy_service_agent(service, agent)
     else: # SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS
         return docker_adpt.deploy_service_agent(service, service_instance, agent)
 
@@ -37,6 +40,8 @@ def stop_service_agent(service, agent):
         return docker_adpt.stop_service_agent(agent)
     elif service['exec_type'] == SERVICE_DOCKER_SWARM:
         return swarm_adpt.stop_service_agent(agent)
+    elif service['exec_type'] == SERVICE_DOCKER_COMPOSE_SWARM:
+        return swarm_compose_adpt.stop_service_agent(service, agent)
     else: # SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS
         if docker_adpt.stop_service_agent(agent) != STATUS_ERROR:
             connector.user_management_set_um_properties(apps=-1)
@@ -47,7 +52,7 @@ def stop_service_agent(service, agent):
 def start_service_agent(service, agent):
     if service['exec_type'] == SERVICE_KUBERNETES:
         return docker_adpt.start_service_agent(agent)
-    elif service['exec_type'] == SERVICE_DOCKER_SWARM:
+    elif service['exec_type'] == SERVICE_DOCKER_SWARM or service['exec_type'] == SERVICE_DOCKER_COMPOSE_SWARM:
         return swarm_adpt.start_service_agent(agent)
     else: # SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS
         if docker_adpt.start_service_agent(agent) != STATUS_ERROR:
@@ -59,6 +64,8 @@ def start_service_agent(service, agent):
 def terminate_service_agent(service, agent):
     if service['exec_type'] == SERVICE_KUBERNETES:
         return docker_adpt.terminate_service_agent(agent)
+    elif service['exec_type'] == SERVICE_DOCKER_COMPOSE_SWARM:
+        return swarm_compose_adpt.terminate_service_agent(service, agent)
     elif service['exec_type'] == SERVICE_DOCKER_SWARM:
         return swarm_adpt.terminate_service_agent(agent)
     else: # SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS

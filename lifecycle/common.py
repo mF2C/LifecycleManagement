@@ -30,6 +30,7 @@ SERVICE_DOCKER_COMPOSE = "docker-compose" #"docker-compose"
 SERVICE_COMPSS = "compss"
 SERVICE_DOCKER_SWARM =  "docker-swarm" #"swarm" #""docker-swarm"
 SERVICE_KUBERNETES = "K8s"
+SERVICE_DOCKER_COMPOSE_SWARM = "docker-compose-swarm" #"docker-compose-swarm
 
 # Operations:
 OPERATION_START = "start"

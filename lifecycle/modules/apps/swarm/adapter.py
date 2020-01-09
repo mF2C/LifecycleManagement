@@ -23,27 +23,6 @@ from lifecycle.common import OPERATION_START, OPERATION_STOP, OPERATION_TERMINAT
 
 
 '''
- Data managed by this component:
------------------------------------------------------------------------------------------------
- SERVICE INSTANCE:
-   {
-       ...
-       "id": "",
-       "user_id": "testuser",
-       "service_id": "",
-       "agreement_id": "",
-       "status": "waiting",
-       "agents": [
-           {"agent": resource-link, "url": "192.168.1.31", "ports": [8081], "container_id": "10asd673f", "status": "waiting",
-               "num_cpus": 3, "allow": true, "master_compss": false},
-           {"agent": resource-link, "url": "192.168.1.34", "ports": [8081], "container_id": "99asd673f", "status": "waiting",
-               "num_cpus": 2, "allow": true, "master_compss": false}
-      ]
-   }
-   
-    Agent example: {"agent": resource-link, "url": "192.168.1.31", "ports": {8081}, "container_id": "10asd673f", 
-                    "status": "waiting", "num_cpus": 3, "allow": true, "master_compss": false}
------------------------------------------------------------------------------------------------
  DOCKER SWARM SERVICE:
      {
         'Endpoint': {

@@ -15,7 +15,7 @@ from lifecycle.connectors import connector as connector
 from lifecycle.data import data_adapter as data_adapter
 from lifecycle import common as common
 from lifecycle.logs import LOG
-from lifecycle.common import SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS, SERVICE_KUBERNETES, SERVICE_DOCKER_SWARM
+from lifecycle.common import SERVICE_DOCKER, SERVICE_DOCKER_COMPOSE, SERVICE_COMPSS, SERVICE_KUBERNETES, SERVICE_DOCKER_SWARM, SERVICE_DOCKER_COMPOSE_SWARM
 
 
 ###############################################################################
@@ -355,7 +355,7 @@ def select_agents(service_type, agent_type, num_agents, service_instance):
                 service_instance = service_instance_res
 
             # 1.3. check if service is a SWARM service and filter
-            if agent_type == "normal" and service_type == SERVICE_DOCKER_SWARM:
+            if agent_type == "normal" and (service_type == SERVICE_DOCKER_SWARM or service_type == SERVICE_DOCKER_COMPOSE_SWARM):
                 LOG.info("[lifecycle.modules.agent_decision] [select_agents] agent_type is NORMAL. Looking for Swarm devices... ")
                 LOG.info("######## SELECT AGENTS: SWARM SERVICE ######################################### (4) ###########")
                 service_instance_res = __filter_by_swarm(service_instance)
@@ -372,7 +372,7 @@ def select_agents(service_type, agent_type, num_agents, service_instance):
             if service_type == SERVICE_COMPSS:
                 return __select_agents_service_compss(service_instance, num_agents)
             # 2.2. DOCKER_SWARM
-            elif service_type == SERVICE_DOCKER_SWARM:
+            elif service_type == SERVICE_DOCKER_SWARM or service_type == SERVICE_DOCKER_COMPOSE_SWARM:
                 return __select_agents_service_docker_swarm(service_instance)
             # 2.3. DOCKER_COMPOSE
             elif service_type == SERVICE_DOCKER_COMPOSE:
