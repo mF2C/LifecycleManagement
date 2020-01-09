@@ -61,6 +61,11 @@ This component can be installed as a standalone component, or as part of mF2C. T
       cd LifecycleManagement
 ```
 
+- Select the Dockerfile from docker folder. There are three different Dockerfiles:
+  - One Dockerfile used to generate images for ARM devices. This version only includes the Lifecycle component and needs to be used with the `arm` branch.
+  - A "light" Docker image which includes all functionalitites except the deployment of docker-compose in Swarm 
+  - And one Docker image, based on ubuntu, which supports the deployment of docker-compose in Swarm 
+
 - Build the docker image:
 
 ```bash
@@ -74,6 +79,48 @@ The docker image can also be downloaded from docker hub (this image includes the
 ```
 
 To install it as part of mF2C see **mF2C/mF2C** [repository](https://github.com/mF2C/mF2C)
+
+```yml 
+  ########## Lifecycle Manager + User Manager ##########
+  lm-um:
+    image: mf2c/lifecycle-usermngt:1.3.13
+    restart: on-failure
+    depends_on:
+      - cimi
+      - resource-categorization
+      - analytics-engine
+      - landscaper
+    expose:
+      - "46300"
+      - "46000"
+    ports:
+      - "46000:46000"
+      - "46300:46300"
+    environment:
+      - WORKING_DIR_VOLUME=/tmp/mf2c/lm/compose_files
+      - UM_WORKING_DIR_VOLUME=/tmp/mf2c/um/
+      - LM_WORKING_DIR_VOLUME=/tmp/mf2c/lm/
+      - SERVICE_CONSUMER=true
+      - RESOURCE_CONTRIBUTOR=true
+      - MAX_APPS=100
+    volumes:
+      - /tmp/mf2c/lm/compose_files:/tmp/mf2c/lm/compose_files
+      - /tmp/mf2c/um:/tmp/mf2c/um
+      - /tmp/mf2c/lm:/tmp/mf2c/lm
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker
+    labels:
+      - "traefik.enable=true"
+      - "traefik.lm.frontend.rule=PathPrefixStrip:/lm"
+      - "traefik.lm.port=46000"
+      - "traefik.um.frontend.rule=PathPrefixStrip:/um"
+      - "traefik.um.port=46300"
+    healthcheck:
+      start_period: 60s
+      retries: 5
+      test: ["CMD", "wget", "--spider", "http://localhost:46000/api/v2/lm/isumalive"]
+    logging: *logging_params
+```
 
 Finally, to run the component without Docker, you will need **Python 3.4**.
 
@@ -92,6 +139,10 @@ To start the Lifecycle Management module with access to the docker socket ('-v /
 sudo docker run -v /var/run/docker.sock:/var/run/docker.sock -p 46000:46000 lifecycle
 ```
 
+```bash
+sudo docker run -v /var/run/docker.sock:/var/run/docker.sock -v /usr/bin/docker:/usr/bin/docker -v /tmp/mf2c/lm:/tmp/mf2c/lm -v /tmp/mf2c/lm/compose_files:/tmp/mf2c/lm/compose_files -p 46000:46000 lifecycle
+```
+
 Available environment variables:
 - **STANDALONE_MODE** `False` if working in an agent with other mF2C components; `True` if working without external dependencies (except docker)
 - **CIMI_URL**
@@ -101,11 +152,7 @@ Available environment variables:
 - **URL_AC_SERVICE_MNGMT** URL of the Agent Controller - QoS Providing; e.g. https://192.168.192.192:46200/api/service-management
 - **URL_AC_USER_MANAGEMENT** URL of the Agent Controller - User Management; e.g. https://192.168.192.192:46300/api/v1/user-management
 - **URL_PM_RECOM_LANDSCAPER** URL of the Platform Manager - Landscaper/Recommender; e.g. http://192.168.252.41:46020/mf2c
-- **K8S_MASTER**
-- **K8S_PROXY**
-- **K8S_NAMESPACE**
 - **DOCKER_SOCKET**
-- **DOCKER_SWARM**
 
 Example:
 
