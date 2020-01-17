@@ -1,0 +1,39 @@
+# flask (prev version 0.10.1)
+#
+#
+flask==1.0.2
+
+# flask_restful
+#
+#
+flask_restful==0.3.6
+
+# requests
+#
+#
+requests
+
+# flask_cors
+#
+#
+flask_cors==3.0.6
+
+# flask_restful_swagger
+#   https://github.com/rantav/flask-restful-swagger
+#   MIT License; https://github.com/rantav/flask-restful-swagger/blob/master/LICENSE
+flask_restful_swagger==0.20.1
+
+# docker
+#
+# ==3.0.1
+docker
+
+# pydblite
+#   http://www.pydblite.net
+#   BSD licence; http://www.pydblite.net/en/licence.html
+pydblite==3.0.4
+
+# kubernetes
+#
+#
+# kubernetes==7.0
