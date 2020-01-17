@@ -115,17 +115,9 @@ def check_ip(ip_adress):
         response = os.system("ping -c 1 " + ip_adress)
         if response == 0:
             return True
-        else:
-            response = os.system("ping -c 1 " + ip_adress)
-            if response == 0:
-                return True
-            else:
-                response = os.system("ping -c 1 " + ip_adress)
-                if response == 0:
-                    return True
     except:
         LOG.error('[lifecycle.common.common] [check_ip] Exception')
-    return False
+    return True
 
 
 ###############################################################################
